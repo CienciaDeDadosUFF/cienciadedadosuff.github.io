@@ -70,7 +70,7 @@ Os parâmetros $\mu$ e $\sigma$² são a média e a variância da distribuição
 
 Uma das características da distribuição Normal é que ela é simétrica em torno de sua média $\mu$, ou seja, há 50% de probabilidade acumulada à esquerda e à direita da média. Outra característica é o seu formato de "sino", a seguir ilustramos esse comportamento através das densidades X ~ N(0,1), X ~ N(0,2) e X ~ N(3,1).
 
-![Gráfico de Uma Distribuição Normal X ~ (0,1) ]({{ site.url }}/assets/python/courses/machine_learning/04/images/normal.jpg)
+![img.png]({{ site.url }}/assets/python/courses/machine_learning/04/images/normal.jpg)
 
 
 > Nota-se que os dois parâmetros influenciam na caracterização das densidades. Assim temos:
