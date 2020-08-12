@@ -413,7 +413,7 @@ Neste caso, utilizamos a notação $ X\sim F_{m,n} $, onde $m > 0$ e $n > 0$. A 
 
 ![img.png]({{ site.url }}/assets/python/courses/machine_learning/04/images/snedecor.png)
 
-> Propriedade: Sejam U e V duas variáveis aleatórias independentes tais que U ~ $X²_{m}$ e V ~ $X²_{n}$. Seja:
+> Propriedade: Sejam U e V duas variáveis aleatórias independentes tais que U ~ $X^{2}_{m}$ e V ~ $X^{2}_{n}$. Seja:
 
 > $W=\frac{\frac{U}{m}}{\frac{V}{n}}\sim F_{m,n}$
 
@@ -530,7 +530,7 @@ A seguir ilustramos esse comportamento através de uma amostra aleatória simple
 
 Em azul temos uma amostra de tamanho 1 e em vermelho, 25. Veja que os dados ficam mais "concentrados", ou seja, a variância decai conforme o tamanho da amostra aumenta, o que estabelece um formato de "sino" mais estreito ao gráfico. Isso ocorre através do efeito de escala determinado pela variância da distribuição.
 
-**Distribuição Amostral de** $\sum\limits_{i=1}^n\left(\frac{X_i-\mu_i}{\sigma_i}\right)^2$: Seja $X1, X2, . . . , Xn$ uma amostra aleatória simples de tamanho n de uma população normal, isto é, uma população representada por uma variável aleatória normal X ∼ N(µ; σ²) e $S^2$ a variância amostral. Então, a distribuição amostral da variância $\frac{(n - 1)S^2}{\sigma^2}$ é Qui-Quadrado com $n-1$ graus de liberdade.
+**Distribuição Amostral de** $\sum\limits_{i=1}^n\left(\frac{X_i-\mu_i}{\sigma_i}\right)^2$: Seja $X_{1}, X_{2}, . . . , X_{n}$ uma amostra aleatória simples de tamanho n de uma população normal, isto é, uma população representada por uma variável aleatória normal X ∼ N(µ; σ²) e $S^2$ a variância amostral. Então, a distribuição amostral da variância $\frac{(n - 1)S^2}{\sigma^2}$ é Qui-Quadrado com $n-1$ graus de liberdade.
 
 
 $\frac{(n - 1)S^2}{\sigma^2} \sim X^2_{n-1}$
