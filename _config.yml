@@ -10,12 +10,19 @@ description:
 twitter_username: CienciaDeDadosUFF
 github_username:  CienciaDeDadosUFF
 
-permalink: /cursos/notebooks/:categories/:title:output_ext
+permalink: /cursos/notebooks/:title:output_ext
+
+collections:
+  python:
+    output: true
+    permalink: /:collection/:title:output_ext
 
 sass:
   sass_dir: assets/css
   
 plugins:
   - jekyll-feed
-  - jekyll-regex-replace
-  - jekyll-github-metadata
+  - jekyll-sitemap
+  - jekyll-paginate
+  - jekyll-redirect-from
+  - jekyll-seo-tag

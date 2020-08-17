@@ -63,10 +63,20 @@ pre {
 }
 
 main img {
-    max-width: 600px;
-    max-height: 600px;
+    max-width: 100%;
+    height: auto;
     display: block;
     margin-bottom: 2em;
     margin-top: 1em;
     border: 2px solid grey;
 }
+
+@media(max-width: 800px){
+    aside {
+        display: none;
+    }
+}
+
+/* .card-group {
+    display: flex;
+} */

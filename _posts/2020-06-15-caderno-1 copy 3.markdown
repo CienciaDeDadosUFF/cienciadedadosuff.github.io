@@ -3,7 +3,6 @@ layout: post
 title:  "Começando com o Python"
 date:   2020-06-15 10:30:41 -0300
 lang: python
-collection: python
 category: Básico
 ---
 

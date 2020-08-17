@@ -1,9 +1,44 @@
 ---
-layout: default
+layout: course
 title: Cursos Python
 ---
 
-<h1>Python</h1>
+<div class="container p-3 mb-5">
+    {% capture posts %} 
+        {% for post in site.posts %}
+            |{{ post.title }}#{{ post.url }}#{{post.lang}}#{{post.description}}#{{post.category}}
+        {% endfor %}
+    {% endcapture %}
 
-<a href="notebooks/python/caderno-1">01</a>
-<a href="notebooks/python/caderno-2">02</a>
+    {% assign sortedposts = posts | split: '|' | sort %}
+    
+    {% for category in site.categories %}
+        {% assign first = true %}
+            {% for post in sortedposts %}
+                {% assign postitems = post | split: '#' %}
+                {% if postitems[2] == "python" %}
+                    {% assign postcategory = postitems[4] | strip %}
+                    {% if postcategory == category[0] %}
+                        {% if first %}
+                            <h4>{{ category[0] | upcase }}</h4>
+                            <div class="row mb-lg-5">
+                            {% assign first = false %}
+                        {% endif %}
+                        <div class="col-sm">
+                            <div class="card m-2" style="width: 18rem; height: 18rem;">
+                                <div class="card-body">
+                                    <a href="{{ postitems[1] | relative_url }}"><h5 class="card-title">{{ postitems[0] }}</h5></a>
+                                    <h6 class="card-subtitle mb-2 text-muted">{{ category[0] }}</h6>
+                                    <p class="card-text">{{ postitems[3] }}</p>
+                                    <a href="{{ postitems[1] }}" class="card-link">Leia mais</a>
+                                    <a href="#" class="card-link">Download</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endfor %}
+    </div>
+</div>
