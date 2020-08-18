@@ -71,7 +71,7 @@ main img {
     border: 2px solid grey;
 }
 
-.math-container {
+mjx-container {
     overflow-x: auto;
     display: block;
 }
