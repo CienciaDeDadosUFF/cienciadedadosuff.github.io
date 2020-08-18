@@ -71,6 +71,11 @@ main img {
     border: 2px solid grey;
 }
 
+.math-container {
+    overflow-x: auto;
+    display: block;
+}
+
 @media(max-width: 800px){
     aside {
         display: none;
