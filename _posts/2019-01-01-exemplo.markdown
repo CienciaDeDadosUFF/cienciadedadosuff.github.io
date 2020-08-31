@@ -1,0 +1,80 @@
+---
+layout: post
+title:  Exemplo # Título
+description: Descrição # Descrição
+date: 2020-08-02 23:07:41 -3000 # Data
+lang: python # Linguagem utilizada no tutorial r ou python
+category: Categoria # Categoria do caderno, ou seja, assunto
+published: true # Trocar para true caso seja uma postagem real
+---
+
+
+# Título da postagem 
+
+O título da postagem deve ser um H1, ou seja, "#"
+
+## Título da seção
+
+As seções são os links que aparecerão no menu de navegação, lembre-se de que devem ser H2, ou seja, "##".
+
+## Texto de Exemplo
+
+### Veja que não é uma navegação 
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam non eros ac dui sollicitudin venenatis id et velit. Integer metus tortor, lacinia in feugiat vitae, hendrerit at odio. Donec a eros at elit venenatis euismod. Morbi nec enim neque. Duis porttitor, mauris et sodales tristique, lacus dolor efficitur sem, eget venenatis enim magna sed sapien. Proin malesuada libero et leo imperdiet tincidunt. Aenean pretium interdum justo, id iaculis ante hendrerit nec. Donec vitae turpis ullamcorper, aliquet orci ut, luctus tortor. Interdum et malesuada fames ac ante ipsum primis in faucibus. Morbi non sapien non elit tincidunt hendrerit. Sed nec volutpat urna. Maecenas fringilla dolor a odio dignissim, eu ornare ipsum lobortis. Ut interdum mauris in metus hendrerit mattis. Mauris et congue dui. Vivamus mollis eleifend ex.
+
+### Veja que não é uma navegação 2
+Aliquam erat volutpat. Mauris volutpat nec neque in feugiat. Pellentesque felis magna, dignissim at arcu id, ultricies egestas dui. Morbi a nunc vestibulum, imperdiet velit et, interdum odio. Integer iaculis mollis urna, a tristique est. Sed vestibulum eu eros vel porta. Vestibulum aliquet purus diam, ut rhoncus nisl congue in.
+
+Suspendisse potenti. Curabitur lacinia purus at bibendum pellentesque. Maecenas condimentum lacus venenatis est hendrerit porttitor. Aenean fringilla tellus lorem, ultrices vulputate dui sollicitudin ultricies. Pellentesque tempor urna et urna blandit suscipit. Nulla id sapien in eros dapibus accumsan. Vestibulum vel malesuada metus, eget fringilla risus. In turpis risus, mollis vitae hendrerit non, dapibus quis lacus. Proin eu ante egestas, mollis augue in, lobortis mi. Mauris ac ullamcorper lacus. Proin justo sapien, condimentum a sollicitudin pellentesque, vulputate in purus. Cras lobortis odio in placerat imperdiet.
+
+
+## Escrevendo código
+
+```python
+super_herois = ['batman', 'mulher maravilha', 'homem aranha', 'hulk', 'homem de ferro']
+
+while super_herois:
+    super_herois_atual = super_herois.pop()
+    print(super_herois_atual.title())
+    
+print(super_herois)
+```
+
+    Homem De Ferro
+    Hulk
+    Homem Aranha
+    Mulher Maravilha
+    Batman
+    []
+
+```python
+class Carro:
+    def __init__(self, modelo, marca, cor, quilometros_por_combustivel):
+        self.modelo = modelo
+        self.marca = marca
+        self.cor = cor
+        self.quilometros_por_combustivel = quilometros_por_combustivel
+        self.km = 0
+        self.tanque = 0
+    
+    def encher_tanque(self):
+        self.tanque = 60
+        print('Pronto senhor(a), tanque cheio! Vai querer notinha?')
+        
+    def dirigir(self, km):
+        if km * self.quilometros_por_combustivel > self.tanque:
+            print('Você não tem combustível suficiente para viajar ' + str(km) +'Km.')
+        else:
+            self.km += km
+            self.tanque -= km * self.quilometros_por_combustivel
+            print('Você dirigiu por %iKm' % km)        
+```
+## Imagens
+
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/02/images/anaconda_tut0.png)
+
+## Latex
+
+O site também tem suporte a latex
+
+$$P(x) = \frac{1}{{\sigma \sqrt {2\pi } }}e^{{{ - \left( {x - \mu } \right)^2 } \mathord{\left/ {\vphantom {{ - \left( {x - \mu } \right)^2 } {2\sigma ^2 }}} \right. \kern-\nulldelimiterspace} {2\sigma ^2 }}}$$

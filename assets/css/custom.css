@@ -71,6 +71,10 @@ main img {
     border: 2px solid grey;
 }
 
+[data-theme="dark"] main img{
+    background-color: white;
+}
+
 mjx-container {
     overflow-x: auto;
     display: block;

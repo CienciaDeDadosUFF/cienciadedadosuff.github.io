@@ -39,6 +39,11 @@
   background-color: grey !important;
 }
 
+[data-theme="dark"] .card-text {
+  color: #000 !important;
+}
+
+
 .switch {
   position: relative;
   display: inline-block;
