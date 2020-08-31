@@ -6,10 +6,12 @@
     <title>{{ page.title }} | {{ site.title }}</title>
     <link rel="stylesheet" href="{{ "/assets/css/main.css" | relative_url }}">
     <link rel="stylesheet" href="{{ "/assets/css/custom.css" | relative_url }}">
+    <link rel="stylesheet" href="{{ "/assets/darkmode/dark-mode.css" | relative_url }}"> 
   </head>
   <body>
     {% include navbar.html %} 
     {{ content }}
     {% include footer.html %}
   </body>
+  <script src="/assets/darkmode/dark-mode-switch.min.js"></script>
 </html>

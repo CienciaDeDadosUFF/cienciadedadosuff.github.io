@@ -6,10 +6,17 @@
     <title>{{ page.title }} | {{ site.title }}</title>
     <link rel="stylesheet" href="{{ "/assets/css/main.css" | relative_url }}">
     <link rel="stylesheet" href="{{ "/assets/css/custom.css" | relative_url }}">
+    <link rel="stylesheet" href="{{ "/assets/darkmode/dark-mode.css" | relative_url }}"> 
   </head>
   <body>
     {% include navbar.html %} 
+    <div class="jumbotron text-white rounded bg-dark">
+      <div class="col-md-0 px-0">
+        <h1 class="display-4 font-bold text-center">{{ page.title }}</h1>
+      </div>
+    </div>
     {{ content }}
     {% include footer.html %}
   </body>
+  <script src="/assets/darkmode/dark-mode-switch.min.js"></script>
 </html>
