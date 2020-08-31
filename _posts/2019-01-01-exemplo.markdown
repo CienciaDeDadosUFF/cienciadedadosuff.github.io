@@ -5,7 +5,7 @@ description: Descrição # Descrição
 date: 2020-08-02 23:07:41 -3000 # Data
 lang: python # Linguagem utilizada no tutorial r ou python
 category: Categoria # Categoria do caderno, ou seja, assunto
-published: true # Trocar para true caso seja uma postagem real
+published: false # Trocar para true caso seja uma postagem real
 ---
 
 
@@ -76,5 +76,6 @@ class Carro:
 ## Latex
 
 O site também tem suporte a latex
-
-$$P(x) = \frac{1}{{\sigma \sqrt {2\pi } }}e^{{{ - \left( {x - \mu } \right)^2 } \mathord{\left/ {\vphantom {{ - \left( {x - \mu } \right)^2 } {2\sigma ^2 }}} \right. \kern-\nulldelimiterspace} {2\sigma ^2 }}}$$
+{% raw  %}
+$$1 + 1 = 2$$
+{% endraw %}
