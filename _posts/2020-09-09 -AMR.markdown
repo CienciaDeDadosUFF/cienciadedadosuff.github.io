@@ -1,10 +1,10 @@
 ---
 layout: post
 title: "APRENDIZADO DE MÁQUINA"
-description: "Criação: Maqueise Pinheiro e Thaís Machado" "Orientação: Douglas Rodrigues (UFF) e Karina Yaginuma (UFF)" "Colaboradores: Gabriel Miranda e Thiago Augusto"
-date: 2020-09-09 23:07:41 -3000 
+date: 2020-09-09 23:07:41 
 lang: python 
 category: Estatística
+description: Criação: Maqueise Pinheiro e Thaís Machado. Orientação: Douglas Rodrigues (UFF) e Karina Yaginuma (UFF). Colaboradores: Gabriel Miranda e Thiago Augusto.
 ---
 
 
