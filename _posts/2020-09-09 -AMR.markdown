@@ -232,7 +232,7 @@ Por exemplo, podemos calcular o chamado **erro majoritário** que é o limite m�
 
 Digamos que um psicólogo quer construir um classificador para prever se uma pessoa tem ou não indeação suicida, ou seja, pensa ou planeja suicídio. Suponha que ele tem uma base de dados com 1000 observações cuja variável de interesse "Tem indeação suicida?" está rotulada com "sim" ou "não" e 97% das observações, no caso indivíduos/pacientes, não possuem tal característica e portanto 3% dos indivíduos possuem. Criado o preditor, observamos que o erro é de 5%, assim como mostrado a seguir:
 
-![Figura 1: Erro Majoritário](erroMajo.jpeg){width=95%} 
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/erroMajo.jpeg)
 
 As partes em vermelho mostram o erro cometido por ambos os métodos. Agora note as pessoas que possuem indeação suicída porém foram classficadas como não possuidoras dessa característica. Quanto isso afetará no dignóstico do psicólogo?
 
@@ -300,7 +300,8 @@ plot(spamMenor$capitalAve, col = spamRotulos, xlab = "Quantidade de Letras Maiú
      pch = 19)
 ```
 
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-8-1.png)
+
 
 Podemos notar que, em geral, as mensagens classificadas como spam possuem uma frequência maior de letras maiúsculas do que as mensagens classificadas como não spam. Com base nisso queremos construir um preditor, onde podemos classificar e-mails como spam se a frequência de letras maiúsculas for maior que uma determida constante, e não spam caso contrário.
 
@@ -314,7 +315,8 @@ plot(spamMenor$capitalAve, col = spamRotulos, xlab = "Quantidade de Letras Maiú
 abline(h = 2.5, lty = 3, col = "blue")
 ```
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-9-1.png)
+
 
 Então o melhor para esse caso é criar o seguinte modelo:
 
@@ -328,8 +330,8 @@ plot(spamMenor$capitalAve, col = spamRotulos, xlab = "Quantidade de Letras Maiú
      pch = 19)
 abline(h = c(2.5, 3.8), lty = 3, col = "blue")
 ```
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-10-1.png)
 
-![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png)
 
 
 ```r
@@ -366,8 +368,8 @@ plot(spamMenor$capitalAve, col = spamRotulos, xlab = "Quantidade de Letras Maiú
      pch = 19)
 abline(h = 2.5, lty = 3, col = "blue")
 ```
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-12-1.png)
 
-![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png)
 
 ```r
 # construindo o modelo geral
@@ -594,8 +596,7 @@ A matriz de confusão é a matriz de comparação feita após a predição, onde
 *Exemplo:* A matriz de confusão para o problema de predição dos e-mails em spam ou não spam fica da seguinta forma:
 
 <center>
-
-![Figura 1: Matriz de Confusão](Matriz de Confusão Vazia.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/Matriz de Confusão Vazia.png)
 
 </center>
 
@@ -604,8 +605,7 @@ Onde na primeira coluna se encontram os elementos que possuem a característica 
 Com as devidas classificações a matriz de confusão fica da seguinte forma:
 
 <center>
-
-![Figura 2: Matriz de Confusão com elementos](Matriz de Confusão Preenchida.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/Matriz de Confusão Preenchida.png)
 
 </center>
 
