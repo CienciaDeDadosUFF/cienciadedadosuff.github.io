@@ -221,7 +221,7 @@ Os erros mais comuns, que se deve tomar um certo cuidado, são:
 
 ---
 
-## *Design* de predição{#link16}
+## *Design* de predição
 
 **1. Defina sua taxa de erro (*benchmark*).**
 
@@ -273,7 +273,7 @@ Em outras palavras, é quando seu algoritmo de previsão se ajusta ao que você 
 É a taxa de erro que você recebe em um novo conjunto de dados. Na literatura às vezes é chamado de erro de generalização. 
 Uma vez que coletamos uma amostra de dados e construímos um modelo para ela, podemos querer testá-lo em uma nova amostra, por exemplo uma amostra coletada em um horário diferente ou em um local diferente. Daí podemos analisar o quão bem o algoritmo executará a predição nesse novo conjunto de dados.
 
-### Algumas ideias-chave {#link4}
+### Algumas ideias-chave 
 
 1. Quase sempre o erro fora da amostra é o que interessa.
 2. Erro dentro da amostra é menor que o erro fora da amostra.
@@ -445,7 +445,7 @@ Observe que utilizando o modelo sobreajustado obtivemos um erro fora da amostra 
 
 O pacote caret (abreviação de *Classification And Regression Training*) é um pacote muito útil para o *machine learning* pois envolve algoritmos que possibilitam que as previsões sejam feitas de forma mais prática, simplificando o processo de criação de modelos preditivos. Neste [guia detalhado](http://topepo.github.io/caret/index.html) pode ser encontrado mais informações sobre o pacote.
 
-### Avaliando Classificadores {#link3}
+### Avaliando Classificadores 
 
 Vamos utilizar a base de dados spam novamente para realizarmos o procedimento de predição para um e-mail (se ele é spam ou não spam), dessa vez utilizando o pacote caret.
 
@@ -590,7 +590,7 @@ head(predicao, n=30)
 
 Ao fazermos isso obtemos uma série de predições para as classes dos e-mails do conjunto teste. Podemos então realizar a avaliação do modelo comparando os resultados da predição com as reais classes dos e-mails, por meio do comando confusionMatrix(). 
 
-### Matriz de Confusão *(Confusion Matrix)* {#link2}
+### Matriz de Confusão *(Confusion Matrix)* 
 
 A matriz de confusão é a matriz de comparação feita após a predição, onde as linhas correspondem ao que foi previsto e as colunas correspondem à verdade conhecida.
 
@@ -669,7 +669,7 @@ Se identificar corretamente os positivos for mais importante, utilizamos o predi
 Outra medida para avaliar a qualidade do nosso preditor é a **precisão** (*Accuracy*). Ela avalia a porcentagem de acertos que tivemos em geral. Ou seja, somamos o número de Verdadeiros Positivos com o número de Verdadeiros Negativos e dividimos pelo tamanho da amostra.
 $$Precisão=\frac{VP+VN}{VP+VN+FN+FP}$$
 
-Para demais medidas da matriz de confusão consulte o [apêndice](#link9).
+Para demais medidas da matriz de confusão consulte o [apêndice].
 
 ### Avaliando Regressores
 
@@ -713,7 +713,7 @@ Vamos treinar nosso modelo utilizando a amostra **treino**.
 modelo = caret::train(waiting~eruptions, data = treino, method = "lm")
 ```
 
-Novamente, colocamos a variável que tentamos prever em função das outras. No caso, só temos duas variáveis então não precisamos colocar o ponto como no [classificador](#link3).
+Novamente, colocamos a variável que tentamos prever em função das outras. No caso, só temos duas variáveis então não precisamos colocar o ponto como no [classificador].
 
 
 ```r
@@ -748,7 +748,7 @@ predicao = predict(modelo, newdata = teste)
 
 Assim como no classificador, a função `predict` nos retorna a previsão dos tempos entre as erupções dado os tempos das durações das erupções.
 
-#### MSE {#link1}
+#### MSE
 
 Assim como há diversas formas de compararmos a qualidade dos classificadores, há também diversas formas de compararmos regressores. O que estudaremos agora é o MSE (*mean squared error* - erro quadrático médio). Mais formas de comparação de regressores também serão vistas futuramente.
 
@@ -915,7 +915,7 @@ modelo = caret::train(type ~ ., data = spam, method = "glm", trControl = control
 ```
 
 
-#### Bootstrap {#link5}
+#### Bootstrap 
 
 O bootstrap é uma técnica de reamostragem com o propósito de reduzir desvios e realizar amostragem dos dados de treino com repetições. Já vimos anteriormente que este é o método default do comando train(), onde é feito 25 reamostragens por bootstrap. 
 
@@ -1013,7 +1013,7 @@ Repare que foi calculada três diferentes medidas: "MAE", "RMSE", e "Rsquared".
 
 O **Erro Médio Absoluto** (MAE - *Mean Absolute Error*) é dado pelo média dos desvios absolutos. $$MAE = \frac{\sum\limits_{i=1}^{n}\mid estimado_i - real_i\mid}{n}\quad, i=1,2,...,n.$$ 
 
-A **Raiz do Erro Quadrático Médio** (RMSE - *Root Mean Squared Error*), como o nome já diz, não é nada mais que a raiz quadrada do Erro Quadrático Médio já citado no capítulo de [Tipos de Erro](#link1). $$RMSE=\sqrt{MSE}=\sqrt{\frac{\sum\limits_{i=1}^{n} \left( estimado_i-real_i \right)^{2}}{n}}\quad, i=1,2,...,n.$$ 
+A **Raiz do Erro Quadrático Médio** (RMSE - *Root Mean Squared Error*), como o nome já diz, não é nada mais que a raiz quadrada do Erro Quadrático Médio já citado no capítulo de [Tipos de Erro]. $$RMSE=\sqrt{MSE}=\sqrt{\frac{\sum\limits_{i=1}^{n} \left( estimado_i-real_i \right)^{2}}{n}}\quad, i=1,2,...,n.$$ 
 
 O **Coeficiente de Determinação**, Também chamado de $R^2$ (*R squared*), é dado pela razão entre o MSE e a Variância subtraído de 1. $$R^2 =1- \frac{MSE}{Var}= 1-\frac{\sum\limits_{i=1}^{n} (real_i - estimado_i)^2}{\sum\limits_{i=1}^{n} (real_i - média)^2}\quad, i=1,2,...,n.$$
 
@@ -1116,7 +1116,7 @@ summary(diferencas)
 
 Observe que, para cada medida, acima da diagonal temos a diferença entre os modelos e abaixo da diagonal o p-valor do teste de comparação entre eles. Portanto, se considerarmos um nível de significância de 1%, é razoável dizer que os modelos PPR e KKN produzem resultados significativamente diferentes. Sendo assim, escolheriamos o método KNN para treinar nosso modelo.
 
-### Exemplo de Comparação de Classificadores - base `Heart` {#link6}
+### Exemplo de Comparação de Classificadores - base `Heart` 
 
 Suponha agora que queremos predizer se uma pessoa tem ou problema no coração dado que ela apresentou dor no peito. Considere a seguinte base de dados.
 
@@ -1214,7 +1214,7 @@ summary(resultados)
 
 Repare que foi calculada duas diferentes medidas: "Accuracy", e "Kappa".
 
-A **Precisão** (*Accuracy*) como já foi citado no capítulo [Introdução ao pacote caret](#link2), avalia a proporção de acertos na predição.$$Precisão=\frac{Predições\ corretas}{Total\ de\ predições}$$
+A **Precisão** (*Accuracy*) como já foi citado no capítulo [Introdução ao pacote caret], avalia a proporção de acertos na predição.$$Precisão=\frac{Predições\ corretas}{Total\ de\ predições}$$
 
 O **Coeficiente de concordância Kappa** avalia o grau de concordância entre a classificação e o real valor de uma mesma amostra. E é calculado da seguinte forma:
 
@@ -1556,7 +1556,7 @@ A única limitação é que esse método aplica a padronização em **todas** as
 
 > **Obs.:** Quando for padronizar uma variável da sua base para depois treinar seu algoritmo, lembre-se que colocar a variável padronizada de volta na sua base.
 
-### Tratando NA's{#link15}
+### Tratando NA's
 
 É muito comum encontrar alguns dados faltantes (NA's) em uma base de dados. E quando você usa essa base para fazer predições, o algoritmo preditor muitas vezes falha, pois eles são criados para não manipular dados ausentes (na maioria dos casos). O mais recomendado a se fazer é descartar esses dados, principalmente se o número de variáveis for muito pequeno. Porém, em alguns casos, podemos tentar substituir os NA's da amostra por dados de outros elementos que possuam características parecidas.
 
@@ -2173,7 +2173,7 @@ head(Wage_dummy)
 ## 376662 4.845098 127.11574                       1                0
 ```
 
-### Variância Zero ou Quase-Zero {#link7}
+### Variância Zero ou Quase-Zero 
 
 Algumas vezes em um conjunto de dados podemos ter uma variável que assuma somente um único valor para todos os indivíduos, ou seja, ela possui **variância zero**. Ou podemos ter uma com uma frequência muito alta de um único valor, possuindo, assim, **variância quase zero**. Essas variáveis não auxiliam na predição, pois possuem o mesmo valor em muitos indivíduos, trazendo, assim, pouca informação ao modelo. Nosso objetivo é, então, identificar essas variáveis, chamadas de *near zero covariates*, para que possamos removê-las do nosso modelo de predição.
 
@@ -2495,7 +2495,7 @@ Uma árvore de decisão, em geral, pergunta uma questão e classifica o elemento
 
 As árvores de decisão podem ser aplicadas aos problemas de regressão e classificação. Primeiro vamos considerar os problemas de classificação, e depois passamos para a regressão.
 
-### em Classificação {#link12}
+### em Classificação 
 
 Vejamos a seguir um exemplo de árvore de decisão para um problema de classificação.
 
@@ -2833,9 +2833,9 @@ Pergunta: quando o processo de construção de uma árvore chega ao fim? O proce
 
 3. Quando o ganho ao aumentar a árvore é muito pequeno. 
 
-O ganho ao aumentar a árvore pode ser resumido como um conjunto de atributos presentes na árvore que retornem o maior ganho de informações. Essa questão será melhor abordada posteriormente, juntamente com a questão de como podar as árvores (que está intimamente relacionada ao ganho) no subcapítulo [XGBoost](#link10).
+O ganho ao aumentar a árvore pode ser resumido como um conjunto de atributos presentes na árvore que retornem o maior ganho de informações. Essa questão será melhor abordada posteriormente, juntamente com a questão de como podar as árvores (que está intimamente relacionada ao ganho) no subcapítulo [XGBoost].
 
-### em Regressão {#link11}
+### em Regressão 
 
 Agora iremos discutir o processo de construção de uma árvore de regressão. Em uma árvore de regressão, diferentemente de uma árvore para classificação, cada folha possui um valor numérico (ao invés de categorias como "Sim" ou "Não", como no exemplo anterior da base SmallHeart). Vejamos a seguir um exemplo de árvore de decisão para um problema de regressão.
 
@@ -3051,7 +3051,7 @@ rpart.plot(heart_arvore)
 
 Agora podemos levantar a seguinte questão: como avaliar a precisão do modelo construído? Nesse exemplo nós utilizamos toda a amostra para construir a árvore, apenas para explicar o funcionamente do `rpart`, então não temos uma amostra teste para verificar o quão bom é o modelo. Então para isso teríamos que primeiramente dividir a amostra em treino e teste, depois criar o modelo com a amostra treino e em seguida aplicá-lo na amostra teste, e então, por último, poderíamos utilizar a função confusionMatrix() para obtermos não só a precisão como outras medidas avaliativas do modelo, além, é claro, da matriz de confusão. No tópico abaixo essas etapas serão construídas detalhadamente.
 
-###  Construindo árvores com `train` {#link8}
+###  Construindo árvores com `train` 
 
 Podemos utilizar árvores de decisão/regressão como um método de treinamento para os dados através da função train(). Vamos fazer isso utilizando a base de dados College. Este banco possui informações sobre 777 diferentes universidades e faculdades dos EUA. Ela apresenta algumas variáveis como: Apps - número de pedidos recebidos para ingresso, Room.Board - custos de acomodação e alimentação, Books - custos estimados de livros, PhD - quantidade de professores com doutorado, entre outras, e nossa variável de interesse Private, que indica se a universidade é privada ou pública.
 
@@ -3221,7 +3221,7 @@ rpart.plot(modelo$finalModel)
 
 ### Florestas Aleatórias
 
-As árvores de decisão possuem uma estrutura de fácil compreensão, o que faz com que ela seja bastante utilizada devido a sua boa aparência e interpretação intuitíva. Mas elas possuem uma limitação, o [sobreajuste](#link4), sendo assim, elas não são muito eficientes com novas amostras. O que fazer então?
+As árvores de decisão possuem uma estrutura de fácil compreensão, o que faz com que ela seja bastante utilizada devido a sua boa aparência e interpretação intuitíva. Mas elas possuem uma limitação, o [sobreajuste], sendo assim, elas não são muito eficientes com novas amostras. O que fazer então?
 
 As **Florestas Aleatórias** (*Random Forest*) se utilizam de várias árvores de decisão, combinando a simplicidade das árvores com a flexibilidade de um método sem sobreajuste, aumentando assim a precisão do preditor.
 
@@ -3253,7 +3253,7 @@ str(balloons)
 
 Com base na cor do balão, o tamanho dele, se ele é elástico ou não e se quem o está enchendo é uma criança ou um adulto, queremos predizer se o balão vai encher ou não. Portanto, nossa variável de interesse é `Inflated` e queremos construir um classificador.
 
-A primeira coisa que precisamos fazer é criar uma nova amostra do mesmo tamanho da original utilizando [bootstrap](#link5).
+A primeira coisa que precisamos fazer é criar uma nova amostra do mesmo tamanho da original utilizando [bootstrap].
 
 
 ```r
@@ -3388,7 +3388,7 @@ Assim, temos nossa primeira árvore de decisão.
 ![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/floresta3.jpeg)
 
 
-> A floresta aleatória pode ser utilizada tanto em classificadores como em regressores. A diferença é que em regressores, utilizamos [árvores de regressão](#link11) no lugar de [árvores de classificação](#link12). 
+> A floresta aleatória pode ser utilizada tanto em classificadores como em regressores. A diferença é que em regressores, utilizamos árvores de regressão no lugar de árvores de classificação.
 
 Em seguida vamos construir várias árvores da mesma maneira que a anterior. Para nosso exemplo vamos construir apenas 4 árvores, mas em geral vamos fazer bem mais que isso.
 
@@ -3445,7 +3445,7 @@ knitr::kable(Out_of_bag)
 |PURPLE |LARGE |STRETCH |ADULT |TRUE     |
 |PURPLE |LARGE |DIP     |ADULT |FALSE    |
 
-Para avaliar, é preciso passar cada uma das observações do `Out_of_bag` por todas as árvores e a predição será feita por votos também. Ao fazer isso, observamos uma [precisão](#link6) de 86%.
+Para avaliar, é preciso passar cada uma das observações do `Out_of_bag` por todas as árvores e a predição será feita por votos também. Ao fazer isso, observamos uma precisão de 86%.
 
 > A proporção de amostras do Out-of-bag que foram incorretamente classificadas é chamada *Out-of-bag-error*
 
@@ -4238,7 +4238,7 @@ de árvores que caminham em direção ao valor correto em passos pequenos.
 
 #### Construindo um regressor com o pacote `gbm`
 
-Para nosso exemplo, vamos utilizar a base de dados `Wage` do pacote `ISLR`. Para isso, vamos precisar limpar os dados removendo [variáveis de variância zero](#link7).
+Para nosso exemplo, vamos utilizar a base de dados `Wage` do pacote `ISLR`. Para isso, vamos precisar limpar os dados removendo variáveis de variância zero.
 
 
 ```r
@@ -4553,7 +4553,7 @@ Note que o modelo obteve uma precisão razoável de 75,79%.
 
 ---
 
-### *XGBoost* {#link10}
+### *XGBoost* 
 
 O XGBoost é a abreviação de ***Extreme Gradient Boost***. Ele foi desenvolvido para suportar um grande volume de dados de forma eficiente. Geralmente é 10 vezes mais rápido que o Gradiente Boosting.
 
@@ -5366,7 +5366,7 @@ xgb.plot.tree(model = modelo, trees = 2)
 
 Neste capítulo estudaremos alguns métodos não baseados em árvores que também são muito importantes e utilizados em *machine learning*: *Support Vector Machine* (SVM) e *K-Nearest Neighbors* (KNN). Veremos como os modelos funcionam na teoria com alguns exemplos e em seguida iremos implementá-los computacionalmente utilizando a linguagem R.
 
-### *Support Vector Machine (SVM)*{#link14}
+### *Support Vector Machine (SVM)
 
 O *Support Vector Machine* - ou Máquina de Vetores de Suporte - é um algoritmo de aprendizado supervisionado que analisa os dados e os divide em diferentes grupos, de acordo com seus padrões, para assim classificar as observações. É mais utilizado em problemas de classificação, o qual será o maior foco deste capítulo, mas também pode ser utilizado para regressão.
 
@@ -5602,7 +5602,7 @@ Vamos supor que queremos prever as vendas de um produto em unidades monetárias 
 
 Note que agora é necessário termos um eixo para representar a variável de interesse. Podemos reparar também que, em geral, à medida que os gastos com publicidade aumentam, as vendas também aumentam. 
 
-Ao invés de encontrar uma linha para separar os dados, o objetivo do SVR é encontrar uma linha com o objetivo de **ajustar os dados sobre ela**. A ideia é parecida com a de regressão linear simples, exceto pelo fato de que, ao invés de minimizar a soma dos quadrados dos resíduos, seu objetivo é minimizar a norma do vetor de coeficiente, um assunto que está fora dos escopos deste material. Para mais informações, consulte o livro [*The Elements of Statistical Learning*](#link13).
+Ao invés de encontrar uma linha para separar os dados, o objetivo do SVR é encontrar uma linha com o objetivo de **ajustar os dados sobre ela**. A ideia é parecida com a de regressão linear simples, exceto pelo fato de que, ao invés de minimizar a soma dos quadrados dos resíduos, seu objetivo é minimizar a norma do vetor de coeficiente, um assunto que está fora dos escopos deste material. Para mais informações, consulte o livro *The Elements of Statistical Learning*.
 
 Para definirmos o quanto de erro é aceitável no nosso modelo, utilizamos o parâmetro $\varepsilon$. A figura abaixo apresenta a linha azul que representa a linha de melhor ajuste de acordo com a margem de erro escolhida ($\varepsilon$), representada pelas linhas verdes.
 
@@ -6560,7 +6560,7 @@ plot(modelfit.r)
 
 ![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-252-1.png)
 
-Podemos ver aqui um **resumo dos argumentos equivalentes** em cada função e seus valores *default*. A primeira nomeclatura é referente as [fórmulas apresentadas](#link14).
+Podemos ver aqui um **resumo dos argumentos equivalentes** em cada função e seus valores *default*. A primeira nomeclatura é referente as fórmulas apresentadas.
 
 | **Argumento** | **e1071::svm** | **kernlab::ksvm** | **caret::train** | **Observações** |
 |-|-|-|-|-|
@@ -6582,7 +6582,7 @@ Podemos ver aqui um **resumo dos argumentos equivalentes** em cada função e se
 
 ### *K-Nearest Neighbors (KNN)*
 
-O método *K-Nearest Neighbors (KNN)* - K vizinhos mais próximos - já foi brevemente comentado neste material no capítulo de pré-processamento, com o objetivo de [tratar NA's](#link15) em uma base de dados. Agora veremos como utilizá-lo para problemas de *machine learning* de classificação e regressão. Veremos os detalhes de como o método funciona para ambos os casos e duas formas de implementá-lo: utilizando funções do pacote `FNN` e a função `train()` do pacote `caret`.
+O método *K-Nearest Neighbors (KNN)* - K vizinhos mais próximos - já foi brevemente comentado neste material no capítulo de pré-processamento, com o objetivo de tratar NA's em uma base de dados. Agora veremos como utilizá-lo para problemas de *machine learning* de classificação e regressão. Veremos os detalhes de como o método funciona para ambos os casos e duas formas de implementá-lo: utilizando funções do pacote `FNN` e a função `train()` do pacote `caret`.
 
 ### Em Classificação
 
@@ -7074,7 +7074,7 @@ treino = base[noTreino,]
 teste = base[-noTreino,]
 ```
 
-Como temos que escolher o melhor valor de k para o modelo, não podemos escolhê-lo de forma arbitrária. Sendo assim, vamos pegar uma parte do nosso conjunto de treino e utilizarmos para validação. A validação, como já comentado no capítulo [Design de Predição](#link16), serve como um "pré-teste", onde iremos utilizar vários valores diferentes de k nela, e selecionar aquele que otimiza a predição. Esse será o valor utilizado para a amostra teste.
+Como temos que escolher o melhor valor de k para o modelo, não podemos escolhê-lo de forma arbitrária. Sendo assim, vamos pegar uma parte do nosso conjunto de treino e utilizarmos para validação. A validação, como já comentado no capítulo Design de Predição, serve como um "pré-teste", onde iremos utilizar vários valores diferentes de k nela, e selecionar aquele que otimiza a predição. Esse será o valor utilizado para a amostra teste.
 
 Vamos pegar 20% dos dados para a validação. Dessa forma, temos que pegar 25% da amostra treino, pois ela é 80% dos dados totais ($0,25 \times 0,8 = 0,2$).
 
@@ -7492,7 +7492,7 @@ caret::confusionMatrix(modelo_final, as.factor(teste_label), positive = "1")
 ## 
 ```
 
-Repare que as medidas de avaliação do modelo não foram tão boas; o valor da precisão, particularmente, foi menor do que a taxa de não informação ([No Information Rate](#link9)), o que não deve acontecer. Sendo assim, esse não é o modelo ideal para essa base.
+Repare que as medidas de avaliação do modelo não foram tão boas; o valor da precisão, particularmente, foi menor do que a taxa de não informação (No Information Rate), o que não deve acontecer. Sendo assim, esse não é o modelo ideal para essa base.
 
 Vamos realizar o mesmo procedimento para os dados mas dessa vez vamos padronizá-los antes.
 
@@ -8297,7 +8297,7 @@ boxplot(modelo$residuals, col = "lightblue", horizontal = T, xlab = "Resíduos")
 
 ---
 
-## Referências{#link13}
+## Referências
 
 JAMES, G.; Witten, D.; Hastie, T.; TIBSHIRANI, R. **An Introduction to Statistical Learning: with applications in R**. New York: Springer, 2013.
 
@@ -8311,11 +8311,11 @@ R Core Team (2019). R: A language and environment for statistical computing. R F
 
 ---
 
-## Apêndice{#link9}
+## Apêndice
 
 ### Outras Medidas da Matriz de Confusão
 
-No capítulo de avaliação de preditores introduzimos a [matriz de confusão](#link2) e as medidas de avaliação mais utilizadas: sensibilidade, especificidade e precisão. Vimos também como construí-la de forma rápida e prática com a função confusionMatrix() do pacote *caret*. Porém, além das 3 medidas mais utilizadas, a função também libera algumas outras, que explicaremos como elas são calculadas a seguir.
+No capítulo de avaliação de preditores introduzimos a matriz de confusão e as medidas de avaliação mais utilizadas: sensibilidade, especificidade e precisão. Vimos também como construí-la de forma rápida e prática com a função confusionMatrix() do pacote *caret*. Porém, além das 3 medidas mais utilizadas, a função também libera algumas outras, que explicaremos como elas são calculadas a seguir.
 
 Vamos ver a saída da função para o mesmo exemplo dado anteriormente, onde utilizamos a base de dados *spam*. Nesse exemplo nós treinamos o modelo pelo método GLM e em seguida aplicamos ele ao conjunto teste. Avaliamos o modelo utilizando a matriz de confusão gerada pela função confusionMatrix().
 
