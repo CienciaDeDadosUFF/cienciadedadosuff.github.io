@@ -8,24 +8,24 @@ description: "Criação: Maqueise Pinheiro e Thaís Machado. Orientação: Dougl
 ---
 
 
-# Introdução
+## Introdução
 
 Este curso tem como objetivo propagar as ideias básicas de aprendizado de máquina e previsão no *software* estatístico R. A ideia principal é cobrir as técnicas mais usadas como regressão linear, árvores de decisão, e também detalhes básicos e aspectos práticos do aprendizado de máquina. 
 Inicialmente será utilizado alguns códigos básicos do R para alguns modelos de previsão. Contudo, o foco principal será no pacote caret, o qual tem a finalidade de tornar as técnicas de aprendizado mais simples, combinando um grande número de preditores que foram construídos no R.
 
-## Pré-requisitos
+### Pré-requisitos
 
 Os pré-requisitos que serão úteis para o curso são: análise exploratória de dados no R, programação básica em R e conhecimentos teóricos básicos sobre modelos de regressão.
 
-## O que é o Aprendizado de Máquina?
+### O que é o Aprendizado de Máquina?
 
 Em 1959, Arthur Samuel definiu o aprendizado de máquina como o "campo de estudo que dá aos computadores a habilidade de aprender sem serem explicitamente programados". Ou seja, é um método de análise de dados que automatiza a construção de modelos analíticos. É baseado na ideia de que sistemas podem aprender com dados, identificar padrões e tomar decisões com o mínimo de intervenção humana. A importância desse aprendizado se deve principalmente ao fato de que atualmente tem surgido cada vez mais a necessidade de manipulações de grandes volumes e variedades de dados disponíveis.
 
-## Para que serve?
+### Para que serve?
 
 Com o aprendizado de máquina é possível produzir, rápida e automaticamente, modelos capazes de analisar dados maiores e mais complexos, e entregar resultados mais rápidos e precisos – mesmo em grande escala.
 
-## Onde é usado?
+### Onde é usado?
 
 Ao construir modelos precisos há mais chances de identificar boas oportunidades e de evitar riscos desconhecidos. Na prática, podemos citar alguns exemplos reais do uso de aprendizado de máquina:
 
@@ -34,11 +34,11 @@ Ao construir modelos precisos há mais chances de identificar boas oportunidades
 - A Amazon, a Netflix e outras empresas como essa mostram um filme e querem que você veja um próximo filme. Para fazer isso, eles querem mostrar a você o que você pode estar interessado, para que eles possam mantê-lo assistindo e, novamente, aumentar a receita.
 - As seguradoras empregam grandes grupos de atuários e estatísticos para tentar prever seu risco de todo tipo de coisas diferentes, como por exemplo a morte.
 
-## Como funciona?
+### Como funciona?
 
 A funcionalidade do aprendizado de máquina se resume a tentar prever um certo modelo para o conjunto de dados em questão. Há dois modos de isso ser feito: pelo aprendizado supervisionado e pelo aprendizado não supervisionado. Veremos a definição de cada um deles a seguir.
 
-## Tipos de Aprendizado de Maquina
+### Tipos de Aprendizado de Maquina
 
 ### Aprendizado não supervisionado
 
@@ -62,18 +62,18 @@ A aprendizagem supervisionada será o principal foco do curso.
 
 ---
 
-# Predição 
+## Predição 
 
 Queremos então construir um algoritmo "preditor" capaz de inferir se um dado pertence ou não a uma certa categoria. 
 O preditor será formado dos seguintes componentes:
 
 Pergunta $\rightarrow$ Amostra de entrada $\rightarrow$  Características $\rightarrow$ Algoritmo $\rightarrow$ Parâmetros $\rightarrow$ Avaliação
 
-## Pergunta
+### Pergunta
 
 O nosso objetivo é responder a uma pergunta de tipo "O dado A é do tipo x ou do tipo y?". Por exemplo, podemos querer saber se é possível detectar automaticamente se um e-mail é um spam ou um "ham", isto é, não spam. O que na verdade queremos saber é: "É possível usar características quantitativas para classificar um e-mail como spam?".
 
-## Amostra de Entrada
+### Amostra de Entrada
 
 Uma vez formulada a pergunta, precisamos obter uma amostra de onde tentaremos extrair informações que caracterizam a categoria a qual um dado pertence e então usar essas informações para classificar outros dados não categorizados. O ideal é que se tenha uma amostra grande, assim teremos melhores parâmetros para construir nosso preditor. 
 
@@ -130,7 +130,7 @@ teste = spam[-indices,]
 
 Após construido o algoritmo, usaremos o conjunto de teste para obter a estimativa de erro, que será detalhada mais a frente.
 
-## Características
+### Características
 
 Temos que encontrar agora características que possam indicar a categoria dos dados. Podemos, por exemplo, vizualizar algumas variáveis graficamente para obter uma ideia do que podemos fazer. 
 No nosso exemplo de e-mails, podemos querer avaliar se a frequência de palavras "your" em um e-mail pode indicar se ele é um spam ou não.
@@ -142,12 +142,12 @@ plot(density(treino$your[treino$type=="nonspam"]), col="blue",
      xlab = "Frequência de 'your'", ylab = "densidade")
 lines(density(treino$your[treino$type=="spam"]), col="red")
 ```
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-4-1.png)
 
-![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png)
 
 Pelo gráfico podemos notar que a maioria dos e-mails que são spam têm uma frequência maior da palavra "your". Por outro lado, aqueles que são classificados como ham (não spam) têm um pico mais alto perto do 0.
 
-## Algoritmo
+### Algoritmo
 
 Com base nisso podemos construir um algoritmo para prever se um e-mail é spam ou ham. Podemos estimar um modelo onde queremos encontrar uma constante *c* tal que se a frequência da palavra "your" for maior que *c*, então classificamos o e-mail como spam. Caso contrário, classificamos o e-mail como não spam.
 
@@ -162,11 +162,12 @@ lines(density(treino$your[treino$type=="spam"]), col="red")
 abline(v=0.8,col="black")
 ```
 
-![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-5-1.png)
+
 
 Os e-mails à direita da linha preta seriam classificados como spam, enquanto que os à esquerda seriam classificados como não spam.
 
-## Avaliação
+### Avaliação
 
 Agora vamos avaliar nosso modelo de predição.
 
@@ -200,7 +201,7 @@ table(predicao,teste$type)/length(teste$type)
 
 Já na amostra teste acertamos 48+27=75% das vezes. O erro na amostra teste é o que chamamos de erro real. É o erro que esperamos em amostras novas que passarem por nosso preditor.
 
-## Como construir um bom algoritmo de aprendizado de máquina?
+### Como construir um bom algoritmo de aprendizado de máquina?
 
 O "melhor" método de aprendizado de máquina é caracterizado por:
 
@@ -220,7 +221,7 @@ Os erros mais comuns, que se deve tomar um certo cuidado, são:
 
 ---
 
-# *Design* de predição{#link16}
+## *Design* de predição{#link16}
 
 **1. Defina sua taxa de erro (*benchmark*).**
 
@@ -258,21 +259,21 @@ Aplicamos o melhor modelo na amostra teste apenas uma vez porque se aplicarmos d
 
 ---
 
-# Erros Amostrais
+## Erros Amostrais
 
 Este é um dos conceitos mais fundamentais com os quais lidamos na aprendizagem de máquina e previsão. Temos duas taxas de erros amostrais: o **erro dentro da amostra (*in sample error*)** e o **erro fora da amostra (*out of sample error*)**.
 
-## Erro dentro da Amostra (*In Sample Error*)
+### Erro dentro da Amostra (*In Sample Error*)
 
 É a taxa de erro que você recebe no mesmo conjunto de dados usado para criar seu preditor. Na literatura às vezes é chamado de erro de resubstituição.
 Em outras palavras, é quando seu algoritmo de previsão se ajusta ao que você coletou num conjunto de dados específico. E assim, quando você recebe um novo conjunto de dados, a precisão diminuirá.
 
-## Erro fora da Amostra (*Out of Sample Error*)
+### Erro fora da Amostra (*Out of Sample Error*)
 
 É a taxa de erro que você recebe em um novo conjunto de dados. Na literatura às vezes é chamado de erro de generalização. 
 Uma vez que coletamos uma amostra de dados e construímos um modelo para ela, podemos querer testá-lo em uma nova amostra, por exemplo uma amostra coletada em um horário diferente ou em um local diferente. Daí podemos analisar o quão bem o algoritmo executará a predição nesse novo conjunto de dados.
 
-## Algumas ideias-chave {#link4}
+### Algumas ideias-chave {#link4}
 
 1. Quase sempre o erro fora da amostra é o que interessa.
 2. Erro dentro da amostra é menor que o erro fora da amostra.
@@ -440,11 +441,11 @@ Observe que utilizando o modelo sobreajustado obtivemos um erro fora da amostra 
 
 ---
 
-# Avaliando Preditores - Introdução ao Pacote Caret
+## Avaliando Preditores - Introdução ao Pacote Caret
 
 O pacote caret (abreviação de *Classification And Regression Training*) é um pacote muito útil para o *machine learning* pois envolve algoritmos que possibilitam que as previsões sejam feitas de forma mais prática, simplificando o processo de criação de modelos preditivos. Neste [guia detalhado](http://topepo.github.io/caret/index.html) pode ser encontrado mais informações sobre o pacote.
 
-## Avaliando Classificadores {#link3}
+### Avaliando Classificadores {#link3}
 
 Vamos utilizar a base de dados spam novamente para realizarmos o procedimento de predição para um e-mail (se ele é spam ou não spam), dessa vez utilizando o pacote caret.
 
@@ -595,19 +596,18 @@ A matriz de confusão é a matriz de comparação feita após a predição, onde
 
 *Exemplo:* A matriz de confusão para o problema de predição dos e-mails em spam ou não spam fica da seguinta forma:
 
-<center>
+
 ![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/Matriz de Confusão Vazia.png)
 
-</center>
 
 Onde na primeira coluna se encontram os elementos que possuem a característica de interesse (os e-mails que são spam), e, respectivamente nas linhas, os que foram corretamente identificados - o qual são chamados de **Verdadeiros Positivos (VP)** - e os que foram erroneamente identificados - os **Falsos Negativos (FP)**. Na segunda coluna se encontram os elementos que não possuem a característica de interesse (os e-mails que são ham) e, respectivamente nas linhas, os que foram erroneamente identificados - o qual são chamados de **Falsos Positivos (FN)** - e os que foram corretamente identificados - os **Verdadeiros Negativos (VN)**.
 
 Com as devidas classificações a matriz de confusão fica da seguinte forma:
 
-<center>
+
 ![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/Matriz de Confusão Preenchida.png)
 
-</center>
+
 
 Dentro da função passamos as predições que obtemos pelo modelo ajustado e as reais classificações dos e-mails do conjunto teste.
 
@@ -671,7 +671,7 @@ $$Precisão=\frac{VP+VN}{VP+VN+FN+FP}$$
 
 Para demais medidas da matriz de confusão consulte o [apêndice](#link9).
 
-## Avaliando Regressores
+### Avaliando Regressores
 
 Agora vamos utilizar a base de dados `faithful` para tentar prever o tempo de espera (*waiting*) entre uma erupção e outra de um gêiser dado a duração das erupções (*eruption*).
 
@@ -748,7 +748,7 @@ predicao = predict(modelo, newdata = teste)
 
 Assim como no classificador, a função `predict` nos retorna a previsão dos tempos entre as erupções dado os tempos das durações das erupções.
 
-### MSE {#link1}
+#### MSE {#link1}
 
 Assim como há diversas formas de compararmos a qualidade dos classificadores, há também diversas formas de compararmos regressores. O que estudaremos agora é o MSE (*mean squared error* - erro quadrático médio). Mais formas de comparação de regressores também serão vistas futuramente.
 
@@ -756,7 +756,8 @@ O MSE é a média de quanto os valores previstos para as observações se distan
 
 $$MSE=\frac{1}{n} \sum\limits_{i=1}^{n} \left( Yreal_i-Yestimado_i \right)^{2}$$
 
-![Figura 3: Erro Quadrático Médio](MSE.jpg)
+
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/MSE.jpg)
 
 **Ex.:** O erro quadrático médio para o problema de tempo de erupção do gêiser.
 
@@ -782,8 +783,8 @@ head(faithful)
 plot(faithful$eruptions, faithful$waiting, pch = 20, ylab="Tempo entre Erupções",
      xlab = "Tempo de Erupção", main = "Tempo entre as erupções em função do tempo de erupção do gêiser")
 ```
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-28-1.png)
 
-![plot of chunk unnamed-chunk-28](figure/unnamed-chunk-28-1.png)
 
 Podemos notar que há uma relação linear positiva entre as variáveis. Vamos então ajustar um modelo de regressão linear.
 
@@ -794,8 +795,7 @@ plot(y = faithful$waiting, x = faithful$eruptions, pch = 20, ylab="Tempo entre e
      xlab = "Tempo de erupção", main = "Tempo entre as erupções em função do tempo de erupção do gêiser")
 abline(modelo, col = "red", lwd = 2)
 ```
-
-![plot of chunk unnamed-chunk-29](figure/unnamed-chunk-29-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-29-1.png)
 
 Na reta de regressão temos todos os valores previstos para o tempo de erupção de acordo com os tempos de espera. Podemos então calcular o MSE para o nosso modelo utilizando o comando mse().
 
@@ -813,7 +813,7 @@ Então temos que, em média, o valor estimado para a variável de interesse no c
 
 ---
 
-# *Cross Validation* (Validação Cruzada)
+## *Cross Validation* (Validação Cruzada)
 
 Existem diversos métodos de aprendizado de máquina que podemos usar para construir um preditor. Então como saber qual método é melhor? Um jeito de fazer isso é usando a validação cruzada.
 
@@ -828,21 +828,21 @@ Então o que vamos fazer é, para cada método,
 
 Bem, já sabemos que não é uma boa ideia usar toda a base de dados para treinar o nosso preditor e então podemos dividir por exemplo os primeiros 75% dos dados para treino e 25% finais para  teste. Mas, e se esse não for o melhor jeito de dividir nossos dados? E se o melhor jeito de fazer essa divisão for usando os primeiros 25% para teste e o restante para treino? A Validação cruzada leva em consideração todas essas divisões usando uma de cada vez e tirando a média dos resultados no final. Para isso veremos como realizar alguns métodos de reamostragem, para utilizarmos várias amostras possíveis e não ficarmos dependentes de uma única amostra.
 
-## Alguns Métodos de Reamostragem
+### Alguns Métodos de Reamostragem
 
 Agora vamos compreender como fatiar os dados para realizarmos a reamostragem. Existem vários métodos possíveis mas vamos nos focar em três: k-fold, repeated k-fold e bootstrap.
 
-### K-fold
+#### K-fold
 
 Este método consiste em fatiar os dados em k pedaços iguais. Utilizamos um pedaço para o teste e os demais para o treino. Então realizamos esse procedimento k vezes, de modo que em cada repetição um novo pedaço seja utilizado para o teste. Para avaliar o erro nós tiramos a média de todos os erros de todas as replicações.
 
 **Exemplo:** K-fold com 10 partes:
 
-<center>
 
-![Figura 1: k-fold](K-fold.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/K-fold.png)
 
-</center>
+
+
 
 Quanto maior o k escolhido obtemos menos viés, porém mais variância. Em outras palavras, você terá uma estimativa muito precisa do viés entre os valores previstos e os valores verdadeiros, porém altamente variável. Agora quanto menor o k escolhido, mais viés e menos variância. Ou seja, não iremos necessariamente obter uma boa estimativa do viés, mas ela será menos variável.
 
@@ -902,7 +902,7 @@ controle = trainControl(method = "cv", number = 10)
 modelo = caret::train(type ~ ., data = spam, method = "glm", trControl = controle)
 ```
 
-### Repeated K-fold
+#### Repeated K-fold
 
 O repeated k-fold se resume a repetir o método k-fold várias vezes, com o objetivo de melhorar nossa reamostragem.
 
@@ -915,7 +915,7 @@ modelo = caret::train(type ~ ., data = spam, method = "glm", trControl = control
 ```
 
 
-### Bootstrap {#link5}
+#### Bootstrap {#link5}
 
 O bootstrap é uma técnica de reamostragem com o propósito de reduzir desvios e realizar amostragem dos dados de treino com repetições. Já vimos anteriormente que este é o método default do comando train(), onde é feito 25 reamostragens por bootstrap. 
 
@@ -936,11 +936,11 @@ folds = createResample(y = spam$type, times = 10, list = F)
 
 ---
 
-# Comparando Funções Preditoras
+## Comparando Funções Preditoras
 
 Como já foi dito em capítulos anteriores, existem diversas formas de comparar preditores. Nesse capítulo, vamos estudar um meio de fazer isso e ver mais detalhadamente as medidas de comparação que o R retorna ao usarmos esse método.
 
-## Exemplo de Comparação de Regressores - base `faithful`
+### Exemplo de Comparação de Regressores - base `faithful`
 
 Vamos usar a base de dados `faithful` já presente no R.
 
@@ -1026,8 +1026,8 @@ escala <- list(x=list(relation="free"), y=list(relation="free"))
 # Plotando os dados:
 bwplot(resultados, scales=escala)
 ```
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-41-1.png)
 
-![plot of chunk unnamed-chunk-41](figure/unnamed-chunk-41-1.png)
 
 Pelos boxplots podemos perceber que o modelo linear é o que possui a pior mediana nas três medidas comparativas e parece ter os dados mais espalhados, principalmente no $R^2$, o que indica que ele possui alta variabilidade. Quanto ao KNN e o PPR, os dados estão mais concentrados no RMSE e no $R^2$, embora tenham bastante *outliers*. Parece que o PPR é levemente melhor que o KNN, mas é preciso uma análise mais profunda.
 
@@ -1038,8 +1038,8 @@ library(lattice)
 # Comparando o comportamento de cada fold nos modelos KNN e PPR
 xyplot(resultados, models=c("PPR", "KNN"))
 ```
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-42-1.png)
 
-![plot of chunk unnamed-chunk-42](figure/unnamed-chunk-42-1.png)
 
 Note que a maior parte dos *folds* está acima da diagonal, indicando que o KNN tem um erro absoluto médio (MAE) menor que o PPR. Vamos olhar novamente para o cálculo que fizemos mais acima.
 
@@ -1116,7 +1116,7 @@ summary(diferencas)
 
 Observe que, para cada medida, acima da diagonal temos a diferença entre os modelos e abaixo da diagonal o p-valor do teste de comparação entre eles. Portanto, se considerarmos um nível de significância de 1%, é razoável dizer que os modelos PPR e KKN produzem resultados significativamente diferentes. Sendo assim, escolheriamos o método KNN para treinar nosso modelo.
 
-## Exemplo de Comparação de Classificadores - base `Heart` {#link6}
+### Exemplo de Comparação de Classificadores - base `Heart` {#link6}
 
 Suponha agora que queremos predizer se uma pessoa tem ou problema no coração dado que ela apresentou dor no peito. Considere a seguinte base de dados.
 
@@ -1217,9 +1217,10 @@ Repare que foi calculada duas diferentes medidas: "Accuracy", e "Kappa".
 A **Precisão** (*Accuracy*) como já foi citado no capítulo [Introdução ao pacote caret](#link2), avalia a proporção de acertos na predição.$$Precisão=\frac{Predições\ corretas}{Total\ de\ predições}$$
 
 O **Coeficiente de concordância Kappa** avalia o grau de concordância entre a classificação e o real valor de uma mesma amostra. E é calculado da seguinte forma:
-<center>
-![Figura 1: Tabela para identificação dos elementos presentes no cálculo do kappa](kappa.jpeg)
-</center>
+
+![Figura 1: Tabela para identificação dos elementos presentes no cálculo do kappa]({{ site.url }}/assets/python/courses/machine_learning/06/images/kappa.jpeg)
+
+
 $$\hat{K}=\frac{\hat{p_0}-\hat{p_e}}{1-\hat{p_e}},\quad \hat{p_0}=\sum^{r}_{i}\frac{n_{ii}}{n} \quad e \quad\hat{p_e}=\sum^{r}_{i}\frac{n_{i.}*n_{.i}}{n^2}$$
 
 Portanto, queremos que as duas medidas sejam altas. Vamos ver o boxplot.
@@ -1231,8 +1232,8 @@ escala <- list(x=list(relation="free"), y=list(relation="free"))
 # plotando os dados
 bwplot(resultados, scales=escala)
 ```
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-48-1.png)
 
-![plot of chunk unnamed-chunk-48](figure/unnamed-chunk-48-1.png)
 
 Pelo boxplot podemos ver que o método Rpart possui uma alta variabilidade. O método GLM está com uma mediana melhor e parece mais concentrado. Mas será que ele é mesmo melhor que o SVM?
 
@@ -1241,8 +1242,8 @@ Pelo boxplot podemos ver que o método Rpart possui uma alta variabilidade. O m�
 # Comparando o comportamento de cada fold nos modelos KNN e PPR
 xyplot(resultados, models=c("GLM", "SVM"))
 ```
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-49-1.png)
 
-![plot of chunk unnamed-chunk-49](figure/unnamed-chunk-49-1.png)
 
 Por esse plot, não parece haver uma diferença significativa entre os dois métodos. Vamos voltar a nossas medidas.
 
@@ -1367,11 +1368,11 @@ A diferença de processamento agora já é um pouco maior. Mas, lembre que nossa
 
 ---
 
-# Pré-Processamento
+## Pré-Processamento
 
 Antes de criarmos um modelo de predição, é importante plotarmos as variáveis do nosso modelo antecipadamente para observarmos se há algum comportamento estranho entre elas. Por exemplo, podemos ter uma variável que assuma frequentemente um único valor (possui muito pouca variabilidade), o que não acrescenta informações relevantes ao modelo, ou uma que possua alguns dados faltantes (NA's). O que podemos fazer nesses casos, que é o que iremos estudar neste capítulo, é realizar alterações em tais variáveis, afim de melhorar/otimizar a nossa predição/classificação. Essa é a ideia de **pré-processar**.
 
-## Padronizando os Dados
+### Padronizando os Dados
 
 Vamos carregar o banco de dados spam e criar amostras treino e teste.
 
@@ -1391,8 +1392,8 @@ hist(treino$capitalAve,
      main = "Histograma da Média de Letras Maiúsculas por Linha",
      col="steelblue", breaks = 4)
 ```
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-54-1.png)
 
-![plot of chunk unnamed-chunk-54](figure/unnamed-chunk-54-1.png)
 
 Podemos notar que muitos elementos estão próximos do 0 e os outros estão muito espalhados. Ou seja, essa variável não está trazendo muita informação para o modelo.
 
@@ -1451,8 +1452,8 @@ E variância 1.
 hist(treinoCapAveP, ylab = "Frequência", xlab = "Média de Letras Maiúsculas por Linha",
      main = "Histograma da Média de Letras Maiúsculas por Linha",col="steelblue", breaks =4)
 ```
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-59-1.png)
 
-![plot of chunk unnamed-chunk-59](figure/unnamed-chunk-59-1.png)
 
 Agora vamos aplicar a mesma transformação na amostra teste. Uma coisa a ter em mente é que ao aplicar um algoritmo no conjunto de teste, só podemos usar os parâmetros que estimamos no conjunto de treino. Ou seja, **temos que usar a média e o desvio padrão da variável capitalAve do TREINO**.
 
@@ -1481,7 +1482,7 @@ sd(testeCapAveP)
 
 Nesse caso não obtemos média 0 e variância 1, afinal nós utilizamos os parâmetros do treino para a padronização. Mas podemos notar que os valores estão relativamente próximos disso.
 
-### Padronizando os Dados com a Função preProcess()
+#### Padronizando os Dados com a Função preProcess()
 
 Podemos realizar o pré-processamento utilizando a função preProcess() do caret. Ela realiza vários tipos de padronizações, mas para utilizarmos a mesma (subtrair a média e dividir pelo desvio padrão) utilizamos o método c("center","scale").
 
@@ -1555,13 +1556,13 @@ A única limitação é que esse método aplica a padronização em **todas** as
 
 > **Obs.:** Quando for padronizar uma variável da sua base para depois treinar seu algoritmo, lembre-se que colocar a variável padronizada de volta na sua base.
 
-## Tratando NA's{#link15}
+### Tratando NA's{#link15}
 
 É muito comum encontrar alguns dados faltantes (NA's) em uma base de dados. E quando você usa essa base para fazer predições, o algoritmo preditor muitas vezes falha, pois eles são criados para não manipular dados ausentes (na maioria dos casos). O mais recomendado a se fazer é descartar esses dados, principalmente se o número de variáveis for muito pequeno. Porém, em alguns casos, podemos tentar substituir os NA's da amostra por dados de outros elementos que possuam características parecidas.
 
 > **Obs:** Este é um procedimento que deve ser feito com muito cuidado, apenas em situações de real necessidade.
 
-### Método *k-Nearest Neighbors* (*knn*)
+#### Método *k-Nearest Neighbors* (*knn*)
 
 O método *k-Nearest Neighbors* (*knn*) consiste em procurar os k vizinhos mais próximos do elemento que possui o dado faltante de uma variável de interesse, calculando a média dos valores observados dessa variável dos k vizinhos e imputando esse valor ao elemento.
 
@@ -1975,7 +1976,7 @@ teste$Thal
 ```
 
 
-## Variável *Dummy*
+### Variável *Dummy*
 
 As variáveis *dummies* ou variáveis indicadoras são formas de agregar informações qualitativas em modelos estatísticos. Ela atribui 1 se o elemento possui determinada característica, ou 0 caso ele não possua. Esse tipo de transformação é importante para modelos de regressão pois ela torna possível trabalhar com variáveis qualitativas.
 
@@ -2014,8 +2015,8 @@ Wage %>% ggplot(aes(x=jobclass)) + geom_bar(aes(fill=jobclass)) +
   ylab("Frequência") + guides(fill=F) + theme_light() +
   ggtitle("Gráfico de Barras para o Tipo de Trabalho")
 ```
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-86-1.png)
 
-![plot of chunk unnamed-chunk-86](figure/unnamed-chunk-86-1.png)
 
 
 
@@ -2024,8 +2025,8 @@ Wage %>% ggplot(aes(x=health_ins)) + geom_bar(aes(fill=health_ins)) +
   ylab("Frequência") + guides(fill=F) + theme_light() +
   ggtitle("Gráfico de Barras para o Plano de Saúde")
 ```
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-87-1.png)
 
-![plot of chunk unnamed-chunk-87](figure/unnamed-chunk-87-1.png)
 
 Vamos transformar essas 2 variáveis em *dummies* por meio da função dummyVars().
 
@@ -2172,7 +2173,7 @@ head(Wage_dummy)
 ## 376662 4.845098 127.11574                       1                0
 ```
 
-## Variância Zero ou Quase-Zero {#link7}
+### Variância Zero ou Quase-Zero {#link7}
 
 Algumas vezes em um conjunto de dados podemos ter uma variável que assuma somente um único valor para todos os indivíduos, ou seja, ela possui **variância zero**. Ou podemos ter uma com uma frequência muito alta de um único valor, possuindo, assim, **variância quase zero**. Essas variáveis não auxiliam na predição, pois possuem o mesmo valor em muitos indivíduos, trazendo, assim, pouca informação ao modelo. Nosso objetivo é, então, identificar essas variáveis, chamadas de *near zero covariates*, para que possamos removê-las do nosso modelo de predição.
 
@@ -2222,8 +2223,8 @@ Podemos observar que a variável "*rain*" possui variância quase zero, portanto
 hist(incendio$rain, main = "Histograma da Variável Rain",
      xlab = "Variável Rain", ylab = "Frequência", col = "purple")
 ```
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-96-1.png)
 
-![plot of chunk unnamed-chunk-96](figure/unnamed-chunk-96-1.png)
 
 Logo, vamos excluir ela da nossa base de dados. O argumento "saveMetrics=FALSE" (default da função) retorna justamente qual(is) variável(is) do bando de dados é(são) *near zero covariate* .
 
@@ -2247,7 +2248,7 @@ head(Nova_incendio)
 ```
 
 
-## Análise de Componentes Principais (*PCA*)
+### Análise de Componentes Principais (*PCA*)
 
 Muitas vezes podemos ter variáveis em excesso no nosso banco de dados, o que torna difícil a manipulação das mesmas. A ideia geral do *PCA* (*Principal Components Analysis*) é reduzir a quantidade de variáveis, obtendo combinações interpretáveis delas. O *PCA* faz isso tranformando um conjunto de observações de variáveis possivelmente correlacionadas num conjunto de valores de variáveis linearmente não correlacionadas, chamadas de componentes principais. O número de componentes principais é sempre menor ou igual ao número de variáveis originais, e eles são selecionados de forma que expliquem uma alta porcentagem da variância do modelo. 
 
@@ -2376,7 +2377,7 @@ Obtemos uma acurácia de 0,92, o que indica também uma alta taxa de acerto, por
 Em geral, são utilizados pontos de corte para a variãncia 
 explicada acima de 0,9.
 
-### *PCA* fora da função train()
+#### *PCA* fora da função train()
 
 Podemos também realizar o pré-processamento fora da função train(). Primeiramente vamos criar o pré-processamento, utilizando a amostra treino.
 
@@ -2442,9 +2443,9 @@ confusionMatrix(testePCA$type, testeMod)
 ## 
 ```
 
-## Normalização dos Dados
+### Normalização dos Dados
 
-### Transformação de Box-Cox
+#### Transformação de Box-Cox
 
 A transformação de Box-Cox é uma transformação feita nos dados (contínuos) para tentar normalizá-los. Considerando $X_1,...,X_n$ as variáveis do conjunto de dados original, essa transformação consiste em encontrar um $\lambda$ tal que as variáveis transformadas $Y_1,...Y_n$ se aproximem de uma distribuição normal com variância constante. 
 
@@ -2459,9 +2460,9 @@ O método de Box-Cox é o método mais simples e o mais eficiente computacionalm
 treinoBC = preProcess(treino, method = "BoxCox") 
 ```
 
-### Outras Transformações
+#### Outras Transformações
 
-#### Transformação de Yeo-Johnson
+##### Transformação de Yeo-Johnson
 
 A transformação de Yeo-Johnson é semelhante à transformação de Box-Cox, porém ela aceita preditores com dados nulos e/ou dados negativos. Também podemos aplicá-la aos dados através da função preProcess().
 
@@ -2471,7 +2472,7 @@ treinoYJ = preProcess(treino, method = "YeoJohnson")
 ```
 
 
-#### Transformação Exponencial de Manly
+##### Transformação Exponencial de Manly
 
 O método exponencial de Manly também consiste em estimar um $\lambda$ tal que as variáveis transformadas se aproximem de uma distribuição normal. Assim como a transformação de Yeo-Johnson, ela também aceita dados positivos, nulos e negativos. Essa transformação é dada pela seguinte forma: $$Y_i(\lambda)=\frac{e^{X\lambda}-1}{\lambda} \hbox{ , se } \lambda \neq 0.$$
 
@@ -2482,13 +2483,13 @@ treinoEXP = preProcess(treino, method = "expoTrans")
 
 ---
 
-# Métodos de Treino Baseados em Árvores
+## Métodos de Treino Baseados em Árvores
 
 Neste capítulo será estudado de forma mais aprofundada modelos de treinamento baseados em árvores, os quais são simples para interpretação, como: árvores de decisão e regressão, florestas aleatórias, adaboost, entre outros. O objetivo é entender o funcionamento dos mesmos, assim como os critérios que utilizam para classificarem as amostras. 
 
 É importante deixar claro que para utilizarmos esses métodos podemos usar tanto dados numéricos quanto categóricos. Além disso, não é necessário padronizar os dados.
 
-## Árvores de Decisão
+### Árvores de Decisão
 
 Uma árvore de decisão, em geral, pergunta uma questão e classifica o elemento baseado na resposta. Ela utiliza os dados de cada indivíduo para criar uma regra de separação, que posteriormente será utilizada para rotular novas amostras.
 
@@ -2498,11 +2499,10 @@ As árvores de decisão podem ser aplicadas aos problemas de regressão e classi
 
 Vejamos a seguir um exemplo de árvore de decisão para um problema de classificação.
 
-<center>
 
-![Figura 1: Exemplo de Árvore de decisão para jogar tênis.](Ex_Arvores.png)
 
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/Ex_Arvores.png)
+
 
 **Nomenclatura:**
 
@@ -2510,11 +2510,10 @@ Vejamos a seguir um exemplo de árvore de decisão para um problema de classific
 - **Nós Internos** ou **Nós**: são as variáveis intermediárias, que possuem tanto setas apontandas para elas como saindo delas;
 - **Nós Folhas** ou **Nós Terminais** ou **Folhas**: possuem apenas setas apontadas para elas. Representam a decisão final da árvore.
 
-<center>
 
-![Figura 2: Estrutura de uma árvore de decisão.](Nomenclatura_Arvore.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/Nomenclatura_Arvore.png)
 
-</center>
+
 
 No processo de construção de uma árvore de decisão é importante ressaltar que a separação dos dados deve envolver apenas duas respostas: "Sim" ou "Não". Também é preciso definir a ordem das variáveis, como a variável com que se deve começar, qual deve ser a seguinte, e assim por diante. A solução para isso é obtida através do nível de **impureza** das variáveis.
 
@@ -2587,11 +2586,10 @@ base %>% group_by(Sex, HeartDisease) %>% summarise(N=n())
 
 Então a variável "Sex=M" separa os pacientes da seguinte forma:
 
-<center>
 
-![Figura 3: Divisão por 'Sex=M'](Arvore_Sex.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/Arvore_Sex.png)
 
-</center>
+
 
 Note que a maioria dos pacientes com doença cardíaca terminaram na folha referente ao sexo masculino, mas a maioria dos que não possuem doença também. Já podemos ter uma ideia que essa variável não é tão boa em separar os dados, mas para averiguarmos essa hipótese vamos calcular o índice gini dela.
 
@@ -2644,11 +2642,9 @@ base %>% group_by(ChestPain, HeartDisease) %>% summarise(N=n())
 
 Vamos considerar a variável "ChestPain = Typical". Ela separa os dados da seguinte forma:
 
-<center>
 
-![Figura 4: Divisão por 'ChestPain=Typical'](Arvore_Chest.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/Arvore_Chest.png)
 
-</center>
 
 Note que quase metade dos pacientes que possuem dor no peito têm doença cardíaca. Dos que não sentem a dor no peito, quase $\frac{1}{4}$ apenas possui a doença.
 
@@ -2706,11 +2702,9 @@ base %>% group_by(Thal, HeartDisease) %>% summarise(N=n())
 
 Vamos, primeiramente, olhar para a variável "Thal = normal". Ela separa os dados da seguinte forma:
 
-<center>
 
-![Figura 5: Divisão por 'Thal=normal'](Arvore_Thal_normal.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/Arvore_Thal_normal.png)
 
-</center>
 
 Note que a maioria dos pacientes que possuem doença cardíaca estão no grupo dos que possuem "Thal = normal".
 
@@ -2728,11 +2722,9 @@ $$ \hbox{Gini(Thal = Normal)} = 0,26 \times \frac{52}{72} + 0,48 \times \frac{20
 
 Agora vamos olhar para a variável "Thal = Fixed". Ela separa os dados da seguinte forma:
 
-<center>
 
-![Figura 6: Divisão por 'Thal=fixed'](Arvore_Thal_fixed.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/Arvore_Thal_fixed.png)
 
-</center>
 
 Vamos calcular o índice Gini do nó "Thal = Fixed Sim":
 
@@ -2748,11 +2740,9 @@ $$ \hbox{Gini(Thal = Fixed)} = 0,375 \times \frac{4}{72} + 0,344 \times \frac{68
 
 Por último, vamos olhar para a variável "Thal = Reversable".
 
-<center>
 
-![Figura 7: Divisão por 'Thal=reversable'](Arvore_Thal_reversable.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/Arvore_Thal_reversable.png)
 
-</center>
 
 Vamos calcular o índice Gini do nó "Thal = Reversable Sim":
 
@@ -2779,11 +2769,9 @@ Resumindo, os índices Ginis de todas as variáveis são:
 
 A variável "Thal = Reversable" é a que possui o menor índice Gini, portanto ela é a mais pura. Ela ficará no topo da árvore de decisão, ou seja, será o nó raiz.
 
-<center>
 
-![Figura 8: Raiz da Árvore final](Raiz_Arvore_Final.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/Raiz_Arvore_Final.png)
 
-</center>
 
 O próximo passo é definir as variáveis que ficarão no nó "Thal = Reversable Sim" e "Thal = Reversable Não". Para isso temos que olhar para a base de dados com os indivíduos do grupo "Thal = Reversable Sim" e "Thal = Reversable Não", respectivamente.
 
@@ -2831,11 +2819,9 @@ Agora calculamos também o índice Gini para todas as variáveis referentes a es
 
 Dessa forma, podemos dar continuidade a nossa árvore.
 
-<center>
 
-![Figura 9: Árvore Final](Arvore_de_Decisao_Final.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/Arvore_de_Decisao_Final.png)
 
-</center>
 
 Após obtidos esses novos nós, o processo continua se repetindo, obtendo novos nós e/ou folhas para a árvore, até a construção chegar ao fim.
 
@@ -2853,11 +2839,8 @@ O ganho ao aumentar a árvore pode ser resumido como um conjunto de atributos pr
 
 Agora iremos discutir o processo de construção de uma árvore de regressão. Em uma árvore de regressão, diferentemente de uma árvore para classificação, cada folha possui um valor numérico (ao invés de categorias como "Sim" ou "Não", como no exemplo anterior da base SmallHeart). Vejamos a seguir um exemplo de árvore de decisão para um problema de regressão.
 
-<center>
 
-![Figura 10: Exemplo de árvore de regressão para avaliar a eficácia de um medicamento em um paciente.](Ex_Arvore_Reg.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/Ex_Arvore_Reg.png)
 
 Esse valor numérico presente nas folhas não é nada menos que a média do valor da variável de interesse a ser prevista para os elementos que satisfazem a condição do nó. Por exemplo, na árvore de regressão acima a primeira folha dá como resultado uma eficácia de 5%: essa foi a média observada da eficácia do medicamento em pacientes com mais de 50 anos de idade. Para a segunda folha, a com eficácia de 20%: esse valor é a média da eficácia do medicamento em um indivíduo com menos de 50 anos de idade e que toma uma dosagem maior do que 29mg foi de 20%. O processo é o mesmo para as outras folhas.
 
@@ -2898,7 +2881,7 @@ plot(vendas$TV, vendas$sales, pch = 19,
      main = "Vendas do produto x Publicidade para a TV")
 ```
 
-![plot of chunk unnamed-chunk-121](figure/unnamed-chunk-121-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-121-1.png)
 
 Primeiramente é preciso definir qual valor irá entrar como condição no primeiro nó. O algoritmo realiza isso testando todos os possíveis valores de separação para os dados, e pega o que minimiza a soma dos quadrados dos resíduos. Inicialmente, como o primeiro separador, ele considera a média dos 2 menores valores da Publicidade.
 
@@ -2923,15 +2906,12 @@ plot(vendas$TV, vendas$sales, pch = 19,
                                                                  col = "red")
 ```
 
-![plot of chunk unnamed-chunk-123](figure/unnamed-chunk-123-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-123-1.png)
 
 Assim, o primeiro nó será da seguinte forma: 
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/ArvReg1.png)
 
-![Figura 11: Divisão por 'TV< 44,95'](ArvReg1.png)
-
-</center>
 
 Para a resposta "sim" prevemos que as vendas do produto será de 9,2, o qual é o resultado da média dos valores das vendas para todos os produtos cuja publicidade foi menor do que 44,95 (ou seja, é apenas o valor do primeiro elemento). Para a resposta "Não", então a folha seguinte contém o resultado da média dos valores das vendas para todos os produtos cuja publicidade foi maior do que 44,95, o qual é de 15,05.
 
@@ -2958,15 +2938,13 @@ plot(vendas$TV, vendas$sales, pch = 19,
                                                                  col = "red")
 ```
 
-![plot of chunk unnamed-chunk-125](figure/unnamed-chunk-125-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-125-1.png)
 
 Então o nó considerado será da forma "Publicidade para a TV < 66,95?".
 
-<center>
 
-![Figura 12: Divisão por 'TV < 66,95'](ArvReg2.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/ArvReg2.png)
 
-</center>
 
 O valor de 8,9 corresponde ao resultado da média dos valores das vendas para todos os produtos cuja publicidade foi menor do que 66,95. Então a árvore prevê esse valor de vendas para o produto que obteve uma publicidade para a TV < 66,95. O valor de 15,77 é o resultado da média dos valores das vendas para todos os produtos cuja publicidade foi maior do que 66,95. Novamente serão obtidos os resíduos dessa predição e eles serão somados.
 
@@ -3006,7 +2984,7 @@ library(rpart.plot)
 rpart.plot(heart_arvore)
 ```
 
-![plot of chunk unnamed-chunk-127](figure/unnamed-chunk-127-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-127-1.png)
 
 Observe que a árvore ficou "vazia". O que ela quer dizer com isso é: assuma "Não" sempre para o indivíduo possuir doença cardíaca, e acerte com precisão de 78%. Isso ocorre devido aos valores iniciais do comando rpart.control(), que ajusta os parâmetros da função rpart(). Os principais parâmetros do rpart.control são:
 
@@ -3027,7 +3005,7 @@ heart_arvore = rpart(HeartDisease~., data = base, control = controle)
 rpart.plot(heart_arvore)
 ```
 
-![plot of chunk unnamed-chunk-128](figure/unnamed-chunk-128-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-128-1.png)
 
 Note que o nó raiz é exatamente aquele que calculamos como o mais puro, o "Thal = Reversable", que é equivalente a "Thal = Fixed ou Normal". Os nós adjacentes também foram o que obtivemos anteriormente como os mais puros. 
 
@@ -3035,27 +3013,19 @@ Cada saída do comando rpart.plot() tem um significado específico:
 
 1. A primeira saída é a classe estimada pela árvore para as amostras que se encontram naquele nó.
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/rpart1.png)
 
-![Figura 13: Entendendo o `rpart` - parte1](rpart1.png)
-
-</center>
 
 2. A segunda saída é a proporção de indivíduos na classe contrária àquela estimada na primeira saída.
 
-<center>
 
-![Figura 14: Entendendo o `rpart` - parte2](rpart2.jpg)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/rpart2.png)
 
-</center>
 
 3. A terceira saída é a porcentagem da amostra que se encontra no atual nó.
 
-<center>
 
-![Figura 15: Entendendo o `rpart` - parte3](rpart3.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/rpart3.png)
 
 **Ex. 2:** Vamos agora constuir a árvore mais completa possível, ou seja, uma árvore sobreajustada à amostra, sem restrições em sua profundidade máxima.
 
@@ -3066,7 +3036,7 @@ heart_arvore = rpart(HeartDisease~., data = base, control = controle)
 rpart.plot(heart_arvore)
 ```
 
-![plot of chunk unnamed-chunk-129](figure/unnamed-chunk-129-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-129-1.png)
 
 **Ex. 3:** Vamos agora considerar 10 como o número mínimo de observações em um nó e 3 como a profundidade máxima da árvore.
 
@@ -3077,7 +3047,7 @@ heart_arvore = rpart(HeartDisease~., data = base, control = controle)
 rpart.plot(heart_arvore)
 ```
 
-![plot of chunk unnamed-chunk-130](figure/unnamed-chunk-130-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-130-1.png)
 
 Agora podemos levantar a seguinte questão: como avaliar a precisão do modelo construído? Nesse exemplo nós utilizamos toda a amostra para construir a árvore, apenas para explicar o funcionamente do `rpart`, então não temos uma amostra teste para verificar o quão bom é o modelo. Então para isso teríamos que primeiramente dividir a amostra em treino e teste, depois criar o modelo com a amostra treino e em seguida aplicá-lo na amostra teste, e então, por último, poderíamos utilizar a função confusionMatrix() para obtermos não só a precisão como outras medidas avaliativas do modelo, além, é claro, da matriz de confusão. No tópico abaixo essas etapas serão construídas detalhadamente.
 
@@ -3197,7 +3167,7 @@ Obtivemos uma acurácia de 0,8922, o que é razoável para um modelo que utiliza
 rpart.plot(modelo$finalModel)
 ```
 
-![plot of chunk unnamed-chunk-135](figure/unnamed-chunk-135-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-135-1.png)
 
 A limitação de utilizar as árvores através do train() é que o único parâmetro da árvore que pode ser alterado é o cp (*complexity parameter*).
 
@@ -3245,11 +3215,11 @@ Note que com esse valor de cp a árvore fica mais profunda, pois estamos diminui
 rpart.plot(modelo$finalModel)
 ```
 
-![plot of chunk unnamed-chunk-138](figure/unnamed-chunk-138-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-138-1.png)
 
 ---
 
-## Florestas Aleatórias
+### Florestas Aleatórias
 
 As árvores de decisão possuem uma estrutura de fácil compreensão, o que faz com que ela seja bastante utilizada devido a sua boa aparência e interpretação intuitíva. Mas elas possuem uma limitação, o [sobreajuste](#link4), sendo assim, elas não são muito eficientes com novas amostras. O que fazer então?
 
@@ -3350,11 +3320,8 @@ table(NovaAmostra1$Age, NovaAmostra1$Inflated)
 
 A variável idade tem um grau de impureza menor, então ela será a raiz da árvore.
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/floresta1.jpeg)
 
-![Figura 1: Índice Gini da divisão por 'Age=ADULT'](floresta1.jpeg){width=60%}
-
-</center>
 
 Agora das variáveis que ainda não foram usadas, sorteamos mais duas para continuar a árvore.
 
@@ -3413,19 +3380,13 @@ table(NovaAmostra1$Act, NovaAmostra1$Inflated)
 
 Como a variável *act* tem o menor grau de impureza, ela será o próximo nó.
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/floresta2.jpeg)
 
-![Figura 2: Índice Gini da divisão por 'Act=DIP'](floresta2.jpeg){width=60%}
-
-</center>
 
 Assim, temos nossa primeira árvore de decisão.
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/floresta3.jpeg)
 
-![Figura 3: Árvore final](floresta3.jpeg){width=60%}
-
-</center>
 
 > A floresta aleatória pode ser utilizada tanto em classificadores como em regressores. A diferença é que em regressores, utilizamos [árvores de regressão](#link11) no lugar de [árvores de classificação](#link12). 
 
@@ -3433,13 +3394,10 @@ Em seguida vamos construir várias árvores da mesma maneira que a anterior. Par
 
 Temos então nossas 4 árvores construidas.
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/floresta4.jpeg)
 
-![](floresta4.jpeg){width=90%}
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/floresta5.jpeg)
 
-![Figura 4: Floresta aleatória](floresta5.jpeg){width=90%}
-
-</center>
 
 Para classificar uma nova amostra, devemos passar ela por todas as árvores construidas e rotular a amostra pela categoria resultada mais vezes.
 
@@ -3622,7 +3580,7 @@ ggplot(data=erro_OOB, aes(x=Arvores, y=Erro)) +
                          labels = c("Não Spam", "Spam"))
 ```
 
-![plot of chunk unnamed-chunk-150](figure/unnamed-chunk-150-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-150-1.png)
 
 
 ```r
@@ -3643,7 +3601,7 @@ ggplot(data=erro_OOB, aes(x=Arvores, y=Erro)) +
                          labels = c("Não Spam", "Spam"))
 ```
 
-![plot of chunk unnamed-chunk-151](figure/unnamed-chunk-151-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-151-1.png)
 
 
 ```r
@@ -3664,7 +3622,7 @@ ggplot(data=erro_OOB, aes(x=Arvores, y=Erro)) +
                          labels = c("Não Spam", "Spam"))
 ```
 
-![plot of chunk unnamed-chunk-152](figure/unnamed-chunk-152-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-152-1.png)
 
 
 ```r
@@ -3685,7 +3643,7 @@ ggplot(data=erro_OOB, aes(x=Arvores, y=Erro)) +
                          labels = c("Não Spam", "Spam"))
 ```
 
-![plot of chunk unnamed-chunk-153](figure/unnamed-chunk-153-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-154-1.png)
 
 Repare que após uma certa quantidade de árvores, o erro se estabiliza. Sendo assim, não é necessário utilizar grandes quantidades de árvores em todos os casos. É preciso verificar até onde existe ganho.
 
@@ -3750,15 +3708,11 @@ modelo
 
 ---
 
-## *AdaBoost*
+### *AdaBoost*
 
 O método de treino AdaBoost se baseia na construção de uma floresta aleatória. Entretanto, na floresta construída por esse método as árvores possuem apenas um nó e duas folhas. Essas árvores são chamadas de **tocos**.
 
-<center>
-
-![Figura 1: Floresta de tocos construída pelo método *AdaBoost*.](Floresta_AdaBoost.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/Floresta_AdaBoost.png)
 
 Em geral, tocos não são muito bons em fazer classificações precisas, ou seja, eles são classificadores fracos. No entanto, o método AdaBoost os combina de forma a criar um bom aprendiz. Ele faz isso utilizando diferenciais na classificação e na construção das árvores que a floresta aleatória comum não utiliza:
 
@@ -3816,31 +3770,23 @@ golf %>% group_by(Outlook, Play) %>% summarise(N=n())
 
 Então temos que "Outlook = Overcast" separa os dados da seguinte forma:
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/AB_Overcast.png)
 
-![Figura 2: Divisão por 'Outlook=Overcast'](AB_Overcast.png)
-
-</center>
 
 $\hbox{Gini(Outlook = Overcast)} = \frac{4}{14} \times \left[ 1- \left( \frac{4}{4} \right)^{2} - \left( \frac{0}{4} \right)^{2} \right] + \frac{10}{14} \times \left[ 1- \left( \frac{5}{10} \right)^{2} - \left( \frac{5}{10} \right)^{2} \right] = 0,357.$
 
 Vamos agora olhar para "Outlook = Rain":
 
-<center>
 
-![Figura 3: Divisão por 'Outlook=Rain'](AB_Rain.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/AB_Rain.png)
 
-</center>
 
 $\hbox{Gini(Outlook = Rain)} = \frac{5}{14} \times \left[ 1- \left( \frac{3}{5} \right)^{2} - \left( \frac{2}{5} \right)^{2} \right] + \frac{9}{14} \times \left[ 1- \left( \frac{6}{9} \right)^{2} - \left( \frac{3}{9} \right)^{2} \right] = 0,457.$
 
 Por último, "Outlook = Sunny":
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/AB_Sunny.png)
 
-![Figura 4: Divisão por 'Outlook=Sunny'](AB_Sunny.png)
-
-</center>
 
 $\hbox{Gini(Outlook = Sunny)} = \frac{5}{14} \times \left[ 1- \left( \frac{2}{5} \right)^{2} - \left( \frac{3}{5} \right)^{2} \right] + \frac{9}{14} \times \left[ 1- \left( \frac{7}{9} \right)^{2} - \left( \frac{2}{9} \right)^{2} \right] = 0,394.$
 
@@ -3864,11 +3810,8 @@ golf %>% group_by(Humidity, Play) %>% summarise(N=n())
 
 Temos que "Humidity = High" separa os dados da seguinte forma:
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/AB_High.png)
 
-![Figura 5: Divisão por 'Humidity=High'](AB_High.png)
-
-</center>
 
 $\hbox{Gini(Humidity = High)} = \frac{7}{14} \times \left[ 1- \left( \frac{3}{7} \right)^{2} - \left( \frac{4}{7} \right)^{2} \right] + \frac{7}{14} \times \left[ 1- \left( \frac{6}{7} \right)^{2} - \left( \frac{1}{7} \right)^{2} \right] = 0,367.$
 
@@ -3890,11 +3833,8 @@ golf %>% group_by(Wind, Play) %>% summarise(N=n())
 ## 4 Weak   Yes       6
 ```
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/AB_Wind.png)
 
-![Figura 6: Divisão por 'Wind=Strong'](AB_Wind.png)
-
-</center>
 
 $\hbox{Gini(Wind = Strong)} = \frac{6}{14} \times \left[ 1- \left( \frac{3}{6} \right)^{2} - \left( \frac{3}{6} \right)^{2} \right] + \frac{8}{14} \times \left[ 1- \left( \frac{6}{8} \right)^{2} - \left( \frac{2}{8} \right)^{2} \right] = 0,429.$
 
@@ -3911,21 +3851,15 @@ Logo, os índices Gini calculados foram:
 
 Selecionamos a variável com o menor índice Gini para ser o primeiro toco da floresta. Nesse caso, o menor índice Gini é o da variável "Outlook = Overcast".
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/AB_toco.png)
 
-![Figura 7: Primeiro toco da floresta.](AB_toco.png)
-
-</center>
 
 Agora precisamos calcular o peso desse toco na classificação final. Para isso, vamos calcular seu **erro total**.
 
 > O **erro total** de um toco é calculado pelo número de amostras classificadas erradas dividido pelo total de amostras.
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/AB_toco2.png)
 
-![Figura 8: Número de acertos e erros do primeiro toco da floresta.](AB_toco2.png)
-
-</center>
 
 Para esse toco houve 5 amostras classificadas erradas em um total de 14. Logo,
 
@@ -3970,21 +3904,14 @@ $$ \hbox{Peso Amostras Corretas} = \frac{5}{14} \ \times e^{-0,29} = 0,267.$$
 
 Então temos os pesos para as amostras:
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/tabela_adaboost.png)
 
-![Figura 9: Tabela de pesos das amostras da base de dados golf.](tabela_adaboost.png)
-
-</center>
 
 A soma dos pesos das amostras deve ser 1, mas isso não ocorre: note que a soma resulta em 4,788. Dessa forma, precisamos reescalar os pesos. Faremos isso dividindo cada um deles por 4,788.
 
 Feito isso, temos uma nova tabela de pesos:
 
-<center>
-
-![Figura 10: Tabela de pesos reescalados das amostras da base de dados.](tabela_adaboost2.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/tabela_adaboost2.png)
 
 Definidos os pesos, em seguida realizamos uma reamostragem via *bootstrap* (uma amostragem da própria amostra, com reposição) do mesmo tamanho da base de dados original. A probabilidade de um elemento da amostra ser sorteado é o peso dele.
 
@@ -4007,11 +3934,8 @@ sample(amostra, size = 14, replace = T, prob = pesos)
 
 Então temos uma nova amostra formada pelos elementos sorteados na reamostragem:
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/tabela_bootstrap.png)
 
-![Figura 11: Nova amostra sorteada na reamostragem.](tabela_bootstrap.png)
-
-</center>
 
 Agora, com essa nova amostra, fixamos pesos uniformes para os elementos e repetimos o processo de criação para o próximo toco. Em seguida verificamos os elementos que foram classificados de forma errada, aumentamos seus pesos no banco de dados e repetimos o processo de *bootstrap*, construindo, assim, o próximo toco. O processo se repete até que a floresta de tocos esteja concluída.
 
@@ -4070,7 +3994,7 @@ library(rpart.plot)
 rpart.plot(modelo$trees[[1]])
 ```
 
-![plot of chunk unnamed-chunk-166](figure/unnamed-chunk-166-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-166-1.png)
 
 Por último, vamos aplicar o modelo na amostra teste e em seguida avaliar o modelo através da matriz de confusão.
 
@@ -4225,7 +4149,7 @@ Note que obtivemos bons resultados mesmo utilizando apenas 10 árvores. A acurá
 
 ---
 
-## *Gradiente Boosting*
+### *Gradiente Boosting*
 
 ### em Regressão
 
@@ -4247,11 +4171,8 @@ Para entendermos como funciona o Gradiente Boosting, considere a seguinte base d
 A primeira coisa a fazer é definir um número máximo de folhas de cada árvore. Para nosso exemplo, vamos definir 4 folhas, mas em geral, é definido uma quantidade de 8 a 32 folhas. Feito isso, tiramos uma média dos pesos dos indivíduos e essa será nossa primeira árvore, uma árvore só com a raiz. 
 
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/tocoGB.png)
 
-![Figura 1: Árvore toco](tocoGB.png){width=30%}
-
-</center>
 
 
 Agora, calculamos o **Pseudo-Resíduo**, o erro de previsão de cada indivíduo, da forma $$Pseudo\ Resíduo = valor\ real - valor\ predito$$ para cada observação. Então, por exemplo, o pseudo-resíduo da primeira observação vai ficar $88-71.5 = 16.5$ .
@@ -4272,21 +4193,14 @@ Agora, calculamos o **Pseudo-Resíduo**, o erro de previsão de cada indivíduo,
 O próximo passo é, utilizando as variáveis explicativas (Altura, Cor e Sexo), construir uma árvore de decisão respeitando o máximo de folhas definido anteriormente. Mas ela deve **predizer o pseudo-resíduo** e não o Peso.
 
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/GB1.png)
 
-![Figura 2: Árvore 1](GB1.png){width=85%}
-
-</center>
 
 
 > Note que temos mais observações do que folhas, sendo assim, podemos ter mais que um resultado em cada uma. Nesse caso, substituímos os valores pela média das folhas.
 
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/GB2.png)
 
-<center>
-
-![Figura 3: Árvore 1](GB2.png){width=85%}
-
-</center>
 
 
 Agora somamos o resultado das duas árvores para classificar na primeira observação, por exemplo, a predição seria $71.5+16.5=88$. Acertamos exatamente o valor real. Isso é bom? Não. Já vimos como não é bom ter um modelo muito ajustado. Temos pouco viés, mas provavelmente alta variância.
@@ -4311,11 +4225,8 @@ Repare que o valor do segundo pseudo-resíduo diminuiu em módulo em relação a
 Agora, utilizando novamente as variáveis explicativas, construímos outra árvore agora para predizer o segundo pseudo-resíduo. 
 
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/GB3.png)
 
-![Figura 4: Árvore 2](GB3.png){width=100%}
-
-</center>
 
 
 > Note que a estrutura da segunda árvore construída ficou semelhante a primeira. Isso não acontece sempre, mas pode acontecer.
@@ -4403,7 +4314,7 @@ Note que utilizamos 300 árvores. Mas pode ser que não seja necessário essa qu
 gbm.perf(modelo)
 ```
 
-![plot of chunk unnamed-chunk-178](figure/unnamed-chunk-178-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-178-1.png)
 
 ```
 ## [1] 48
@@ -4451,20 +4362,12 @@ Considere a seguinte base de dados
 
 Queremos predizer se uma pessoa ama o filme Troll 2 baseado em seu gosto por pipoca, idade e cor favorita. Assim como em regressão, começamos o método de Gradiente Boosting usando uma árvore raiz que represente nossa predição inicial para cada observação. Em regressão usamos a média das observações, em classificação vamos usar o log(chances). Olhando na base de dados, podemos dizer que as chances de alguém amar Troll 2 é $$chances= \frac{Quantidade\ de\ indivíduos\ que\ amaram}{Quantidade\ de\ indivíduos\ que\ odiaram} = \frac{4}{2}$$ portanto, o $log(chances)=log(\frac{4}{2}) = 0.6932$ e é isso que colocaremos na folha inicial.
 
-<center>
-
-![Figura 5: folha inicial.](tocoGBC.png){width=60%}
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/tocoGBC.png)
 
 O jeito mais fácil de usar o log(chances) para classificar é convertendo em probabilidade, e fazemos isso usando a seguinte função: $$ Probabilidade = \frac{e^{log(chances)}}{1+e^{log(chances)}}$$
 Sendo assim, A $Probabilidade\ de\ alguém\ amar\ Troll2 = \frac{e^{log(\frac{4}{2})}}{1+e^{log(\frac{4}{2})}} = \frac{2}{3}=0.6667$. 
 
-<center>
-
-![Figura 6: probabilidade de amar Troll 2.](tocoGBC2.png){width=60%}
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/tocoGBC2.png)
 
 > É importante notar que o log(chances) e a probabilidade só ficaram iguais por causa da aproximação.
 
@@ -4494,11 +4397,7 @@ Mas a classificação não ficou muito boa já que 2 indivíduos foram classific
 
 Agora construímos uma árvore utilizando as variáveis explicativas para predizer o pseudo-resíduo. Assim como o Gradiente Boosting para regressão, temos que definir um número máximo de folhas em cada árvore. Aqui vamos limitar a 3 folhas, mas na prática geralmente é um número entre 8 e 32.
 
-<center>
-
-![Figura 7: árvore para predizer o pseudo-resíduo.](tocoGBC3.png){width=80%}
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/tocoGBC3.png)
 
 Em regressão, os valores das folhas representavam os resíduos. Mas em classificação isso é mais complexo. Isso porque a predição está em log(chances) e as folhas são provenientes de probabilidade. Portanto não podemos apenas somá-las para uma nova predição sem alguma transformação. A transformação mais comum por folha é $$\frac{\sum resíduos}{\sum[prob.\ anterior * (1-prob.\ anterior)]}$$
 
@@ -4506,9 +4405,7 @@ Assim, da esquerda pra direita, para primeira folha temos $$\frac{\sum resíduos
 
 > Por enquanto, a probabilidade anterior é a mesma para todos, mas a partir da próxima árvore isso muda.
 
-<center>
-![Figura 8](tocoGBC4.png){width=80%}
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/tocoGBC4.png)
 
 Agora que todas as folhas foram alteradas, podemos somar os resultados escalados pela taxa de aprendizado. Nesse exemplo, vamos usar uma taxa alta, 0.8. Mas geralmente se usa 0.1. E então calculamos o novo $log(chances)=log(chances)\ anterior + taxa\ de\ aprendizado * log(chances)\ obtido\ na\ árvore$. Para primeira observação, por exemplo, fica $log(chances)=0.7+(0.8*1.4)=1.82$  e então convertemos em probabilidade $\frac{e^{1.82}}{1+e^{1.82}} = 0.8606$. Então, note que fizemos progresso, já que o indivíduo em questão ama Troll 2. Antes ele foi classificado corretamente mas com probabilidade 0.7, agora ele foi classificado corretamente mas com probabilidade 0.9.
 
@@ -4544,9 +4441,7 @@ Calculamos os novos pseudo-resíduos que agora serão diferentes para cada obser
 
 Construímos uma segunda árvore agora para prever os novos pseudo-resíduos e fazemos a transformação para log(chances) para cada folha.
 
-<center>
-![Figura 9](tocoGBC5.png){width=80%}
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/tocoGBC5.png)
 
 Combinamos com as árvores anteriores para obter um valor de saída e transformamos em Probabilidade para classificar. Por exemplo, a primeira observação ficaria $log(chances)=0.7+(0.8*1.4)+(0.8*0.6)=2.3$ e então convertemos em probabilidade $\frac{e^{1.82}}{1+e^{1.82}} = 0.9089$. Dessa forma, continuamos construíndo quantas árvores forem necessárias.
 
@@ -4601,7 +4496,7 @@ head(classe)
 gbm.perf(modelo)
 ```
 
-![plot of chunk unnamed-chunk-186](figure/unnamed-chunk-186-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-186-1.png)
 
 ```
 ## [1] 16
@@ -4658,7 +4553,7 @@ Note que o modelo obteve uma precisão razoável de 75,79%.
 
 ---
 
-## *XGBoost* {#link10}
+### *XGBoost* {#link10}
 
 O XGBoost é a abreviação de ***Extreme Gradient Boost***. Ele foi desenvolvido para suportar um grande volume de dados de forma eficiente. Geralmente é 10 vezes mais rápido que o Gradiente Boosting.
 
@@ -4675,16 +4570,11 @@ library(ggplot2)
 ggplot(peso, aes(x=Altura, y=Peso)) + geom_point(lwd=5, colour = "deeppink3") + 
   theme_minimal() + ylim(c(50,90)) + xlim(c(1.3,1.9))
 ```
-
-![plot of chunk unnamed-chunk-187](figure/unnamed-chunk-187-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-187-1.png)
 
 O primeiro passo é fazer uma predição inicial, que pode ser qualquer uma. O *default* é usar 0,5, mas como estamos falando de peso, vamos utilizar a predição inicial "Peso = 70".
 
-<center>
-
-![Figura 1: Predição Inicial](xgb1.png){width=80%}
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb1.png)
 
 Agora precisamos calcular os resíduos (diferença entre o valor real e o valor predito) que vão nos mostrar quão boa é essa predição. 
 
@@ -4707,37 +4597,21 @@ library(dplyr)
 
 Assim como no Gradiente Boosting, o próximo passo é construir uma árvore para predizer os resíduos. Mas o XGBoost utiliza uma árvore de regressão diferente que vamos chamar de árvore XGB. Existem muitas formas de construir uma árvore XGB. Vamos aprender a mais comum. A árvore XGB inicia com uma folha que leva todos os resíduos.
 
-<center>
-
-![Figura 2: Raiz da árvore XGB](xgb2.png){width=80%}
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb2.png)
 
 Em seguida, calculamos um índice de qualidade ou **Índice de similaridade** $$Índice\ Similaridade\ = \frac{(soma\ dos\ resíduos)^2}{número\ de\ resíduos + \lambda} $$ Onde $\lambda$ (lambda) é um parâmetro de regularização, o que significa que tem o objetivo de reduzir a sensibilidade das observações individuais, ou seja, reduzir o sobreajuste. Por enquanto, vamos considerar $\lambda = 0$ porque esse é o valor default. Sendo assim, o Índice de similaridade da raiz é $\frac{(18+6-14+5-10)^2}{5+0}=\frac{5^2}{5}=5$
 
-<center>
-
-![Figura 3: Raiz da árvore XGB](xgb3.png){width=80%}
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb3.png)
 
 Agora vamos ver se conseguimos melhorar esse índice dividindo os resíduos, ou seja, criando uma ramificação. Vamos começar dividindo a variável `Altura` na média entre os dois menores valores, que são $1.4$ e $1.5$, e calculando o Indice para as novas folhas.
 
 > Observe que nas folhas não estarão as alturas e sim os resíduos correspondentes a altura especificada.
 
-<center>
-
-![Figura 4: Dividindo por 'Altura < 1.45?'](xgb4.png){width=80%}
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb4.png)
 
 Agora, precisamos calcular o ganho dessa ramificação para ver o quanto ela foi efetiva. O ganho é calculado da seguinte forma: $$ganho = IS_{folha\ da\ esquerda} + IS_{folha\ da\ direita} - IS_{raiz}$$ Assim, o ganho da ramificação 'Altura<1.45' é $100 + 56.25 - 5 = 151.25$. Vamos fazer esse calculo em todas as ramificações possiveis, Isto é, se temos 5 observações com diferentes alturas, vamos ter 4 ramificações possiveis: 'Altura<1.45', 'Altura<1.55', 'Altura<1.65' e 'Altura<1.75'.
 
-<center>
-
-![Figura 5: Todas as ramificações da raiz](xgb5.png){width=100%}
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb5.png)
 
 Podemos ver que o ganho de usar a ramificação 'Altura<1.55' é maior, portanto é essa que vamos usar. Agora vamos ramificar as folhas da mesma maneira e escolher as que tiverem melhor ganho. 
 
@@ -4745,11 +4619,7 @@ Podemos ver que o ganho de usar a ramificação 'Altura<1.55' é maior, portanto
 
 Nossa árvore XGB final ficou:
 
-<center>
-
-![Figura 6: Árvore XGB final](xgb6.png){width=80%}
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb6.png)
 
 Agora, vamos podar nossa árvore. Fazemos isso porque pode ser que algum nó tenha o ganho muito baixo e por isso não vale a pena estar na árvore. Para decidir se vamos tirar algum nó e, se sim, qual, vamos escolher um valor que será chamado de $\gamma$ (gamma). Em seguida, calculamos a diferença entre o ganho associado ao nó e $\gamma$, se essa diferença for negativa, então removemos o nó.
 
@@ -4763,21 +4633,13 @@ Vamos escolher $\gamma = 10$. Começando sempre dos nós mais profundos para a r
 
 Com isso, nossa árvore XGB ficou:
 
-<center>
-
-![Figura 7: Árvore XGB final podada](xgb7.png){width=80%}
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb7.png)
 
 Note que se tivéssemos escolhido um $\gamma$ muito alto, por exemplo $\gamma = 570$, toda árvore seria podada. É preciso cuidado.
 
 > Agora vamos voltar ao inicio e reconstruir a árvore agora usando $\lambda = 1$ (lembra do $\lambda$? aquele da fórmula do índicador de similaridade :) ). Para facilitar a vizualização, vamos omitir os cálculos. A nova árvore XGB ficou:
 >
-> <center>
->
-> ![Figura 8: Árvore XGB com $\lambda = 1$](xgb8.png){width=100%}
->
-> </center>
+> ![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb8.png)
 >
 > Podemos notar que quando $\lambda > 0$, o índice de similaridade é menor. O que significa que se mantivermos o mesmo $\gamma$, a poda será mais extrema. Por outro lado, deixar $\lambda > 0$ ajuda a previnir sobreajustes.
 
@@ -4785,21 +4647,13 @@ Agora que temos árvore final, vamos calcular os valores de saída das folhas. $
 
 Repare que, como $\lambda = 0$ o valor de saida é uma média aritmética simples entre os resíduos. Mas note que se $\lambda > 0$ e a folha tiver apenas uma observação, isso reduzira a sensibilidade dessa observação individual evitando sobreajuste.
 
-<center>
-
-![Figura 9: Árvore XGB](xgb9.png){width=80%}
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb9.png)
 
 Assim a primeira árvore está completa e, como em Gradient Boosting, fazemos novas predições começando com a predição inicial e somando com o resultado da árvore XGB escalada pela taxa de aprendizado.
 
 > O XGBoost chama a taxa de aprendizado de $\varepsilon$ (eta) e seu valor default é 0.3, que é o que vamos usar.
 
-<center>
-
-![Figura 10: Calculando predição](xgb10.png){width=80%}
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb10.png)
 
 Por exemplo, se a gente pegasse a primeira observação (indivíduo com altura=1.7), seu peso predito seria $predicao\ inicial + \varepsilon*valor\ de\ saida\ da \ árvore\ XGB = 70+0.3*12=73.6$ que é mais perto do seu peso real (que era 88) do que a predição anterior (70). Assim, com as novas predições, os novos resíduos ficaram: 
 
@@ -4974,15 +4828,11 @@ college %>% ggplot(aes(x = Apps, y = Private)) + geom_point(lwd = 5, aes(colour 
   xlab("Pedidos para Ingresso") + ylab("Universidade Privada")
 ```
 
-![plot of chunk unnamed-chunk-196](figure/unnamed-chunk-196-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-196-1.png)
 
 O primeiro passo é fazer uma predição inicial. Essa predição pode ser qualquer valor, como por exemplo a probabilidade de observar universidades públicas no conjunto de dados. Por *default*, essa predição é de 0,5.
 
-<center>
-
-![Figura 11: Predição inicial do XGBoost para o exemplo de classificação.](pred_inicial.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/pred_inicial.png)
 
 Podemos ilustrar essa predição inicial adicionando uma linha horizontal no gráfico que representa as probabilidades de uma universidade ser pública pelo que observamos no conjunto de dados.
 
@@ -5002,7 +4852,7 @@ college %>% ggplot(aes(x = Apps, y = Probabilidade)) +
             xlab("Pedidos para Ingresso") + guides(col = F)
 ```
 
-![plot of chunk unnamed-chunk-197](figure/unnamed-chunk-197-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-197-1.png)
 
 Feita a predição inicial, agora vamos calcular os resíduos e verificar quão boa é essa predição.
 
@@ -5024,11 +4874,7 @@ college
 
 O próximo passo é construir uma árvore para predizer os resíduos. Assim como a árvore XGB para regressão, a árvore XGB para classificação se inicia com apenas uma folha que leva todos os resíduos.
 
-<center>
-
-![Figura 12: Folha com todos os resíduos.](Resíduos_XGB.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/Resíduos_XGB.png)
 
 Agora precisamos calcular o Índice de Similaridade para os resíduos. Porém, como estamos usando XGBoost para classificação, temos uma nova fórmula para ele.
 
@@ -5040,11 +4886,7 @@ Note que, para o nosso exemplo, o numerador do Índice de Similaridade para a fo
 
 $$\left( \sum\limits_{i=1}^{n} \hbox{Resíduo}_i \right)^{2} = (0,5 - 0,5 - 0,5 + 0,5)^{2} = 0 \Rightarrow \hbox{Índice de Similaridade} = 0$$
 
-<center>
-
-![Figura 13: Índice de similaridade para a folha com todos os resíduos.](IS1.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/IS1.png)
 
 Vamos tentar melhorar o Índice dividindo os resíduos em 2 grupos diferentes. Para isso temos que testar todos os possíveis separadores para os dados e escolher o que tiver o maior ganho. Vamos começar com o primeiro: a média entre os 2 menores valores da variável "*Apps*".
 
@@ -5060,11 +4902,7 @@ mean(ordenados[1:2])
 
 Assim, os resíduos que possuem *Apps* < 1889,5 vão para a esquerda, e os com *Apps* > 1889,5 vão para a direita.
 
-<center>
-
-![Figura 14: Divisão dos resíduos por "Apps < 1889,5?"](xgb_1.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb_1.png)
 
 Agora vamos calcular o Índice de Similaridade para as duas folhas. Como estamos construindo nossa primeira árvore, a Probabilidade Prévia para todos os resíduos é a predição da folha inicial (0,5). Para simplificar as contas, vamos utilizar o valor padrão de $\lambda$, $\lambda$ = 0. Contudo, sabemos da regressão que o $\lambda$ reduz o Índice de Similaridade, o que consequentemente diminui o Ganho e assim torna as folhas mais fáceis de serem podadas, o que ajuda a previnir o sobreajuste.
 
@@ -5076,19 +4914,11 @@ Agora podemos calcular o ganho:
 
 $$\hbox{Ganho} = \hbox{IS}_\hbox{folha da esquerda} + \hbox{IS}_\hbox{folha da direita} - \hbox{IS}_{\hbox{raiz}} = 1 + 0,33-0 = 1,33.$$
 
-<center>
-
-![Figura 15: Ganho da divisão dos resíduos por "Apps < 1889,5?"](xgb_2.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb_2.png)
 
 Agora vamos realizar os mesmos cálculos para os próximos 2 separadores: a média entre o segundo e o terceiro valor e a média entre o terceiro e o quarto valor da variável "*Apps*".
 
-<center>
-
-![Figura 16: Ganhos das divisões dos resíduos por  "Apps < 2406,5?" e  "Apps < 2739,5?"](xgb_3.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb_3.png)
 
 Podemos ver que o maior ganho é tanto o da divisão por "Apps < 1889,5?" quanto o da divisão por "Apps < 2739,5?", que deram exatamente iguais. Assim, podemos usar qualquer um dos 2 para ser a raiz da árvore XGB. Vamos ficar com o último. 
 
@@ -5096,11 +4926,7 @@ O próximo passo agora é ramificar a folha da esquerda para darmos continuidade
 
 A árvore XGB fica, então, da seguinte forma:
 
-<center>
-
-![Figura 17: Árvore XGB.](xgb_4.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb_4.png)
 
 Assim, terminamos de construir a árvore XGB. Porém, é importante saber que o XGBoost possui uma forma de determinar um número mínimo de resíduos permitido em cada folha da árvore. Ele faz isso calculando o ***Cover*** das folhas.
 
@@ -5114,19 +4940,11 @@ Calculando o *Cover* das nossas duas últimas folhas, temos que:
 
 - *Cover* da 2ª folha = $0,5 \times (1-0,5) + 0,5 \times (1-0,5) = 0,5$.
 
-<center>
-
-![Figura 18: Cover das últimas folhas.](xgb_5.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb_5.png)
 
 Como o *Cover* de ambas as folhas são menores do que 1, o XGBoost não as permite permanecer na árvore. Logo, vamos removê-las. A árvore fica, então, da seguinte forma:
 
-<center>
-
-![Figura 19: Nova árvore XGB.](xgb_6.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb_6.png)
 
 Calculando agora o *Cover* das duas folhas, obtemos:
 
@@ -5134,19 +4952,11 @@ Calculando agora o *Cover* das duas folhas, obtemos:
 
 - *Cover* da 2ª folha = $0,5 \times (1-0,5) = 0,25$.
 
-<center>
-
-![Figura 20: Cover das últimas folhas.](xgb_7.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb_7.png)
 
 Como o *Cover* de ambas as folhas também são menores do que 1, o XGBoost também não as permite permanecer na árvore. Assim, só nos resta a raiz. Mas isso também é um problema, pois o XGBoost requer árvores que sejam maiores do que apenas a raiz. Dessa forma, vamos fixar o valor mínimo para o *Cover* como 0. Assim podemos permanecer com nossa árvore XGB anterior.
 
-<center>
-
-![Figura 21: Árvore XGB final quando é fixado o valor mínimo para o Cover como 0.](xgb_8.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb_8.png)
 
 > **OBS:** Quando estamos utilizando XGBoost para regressão usamos a seguinte fórmula para o Índice de Similaridade:
 >
@@ -5160,11 +4970,7 @@ Como o *Cover* de ambas as folhas também são menores do que 1, o XGBoost tamb�
 
 Agora vamos entrar na parte de como podar a árvore. Ela é feita exatamente como na regressão, nós podamos com base na diferença entre o **Ganho** associado ao nó e $\gamma$. Para esse exemplo, vamos fixar $\gamma = 0,5$.
 
-<center>
-
-![Figura 22: Diferença entre o Ganho do nó inferior e $\gamma$.](xgb_9.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb_9.png)
 
 Como a diferença resultou em um número positivo, não podamos o nó. Logo, não precisamos calcular essa diferença para o nó raiz e nossa árvore permanece a mesma. Note que se tivéssemos fixado, por exemplo, $\gamma = 1,5$, todos os nós seriam podados e nos restaria apenas a predição inicial. É necessário cuidado na escolha do $\gamma$.
 
@@ -5174,11 +4980,7 @@ $$ \hbox{Valores de Saída} = \frac{\sum\limits_{i=1}^{n} \hbox{Resíduo}_i}{\su
 
 Note que a fórmula é bem parecida com a do Índice de Similaridade, o que muda é apenas o fato de que o numerador não está ao quadrado. Novamente vamos utilizar o valor padrão para $\lambda$, 0.
 
-<center>
-
-![Figura 23: Valores de saída das folhas da árvore XGB.](xgb_10.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb_3.png)
 
 Agora que construímos nossa primeira árvore podemos realizar predições. Assim como no XGBoost para regressão, o XGBoost para classificação faz novas predições começando com a predição inicial e somando com o resultado da árvore XGB escalado pela taxa de aprendizado. Porém, assim como com o Gradiente Boosting para classificação, precisamos converter a predição inicial, que é uma probabilidade, para log(chances). A fórmula para converter probabilidades para chances é dada por:
 
@@ -5190,11 +4992,7 @@ $$log \left( \frac{p}{1-p} \right) = log(\hbox{chances}) $$
 
 Então para a predição inicial de 0,5, temos que $\log \left( \frac{0,5}{1-0,5} \right) = log(1) = 0$. Assim, $log(\hbox{chances}) = 0.$ Agora precisamos adicionar esse valor aos valores de saída da árvore XGB multiplicado pela taxa de aprendizado. Essa taxa é chamada de $\varepsilon$ e seu valor padrão é 0,3, o qual iremos usar.
 
-<center>
-
-![Figura 24: Cálculo das novas predições da árvore XGB.](xgb_11.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb_11.png)
 
 >OBS: O que as folhas retornarão após esse cálculo serão os log(chances). É preciso, em seguida, converter para probabilidade também.
 
@@ -5222,11 +5020,7 @@ Fazendo os cálculos, então, da esquerda para a direita:
 
 Assim, temos as predições da nossa árvore:
 
-<center>
-
-![Figura 25: Predições da árvore XGB.](xgb_12.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/xgb_12.png)
 
 Dessa forma podemos obter novos resíduos utilizando a nova árvore.:
 
@@ -5314,7 +5108,7 @@ hist(renda$X2174, main = "Histograma da variável X2174", xlab = "Variável X217
      ylab = "Frequência", col = "blue")
 ```
 
-![plot of chunk unnamed-chunk-203](figure/unnamed-chunk-203-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-203-1.png)
 
 
 ```r
@@ -5322,7 +5116,7 @@ hist(renda$X0, main = "Histograma da variável X0", xlab = "Variável X0",
      ylab = "Frequência", col = "lightblue")
 ```
 
-![plot of chunk unnamed-chunk-204](figure/unnamed-chunk-204-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-204-1.png)
 
 
 ```r
@@ -5568,11 +5362,11 @@ xgb.plot.tree(model = modelo, trees = 2)
 ## Error in loadNamespace(name): there is no package called 'webshot'
 ```
 
-# Outros Métodos
+## Outros Métodos
 
 Neste capítulo estudaremos alguns métodos não baseados em árvores que também são muito importantes e utilizados em *machine learning*: *Support Vector Machine* (SVM) e *K-Nearest Neighbors* (KNN). Veremos como os modelos funcionam na teoria com alguns exemplos e em seguida iremos implementá-los computacionalmente utilizando a linguagem R.
 
-## *Support Vector Machine (SVM)*{#link14}
+### *Support Vector Machine (SVM)*{#link14}
 
 O *Support Vector Machine* - ou Máquina de Vetores de Suporte - é um algoritmo de aprendizado supervisionado que analisa os dados e os divide em diferentes grupos, de acordo com seus padrões, para assim classificar as observações. É mais utilizado em problemas de classificação, o qual será o maior foco deste capítulo, mas também pode ser utilizado para regressão.
 
@@ -5580,21 +5374,13 @@ O *Support Vector Machine* - ou Máquina de Vetores de Suporte - é um algoritmo
 
 Para entender como esse método funciona, vamos utilizar a seguinte situação: queremos verificar se as vendas de um produto em diferentes mercados foram altas ou baixas baseado nos gastos com publicidade desse produto para TV. Para tal temos a amostra treino abaixo:
 
-<center>
-
-![Figura 1: Gastos com publicidade para TV e vendas de um produto em 16 mercados.](svm1.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/svm1.png)
 
 Podemos observar que os mercados que possuíram um maior investimento em publicidade tiveram maiores vendas, estando naturalmente agrupados mais à direita do gráfico. O objetivo do algoritmo é criar um classificador no formato de um separador, ou seja, um ponto que melhor separe os dados entre os que foram classificados como baixas ou altas vendas, de acordo com os gastos com publicidade.
 
 Esse separador é criado como sendo o ponto médio entre os elementos de cada grupo. Dessa forma, é natural perceber que o melhor separador para a amostra é a média entre o mercado que obteve a maior venda dentre os que tiveram baixas vendas e o mercado que obteve a menor venda dentre os que tiveram altas vendas (as bordas de cada agrupamento).
 
-<center>
-
-![Figura 2: Classificador para os dados baseado nos gastos com publicidade para TV.](svm2.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/svm2.png)
 
 Assim, quando novas amostras chegarem para serem analisadas, podemos classificá-las de acordo com nosso classificador. Se ela tiver à esquerda dele será classificada como vendas baixas e se tiver à direita como vendas altas.
 
@@ -5606,11 +5392,7 @@ Como nosso classificador está no ponto médio entre os dois elementos da borda 
 
 O classificador de margem máxima performa bem em bases onde os elementos estejam bem agrupados, mas ele se torna um classificador falho quando a base possui *outliers*. Por exemplo, se um dos mercados do nosso conjunto treino gastou pouco com publicidade para TV, mas obteve vendas altas, o classificador de margem máxima estaria muito próximo ao agrupamento das vendas baixas.
 
-<center>
-
-![Figura 3: Classificador de margem máxima quando a base de dados possui outliers.](svm3.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/svm3.png)
 
 Dessa forma, novas amostras à direita do classificador seriam classificadas como vendas altas, mesmo que elas estivessem mais próximas ao grupo das vendas baixas. Ou seja, isso implicaria em muitos erros de classificação. 
 
@@ -5668,12 +5450,11 @@ vendas %>% ggplot(aes(x = TV, y = radio, color = sales)) + geom_point(size = 3) 
   ylab("Publicidade para Radio") + scale_color_manual(values = c("blue", "orange"))
 ```
 
-![plot of chunk unnamed-chunk-213](figure/unnamed-chunk-213-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-213-1.png)
 
 Repare que as amostras, assim como anteriormente, estão agrupadas em *clusters*. E, novamente, para escolher o melhor classificador, o algoritmo irá utilizar *cross validation* para determinar qual é a melhor margem suave. Como o problema possui duas variáveis, o *support vector classifier* será uma linha dividindo os dois grupos.
 
-![plot of chunk unnamed-chunk-214](figure/unnamed-chunk-214-1.png)
-
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-214-1.png)
 
 Assim, as novas amostras que estiverem à direita da linha serão classificadas como vendas altas, e as que estiverem à esquerda como vendas baixas. 
 
@@ -5696,7 +5477,7 @@ legend("top", legend = c("Vendas baixas", "Vendas altas"), col = c("orange", "bl
        horiz = T)
 ```
 
-![plot of chunk unnamed-chunk-215](figure/unnamed-chunk-215-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-215-1.png)
 
 Note que, novamente, os dados estão agrupados naturalmente. Quando a base de dados é tridimensional, o classificador de vetor de suporte é um plano e classificamos as novas observações determinando em qual lado do plano elas se encontram.
 
@@ -5745,7 +5526,7 @@ v %>% ggplot(aes(x = TV, y = 0, color = sales)) + geom_point(size = 3) + xlab("P
         panel.background = element_blank())
 ```
 
-![plot of chunk unnamed-chunk-217](figure/unnamed-chunk-217-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-217-1.png)
 
 Utilizar um classificador de vetor de suporte seria inviável nesse caso, visto que onde quer que ele se encontre existiriam muitos erros de classificação. Para esse tipo de situação em que os dados não são linearmente separáveis, que é o mais habitual de se encontrar na realidade, precisamos utilizar *support vector machines*.
 
@@ -5763,11 +5544,11 @@ v %>% ggplot(aes(x = TV, y = TV2, color = sales)) + geom_point(size = 3) + xlab(
   scale_color_manual(values = c("blue", "orange")) + theme_minimal()
 ```
 
-![plot of chunk unnamed-chunk-218](figure/unnamed-chunk-218-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-218-1.png)
 
 Repare que, aumentando a dimensão da nossa base de 1 para 2 com a transformação que eleva os valores da publicidade ao quadrado, a nossa base agora se tornou linearmente separável. Então podemos utilizar um classificador de vetor de suporte no formato de uma linha para separar os dados.
 
-![plot of chunk unnamed-chunk-219](figure/unnamed-chunk-219-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-219-1.png)
 
 Assim, quando uma nova observação chegar, será calculado o valor da sua publicidade para TV ao quadrado e, de acordo com o lugar que esse valor ficar em relação a linha, a observação será classificada como vendas baixas ou vendas altas. E, resumidamente, é dessa forma que o SVM opera para todas as bases de dados.
 
@@ -5817,11 +5598,7 @@ O *support vector machine* para regressão - mais conhecido como *support vector
 
 Vamos supor que queremos prever as vendas de um produto em unidades monetárias (U.M.) em diferentes mercados baseado nos gastos com publicidade para TV (em U.M.) que o mercado teve com esse produto. Para tal, suponha que a amostra abaixo seja nossa amostra de treino.
 
-<center>
-
-![Figura 4: Gastos com publicidade para TV x vendas de um produto.](svr1.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/svr1.png)
 
 Note que agora é necessário termos um eixo para representar a variável de interesse. Podemos reparar também que, em geral, à medida que os gastos com publicidade aumentam, as vendas também aumentam. 
 
@@ -5829,11 +5606,7 @@ Ao invés de encontrar uma linha para separar os dados, o objetivo do SVR é enc
 
 Para definirmos o quanto de erro é aceitável no nosso modelo, utilizamos o parâmetro $\varepsilon$. A figura abaixo apresenta a linha azul que representa a linha de melhor ajuste de acordo com a margem de erro escolhida ($\varepsilon$), representada pelas linhas verdes.
 
-<center>
-
-![Figura 5: Regressor para os dados baseado nos gastos com publicidade para TV.](svr3.png)
-
-</center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/svr3.png)
 
 O algoritmo ajusta o modelo da melhor forma possível, mas ainda assim alguns pontos ainda ficam fora da margem de erro. Para definirmos a tolerância que o algoritmo deve ter desse número de pontos que ficam fora da margem utilizamos o parâmetro *c*. Conforme *c* aumenta, a tolerância do número de pontos também aumenta, e quando *c* é pequeno a tolerância também fica pequena. 
 
@@ -5883,7 +5656,7 @@ ggplot(data = treino, aes(x = qsec, y = wt, color = am)) +
   theme_minimal()
 ```
 
-![plot of chunk unnamed-chunk-221](figure/unnamed-chunk-221-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-221-1.png)
 
 Parece ser possível separar as observações em dois grupos, manual e automático, apenas com uma linha. Vamos tentar treinar um modelo de **svm linear** então. Para isso, utilizaremos a função `svm()`.
 
@@ -5926,7 +5699,7 @@ Os principais argumentos dessa função são:
 plot(svmfit, select(treino, am, qsec, wt), col=c("cornflowerblue", "darkred"))
 ```
 
-![plot of chunk unnamed-chunk-223](figure/unnamed-chunk-223-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-223-1.png)
 
 As observações em vermelho, são as rotuladas como manuais, e as pretas como automaticas. 
 
@@ -6063,7 +5836,7 @@ mean(predicao == teste$am)
 
 Agora, observe o gráfico novamente
 
-![plot of chunk unnamed-chunk-227](figure/unnamed-chunk-227-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-227-1.png)
 
 Será que se usarmos uma curva no lugar de uma reta para separar os grupos, teriamos um modelo melhor? Vamos treinar um modelo usando o kernel **polinomial**.
 
@@ -6101,7 +5874,7 @@ plot( svmfit.p, select(treino, am, wt, qsec),
       col=c("cornflowerblue", "darkred"))
 ```
 
-![plot of chunk unnamed-chunk-229](figure/unnamed-chunk-229-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-229-1.png)
 
 Da mesma forma, podemos usar a função `tune` para testar mais de um valor em cada parâmetro.
 
@@ -6188,7 +5961,7 @@ mean(predicao == teste$am)
 
 Observe agora a distribuição das variáveis `mpg` e `qsec`
 
-![plot of chunk unnamed-chunk-232](figure/unnamed-chunk-232-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-232-1.png)
 
 Vamos treinar um modelo com kernel **radial** utilizando elas
 
@@ -6220,7 +5993,7 @@ plot(svmfit.r, select(treino, am, qsec, mpg),
       col=c("cornflowerblue", "darkred"))
 ```
 
-![plot of chunk unnamed-chunk-233](figure/unnamed-chunk-233-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-233-1.png)
 
 Para o modelo com kernel radial, precisamos informar apenas o parâmetro `gamma` (O mesmo $\gamma$ da fórmula $K(x,y) = e^{-\gamma||x-y||^{2}}$ ). Vamos testar com outros valores de parâmetros
 
@@ -6323,7 +6096,7 @@ ggplot(data = treino, aes(x = hp, y = wt, color = am)) +
   theme_minimal()
 ```
 
-![plot of chunk unnamed-chunk-237](figure/unnamed-chunk-237-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-237-1.png)
 
 Também podemos criar modelos de SVM utilizando a função `ksvm` presente no pacote 
 
@@ -6461,7 +6234,7 @@ kernfit.p
 plot(kernfit.p, data = select(treino, am, qsec, wt))
 ```
 
-![plot of chunk unnamed-chunk-241](figure/unnamed-chunk-241-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-241-1.png)
 
 a avaliação é feita da mesma forma que as anteriores:
 As observações marcadas com um triângulo são as rotuladas com câmbio automático, enquanto as marcadas com círculo são as de câmbio manual.
@@ -6500,7 +6273,7 @@ kernfit.r
 plot(kernfit.r, data = select(treino, am, qsec, mpg))
 ```
 
-![plot of chunk unnamed-chunk-242](figure/unnamed-chunk-242-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-242-1.png)
 
 ### SVM com a função `train()` do pacote `caret`
 
@@ -6568,7 +6341,7 @@ Aqui, ele testou 15 valores para `C` e concluiu que a melhor precisão ocorria q
 plot(modelfit.l)
 ```
 
-![plot of chunk unnamed-chunk-245](figure/unnamed-chunk-245-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-245-1.png)
 
 Aqui podemos observar a distribuição da precisão para cada valor de custo que testamos.
 
@@ -6672,7 +6445,7 @@ e então ele utiliza a combinação que possui a melhor precisão.
 plot(modelfit.p)
 ```
 
-![plot of chunk unnamed-chunk-248](figure/unnamed-chunk-248-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-248-1.png)
 
 O plot nos mostra a distribuição da precisão em cada combinação de custo, *degree* e *scale*. Por exemplo, podemos ver que usando $degree=1$ (Primeiro quadro), $scale=0.1$ (eixo x/abscissa) e $C=2$ (linha vermelha) alcançamos uma precisão em torno de $0.88$ (eixo y/ordenadas).
 
@@ -6785,7 +6558,7 @@ modelfit.r
 plot(modelfit.r)
 ```
 
-![plot of chunk unnamed-chunk-252](figure/unnamed-chunk-252-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-252-1.png)
 
 Podemos ver aqui um **resumo dos argumentos equivalentes** em cada função e seus valores *default*. A primeira nomeclatura é referente as [fórmulas apresentadas](#link14).
 
@@ -6807,7 +6580,7 @@ Podemos ver aqui um **resumo dos argumentos equivalentes** em cada função e se
 
 ---
 
-## *K-Nearest Neighbors (KNN)*
+### *K-Nearest Neighbors (KNN)*
 
 O método *K-Nearest Neighbors (KNN)* - K vizinhos mais próximos - já foi brevemente comentado neste material no capítulo de pré-processamento, com o objetivo de [tratar NA's](#link15) em uma base de dados. Agora veremos como utilizá-lo para problemas de *machine learning* de classificação e regressão. Veremos os detalhes de como o método funciona para ambos os casos e duas formas de implementá-lo: utilizando funções do pacote `FNN` e a função `train()` do pacote `caret`.
 
@@ -6887,7 +6660,7 @@ ggplot(base, aes(x = RestBP, y = Chol, color = AHD)) + geom_point(size = 3) + th
                         labels = c("Não", "Sim", "Desconhecido"))
 ```
 
-![plot of chunk unnamed-chunk-255](figure/unnamed-chunk-255-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-255-1.png)
 
 O primeiro passo é escolher um valor para o *k*. Como a predição será feita com base na moda das *k* classificações mais próximas da amostra, é recomendado escolher um *k* ímpar, para evitar algum possível empate. Vamos utilizar *k* = 3.
 
@@ -6943,7 +6716,7 @@ ggplot(base, aes(x = RestBP, y = Chol, color = AHD)) + geom_point(size = 3) +
                         labels = c("Não", "Sim", "Desconhecido"))
 ```
 
-![plot of chunk unnamed-chunk-257](figure/unnamed-chunk-257-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-257-1.png)
 
 
 Logo, como as 3 observações são classificadas como "Não" para a variável de interesse, imputamos essa classificação à observação que queremos prever.
@@ -7010,7 +6783,7 @@ ggplot(base, aes(x = RestBP, y = Chol, color = AHD)) + geom_point(size = 3) +
                         labels = c("Não", "Sim", "Desconhecido"))
 ```
 
-![plot of chunk unnamed-chunk-260](figure/unnamed-chunk-260-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-260-1.png)
 
 Como 2 das 3 observações são classificadas como "Não", a observação 9 recebe a classificação "Não".
 
@@ -7073,7 +6846,7 @@ ggplot(base, aes(x = RestBP, y = Chol, color = AHD)) + geom_point(size = 3) +
                         labels = c("Não", "Sim", "Desconhecido"))
 ```
 
-![plot of chunk unnamed-chunk-263](figure/unnamed-chunk-263-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-263-1.png)
 
 Então a observação recebe a classificação "Sim", visto que 2 das 3 observações mais próximas à ela são classificadas como "Sim".
 
@@ -7126,7 +6899,7 @@ ggplot(treino, aes(x=eruptions, y=waiting)) +
   geom_point() + theme_minimal()
 ```
 
-![plot of chunk unnamed-chunk-266](figure/unnamed-chunk-266-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-266-1.png)
 
 Suponha que obtivemos uma nova observação cujo tempo de erupção foi de $3.2$, indicado pela linha vermelha.
 
@@ -7137,7 +6910,7 @@ ggplot(treino, aes(x=eruptions, y=waiting)) +
   geom_vline(xintercept= 3.2, colour="red") 
 ```
 
-![plot of chunk unnamed-chunk-267](figure/unnamed-chunk-267-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-267-1.png)
 
 Assim como em classificação, a ideia do KNN é estimar o valor pela média das sobservações menos distantes. Essa distância pode ser obtida pela método Euclidiano, de Manhattan ou ainda outro. O mais comum é o Euclidiano ($\operatorname{d}(p,q) = \sqrt{\sum\limits_{i=1}^{n} (p_i-q_i)^{2}}$) que é o que usaremos.
 
@@ -7177,7 +6950,7 @@ ggplot(treino, aes(x=eruptions, y=waiting)) +
            size = .5, alpha=0.5) 
 ```
 
-![plot of chunk unnamed-chunk-269](figure/unnamed-chunk-269-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-269-1.png)
 
 Poderiamos usar um k=10, nesse caso, teriamos
 
@@ -7219,7 +6992,7 @@ ggplot(treino, aes(x=eruptions, y=waiting)) +
            size = .5, alpha=0.5) + theme_minimal()
 ```
 
-![plot of chunk unnamed-chunk-270](figure/unnamed-chunk-270-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-270-1.png)
 
 Ou ainda, um k=190
 
@@ -7257,7 +7030,7 @@ ggplot(treino, aes(x=eruptions, y=waiting)) +
            size = .5, alpha=0.5) 
 ```
 
-![plot of chunk unnamed-chunk-271](figure/unnamed-chunk-271-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-271-1.png)
 
 Para bases com mais de uma variável explicativa, o cálculo da distância é feito da mesma forma assim como foi mostrado na parte de classificação.
 
@@ -8380,7 +8153,7 @@ Podemos alterar o critério de escolha do k adicionando o argumento `metric="MAE
 plot(modelo)
 ```
 
-![plot of chunk unnamed-chunk-291](figure/unnamed-chunk-291-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-291-1.png)
 
 Como podemos ver, k=5 obteve a menor raiz do erro quadrático médio, portanto foi o k escolhido.
 
@@ -8398,7 +8171,7 @@ postResample(predicao,teste$price)
 
 ---
 
-## Modelos Lineares
+### Modelos Lineares
 
 Modelos lineares, também conhecido como regressão linear, é um método estatístico que utiliza a relação existente entre duas ou mais variáveis de modo que uma delas pode ser prevista (explicada) através da outra. Essa relação entre as variáveis deve ser aproximadamente linear para que o modelo possa ser aplicado.
 
@@ -8431,7 +8204,7 @@ cloud(Venda~Prop_outros_meios*Prop_nacional, data = vendas,
       zlab = "Vendas", main = "Vendas de 40 Empresas baseado nos Gastos com Propagandas")
 ```
 
-![plot of chunk unnamed-chunk-294](figure/unnamed-chunk-294-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-294-1.png)
 
 Podemos observar que há uma relação positiva e aproximadamente linear entre as vendas e os gastos com propagandas na mídia nacional e em outros meios. Ou seja, quanto maior os gastos com propaganda da empresa, maior tende a ser o valor das suas vendas. Sendo assim, podemos propor o seguinte modelo para os dados:
 
@@ -8503,11 +8276,8 @@ summary(modelo)
 
 Vamos ver o que cada informação liberada por essa função representa.
 
-<center>
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/lm1.png)
 
-![Figura 1: Saída da função summary - Residuals.](lm1.png)
-
-</center>
 
 Em *Residuals* são apresentadas medidas estatísticas sobre os resíduos do modelo: o mínimo, o 1º quartil, a mediana, o 3º quartil e o máximo. Os resíduos são as diferenças entre os valores estimados das vendas das empresas pelo modelo e os valores reais delas.
 
@@ -8516,18 +8286,18 @@ Em *Residuals* são apresentadas medidas estatísticas sobre os resíduos do mod
 boxplot(modelo$residuals, col = "lightblue", horizontal = T, xlab = "Resíduos")
 ```
 
-![plot of chunk unnamed-chunk-297](figure/unnamed-chunk-297-1.png)
+![tela_0]({{ site.url }}/assets/python/courses/machine_learning/06/images/unnamed-chunk-297-1.png)
 
 
 ### Modelos lineares com a função `train()`
 
 ---
 
-## Modelos Lineares Generalizados
+### Modelos Lineares Generalizados
 
 ---
 
-# Referências{#link13}
+## Referências{#link13}
 
 JAMES, G.; Witten, D.; Hastie, T.; TIBSHIRANI, R. **An Introduction to Statistical Learning: with applications in R**. New York: Springer, 2013.
 
@@ -8541,9 +8311,9 @@ R Core Team (2019). R: A language and environment for statistical computing. R F
 
 ---
 
-# Apêndice{#link9}
+## Apêndice{#link9}
 
-## Outras Medidas da Matriz de Confusão
+### Outras Medidas da Matriz de Confusão
 
 No capítulo de avaliação de preditores introduzimos a [matriz de confusão](#link2) e as medidas de avaliação mais utilizadas: sensibilidade, especificidade e precisão. Vimos também como construí-la de forma rápida e prática com a função confusionMatrix() do pacote *caret*. Porém, além das 3 medidas mais utilizadas, a função também libera algumas outras, que explicaremos como elas são calculadas a seguir.
 
