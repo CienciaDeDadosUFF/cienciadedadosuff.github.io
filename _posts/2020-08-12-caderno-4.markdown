@@ -538,3 +538,9 @@ Em azul temos uma amostra de tamanho 1 e em vermelho, 25. Veja que os dados fica
 $\frac{(n - 1)S^2}{\sigma^2} \sim X^2_{n-1}$
 
 Esse resultado será muito importante para os próximos cadernos, quando trataremos do Intervalo de Confiança e Teste de Hipótese para variância.
+
+## Referências
+
+FARIAS, A. M. L. KUBRUSLY, J. SOUZA, M.A.O. **Probabilidade e Variáveis Aleatórias Unidimensionais.** Departamento de Estatística. Universidade Federal Fluminense.
+Velarde, L. G. C. CAVALIERE, Y. F. **Apostila Inferência Estatística**. Departamento de Estatística. Universidade Federal Fluminense
+FARIAS, A. M. L. **Apostila de Estatística II**. Departamento de Estatística. 2017. Universidade Federal Fluminense.

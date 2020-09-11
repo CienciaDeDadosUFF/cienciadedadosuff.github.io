@@ -555,3 +555,9 @@ variancia_int(df_homens['Age'], 0.05)
     
 
 Assim, podemos concluir que com 95% de confiança o intervalo ${[108,9518; 134,5924]}$ contém o verdadeiro valor da variância dos homens dessa população alvo.
+
+
+## Referências
+
+FARIAS, A. M. L. Apostila de Estatística II. Departamento de Estatística. 2017. Universidade Federal Fluminense.
+Velarde, L. G. C. CAVALIERE, Y. F. Apostila Inferência Estatística. Departamento de Estatística. Universidade Federal Fluminense
