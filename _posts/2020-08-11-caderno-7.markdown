@@ -37,15 +37,15 @@ from scipy.stats import chi2_contingency
 Teste de Levene é usado para testar se k amostras foram coletadas de populações que possuem mesma variância. As hipóteses do teste são:
 
 
- 
+<math> 
 $H_{0} : \sigma^{2}_{1} = \sigma^{2}_{2} = \ldots = \sigma^{2}_{k}$
+</math>
 
-    
- 
 vs
 
- 
+<math>
 $H_{1} : \sigma^{2}_{i} \neq \sigma^{2}_{j}$ para algum $i \neq j, j = 1,2, \ldots,k$
+</math>
 
 Ou seja, igualdade entre as variâncias populacionais contra a alternativa de que nem todas as variâncias são iguais. 
 Ele é o teste mais robusto contra falta de normalidade dos dados e sua estatística de teste segue com uma distribuição F sob $H_{0}$:
@@ -56,9 +56,10 @@ Ele é o teste mais robusto contra falta de normalidade dos dados e sua estatís
 $L = \frac{(n-k)\sum_{i=1}^{k}n_{i}(\bar{Z_{i.}}-\bar{Z_{..}})^{2}}{(k-1)\sum_{i=1}^{k}\sum_{j=1}^{n_{i}}(Z_{ij}-\bar{Z_{i.}})^{2}} \sim F_{k-1,n-k}$
 
 em que 
- 
-$Z_{ij}=\left | X_{i,j} - \bar{X}_{i.} \right |$
 
+<math>
+$Z_{ij}=\left | X_{i,j} - \bar{X}_{i.} \right |$
+</math>
 é o desvio absoluto dos $X_{ij}$ em relação à média de cada grupo. Já
     
  
@@ -67,7 +68,7 @@ $\bar{Z_{i.}}=\sum_{j=1}^{n_{i}}Z_{ij}$
 é a média dos $Z_{i,j}$ no grupo i. E
 
  
-$\bar{Z_{..}}=\frac{1}{n}\sum_{i=1}^{k}\sum_{j=1}^{n_{i}}Z_{ij}$
+<math>$\bar{Z_{..}}=\frac{1}{n}\sum_{i=1}^{k}\sum_{j=1}^{n_{i}}Z_{ij}$</math>
 
 é a média geral dos $Z_{ij}$
 
@@ -75,7 +76,7 @@ $\bar{Z_{..}}=\frac{1}{n}\sum_{i=1}^{k}\sum_{j=1}^{n_{i}}Z_{ij}$
 
 
 O p-valor é calculado da forma:
- 
+
 $p-valor= P(F>L_{obs}\mid H_{0})$
 
 
@@ -95,10 +96,6 @@ df = pd.read_csv('Movie-Ratings.csv')
 df.head()
 ```
 
-
-
-
-<div>
 <style scoped>
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -112,6 +109,7 @@ df.head()
         text-align: right;
     }
 </style>
+
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -172,21 +170,23 @@ df.head()
     </tr>
   </tbody>
 </table>
-</div>
 
 
 
 **Exemplo 1**: Deseja-se saber se a variabilidade das notas dos críticos do site Rotten Tomatoes são `iguais` nos filmes dos gêneros **Comédia, Ação, Aventura e Drama**, ao nível de significância de `5%`.
 
- 
+
+<math>
 $H_{0} : \sigma^{2}_{Ação} = \sigma^{2}_{Aventura} = \sigma^{2}_{Comédia} = \sigma^{2}_{Drama}$
+</math>
 
     
  
 vs
 
- 
+<math>
 $H_{1} : \sigma^{2}_{i} \neq \sigma^{2}_{j}$ para algum $i \neq j, \space\space\space    onde \space i,j = {Ação,Aventura,Comédia,Drama}$
+</math>
 
 
 
@@ -222,16 +222,17 @@ com a hipótese alternativa sendo que pelo menos uma das médias é considerada 
 
 A estatística de teste é dada por:
 
- 
+<math>
 $F = \frac{\frac{SQTR}{k-1}}{\frac{SQE}{n-k}} \sim F_{k-1,n-k}$
+</math>
 
 onde 
  
-$SQTR = \sum_{i}n_{i}(\bar{x_{i}}-\bar{x})^{2}$
+<math>$SQTR = \sum_{i}n_{i}(\bar{x_{i}}-\bar{x})^{2}$</math>
     
 e
  
-$SQE = \sum_{i}\sum_{j}(\bar{x}_{ij}-\bar{x}_{i})^2$
+<math>$SQE = \sum_{i}\sum_{j}(\bar{x}_{ij}-\bar{x}_{i})^2$</math>
 
 O p-valor é calculado da forma:
 
@@ -252,9 +253,7 @@ Vamos exemplificar a utilização do teste com o banco de dados de avaliações 
  
 $H_{0} : \mu_{Ação} = \mu_{Comédia} = \mu_{Drama} = \mu_{Aventura}$
 
- 
 vs
-
  
 $H_{1} : \mu_{i} \neq \mu_{j}$ para algum $i \neq j, \space\space\space    onde \space i,j = {Ação,Aventura,Comédia,Drama}$
 
@@ -376,10 +375,6 @@ df_horror = df[df["Genre"] == 'Horror']
 df_horror.head()
 ```
 
-
-
-
-<div>
 <style scoped>
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -453,10 +448,6 @@ df_horror.head()
     </tr>
   </tbody>
 </table>
-</div>
-
-
-
 
 ```python
 ss.kstest(df_horror['Audience Ratings %'], "norm", args=[np.mean(df_horror['Audience Ratings %']),np.std(df_horror['Audience Ratings %'])])
@@ -520,8 +511,7 @@ Onde $ p_{i,A}; i = 1, 2, · · · , k $ são as proporções da hipótese nula,
 
 Sob $ H_{0} $:
 
- 
-    $X^2 = \sum_{i = 1}^{k}\frac{(o_{i} - e_{i})^2}{e_{i}} \sim X^2_{k-1}$
+$X^2 = \sum_{i = 1}^{k}\frac{(o_{i} - e_{i})^2}{e_{i}} \sim X^2_{k-1}$
 
 > Onde:
 - $ o_{i} :$ é o número de vezes que a categoria $ i $ é observada na amostra
@@ -529,8 +519,9 @@ Sob $ H_{0} $:
 
 E o p-valor é calculado da seguinte forma:
 
- 
+<math>
 $p-valor = P(X^2_{k-1} \geqslant X^2 \ | \ H_{0})$
+</math>
 
 > Para o teste de Aderência usaremos a função `chisquare` da biblioteca **Scipy**, cujos argumentos de entrada são
 - `f_obs`: amostra observada
@@ -605,7 +596,7 @@ vs
  
 $ H_{1} : $ pelo menos uma das igualdades não é valida
 
-Para $ e_{ij} = n_{j}*p_{i} $ e sob $ H_{o} $ temos que:
+Para <math>$ e_{ij} = n_{j}*p_{i} $ e sob $H_{o}$</math> temos que:
 
  
 $X^2 = \sum_{i = 1}^{L}\sum_{j = 1}^{C}\frac{(o_{ij - e_{ij}})^2}{e_{ij}} \sim X^2_{(L - 1)*(C - 1)}$
@@ -619,7 +610,7 @@ $X^2 = \sum_{i = 1}^{L}\sum_{j = 1}^{C}\frac{(o_{ij - e_{ij}})^2}{e_{ij}} \sim X
 E o p-valor é calculado da seguinte forma:
 
  
-$p-valor = P\left ( X^2 \geqslant X^2_{(L - 1)*(C - 1)} \ | \ H_{0} \right )$
+<math>$p-valor = P\left ( X^2 \geqslant X^2_{(L - 1)*(C - 1)} \ | \ H_{0} \right )$</math>
 
 > Para o teste de Homogeneidade usaremos a função `chi2_contingency` da biblioteca **Scipy**, cujo argumento de entrada é
 - `observed`: tabela de contingência
@@ -645,19 +636,21 @@ Para mais informações sobre a função [clique aqui](https://docs.scipy.org/do
     <td>Média</td>
     <td>Alta</td>
   </tr>
-        <thead>
+  </thead>
   <tr>
     <td>Tipo I</td>
     <td>51</td>
     <td>33</td>
     <td>16</td>
   </tr>
+  <thead>
   <tr>
     <td>Tipo II</td>
     <td>58</td>
     <td>29</td>
     <td>13</td>
   </tr>
+  </thead>
 </tbody>
 </table>
 
@@ -707,7 +700,7 @@ $ H_{1} : $ pelo menos uma das igualdades não é valida
 
 Onde $ p_{i\bigcap j} $ é a probabilidade do indivíduo ser classificado como $ i $ e $ j $ simultaneamente e $ p_{i.} $ e $ p_{.j} $ as probabilidades dos indivíduos serem classificados como $ i $ ou $ j $ de forma separada, respectivamente.
 
-Para $ e_{ij} = n*p_{i.}*p_{.j} $ e sob $ H_{o} $ temos que:
+Para <math>$ e_{ij} = n*p_{i.}*p_{.j} $ </math> e sob <math>$ H_{o} $</math> temos que:
 
  
 $X^2 = \sum_{i = 1}^{L}\sum_{j = 1}^{C}\frac{(o_{ij - e_{ij}})^2}{e_{ij}} \sim X^2_{(L - 1)*(C - 1)}$
@@ -715,7 +708,7 @@ $X^2 = \sum_{i = 1}^{L}\sum_{j = 1}^{C}\frac{(o_{ij - e_{ij}})^2}{e_{ij}} \sim X
 E o p-valor é calculado da seguinte forma:
 
  
-$p-valor = P\left ( X^2 \geqslant X^2_{(L - 1)*(C - 1)} \ | \ H_{0} \right )$
+<math>$p-valor = P\left ( X^2 \geqslant X^2_{(L - 1)*(C - 1)} \ | \ H_{0} \right )$</math>
 
 Todo desenvolvimento do cálculo será igual ao teste de Homogeneidade, mas a interpretação do problema será diferente, assim como as hipóteses.
 
@@ -738,7 +731,9 @@ Todo desenvolvimento do cálculo será igual ao teste de Homogeneidade, mas a in
     <td>Média</td>
     <td>Alta</td>
   </tr>
-        <thead>
+  </thead>
+</tbody>
+<tbody>
   <tr>
     <td>Tipo III</td>
     <td>38</td>
@@ -787,7 +782,6 @@ chi2_contingency(tabela_cancer)
 Como p-valor = 0.0879 é maior que o nível de significância, não rejeitamos a hipótese nula. Ou seja, há evidências de que "Tipo de câncer" e "Eficacia da quimioterapia" são variáveis independentes.
 
 ### Referências
-
 
 - Casella, G. e Berger, R. L. **Inferência estatística**. Cengage Learning, 2010.
 - Pauli Virtanen, Ralf Gommers, Travis E. Oliphant, Matt Haberland, Tyler Reddy, David Cournapeau, Evgeni Burovski, Pearu Peterson, Warren Weckesser, Jonathan Bright, Stéfan J. van der Walt, Matthew Brett, Joshua Wilson, K. Jarrod Millman, Nikolay Mayorov, Andrew R. J. Nelson, Eric Jones, Robert Kern, Eric Larson, CJ Carey, İlhan Polat, Yu Feng, Eric W. Moore, Jake VanderPlas, Denis Laxalde, Josef Perktold, Robert Cimrman, Ian Henriksen, E.A. Quintero, Charles R Harris, Anne M. Archibald, Antônio H. Ribeiro, Fabian Pedregosa, Paul van Mulbregt, and SciPy 1.0 Contributors. (2020) **SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python.** Nature Methods, in press.
