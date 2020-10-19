@@ -38,7 +38,9 @@ title: Cursos R
                     {% endif %}
                 {% endif %}
             {% endfor %}
-        </div>
+            {% if postcategory == category[0] %}
+                </div>
+            {% endif %}
     {% endfor %}
     </div>
 </div>

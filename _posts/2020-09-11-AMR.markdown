@@ -2,9 +2,10 @@
 layout: post
 title: "APRENDIZADO DE MÁQUINA"
 date: 2020-09-09 23:07:41 
-lang: r 
-category: Aprendizado de Máquinas
+lang: r
+category: "Aprendizado de Máquinas"
 description: "Criação: Maqueise Pinheiro e Thaís Machado. Orientação: Douglas Rodrigues (UFF) e Karina Yaginuma (UFF). Colaboradores: Gabriel Miranda e Thiago Augusto."
+published: true
 ---
 
 
@@ -597,7 +598,7 @@ A matriz de confusão é a matriz de comparação feita após a predição, onde
 *Exemplo:* A matriz de confusão para o problema de predição dos e-mails em spam ou não spam fica da seguinta forma:
 
 
-![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/Matriz de Confusão Vazia.png)
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/Matriz de Confusao Vazia.png)
 
 
 Onde na primeira coluna se encontram os elementos que possuem a característica de interesse (os e-mails que são spam), e, respectivamente nas linhas, os que foram corretamente identificados - o qual são chamados de **Verdadeiros Positivos (VP)** - e os que foram erroneamente identificados - os **Falsos Negativos (FP)**. Na segunda coluna se encontram os elementos que não possuem a característica de interesse (os e-mails que são ham) e, respectivamente nas linhas, os que foram erroneamente identificados - o qual são chamados de **Falsos Positivos (FN)** - e os que foram corretamente identificados - os **Verdadeiros Negativos (VN)**.
@@ -605,7 +606,7 @@ Onde na primeira coluna se encontram os elementos que possuem a característica 
 Com as devidas classificações a matriz de confusão fica da seguinte forma:
 
 
-![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/Matriz de Confusão Preenchida.png)
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/Matriz de Confusao Preenchida.png)
 
 
 
@@ -4874,7 +4875,7 @@ college
 
 O próximo passo é construir uma árvore para predizer os resíduos. Assim como a árvore XGB para regressão, a árvore XGB para classificação se inicia com apenas uma folha que leva todos os resíduos.
 
-![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/Resíduos_XGB.png)
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/Residuos_XGB.png)
 
 Agora precisamos calcular o Índice de Similaridade para os resíduos. Porém, como estamos usando XGBoost para classificação, temos uma nova fórmula para ele.
 

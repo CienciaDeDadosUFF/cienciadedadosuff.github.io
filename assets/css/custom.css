@@ -75,9 +75,8 @@ main img {
     background-color: white;
 }
 
-mjx-container {
+math {
     overflow-x: auto;
-    display: block;
 }
 
 @media(max-width: 800px){

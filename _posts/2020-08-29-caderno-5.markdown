@@ -60,14 +60,14 @@ Seja  $X_{1}, X_{2}, \ldots, X_{n}$ uma amostra aleatória proveniente de uma po
     
  Logo,
 
-
-$P\left ( -t_{\alpha/2;n-1} \leqslant T \leqslant t_{\alpha/2;n-1} \right ) = 1 - \alpha \\ \\ \\ P\left ( -t_{\alpha/2;n-1} \leqslant \frac{\overline{X} - \mu}{\frac{S}{\sqrt{n}}} \leqslant t_{\alpha/2;n-1}\right ) = 1 - \alpha \\ \\ \\ P\left ( \overline{X} -t_{\alpha/2;n-1}*\frac{S}{\sqrt{n}} \leqslant \mu \leqslant \overline{X} + t_{\alpha/2;n-1}*\frac{S}{\sqrt{n}}\right ) = 1 - \alpha \\ \\ \\ \left [ \overline{X} -t_{\alpha/2;n-1}*\frac{S}{\sqrt{n}}; \overline{X} +t_{\alpha/2;n-1}*\frac{S}{\sqrt{n}} \right ]$
+<math display="block">
+$P\left ( -t_{\alpha/2;n-1} \leqslant T \leqslant t_{\alpha/2;n-1} \right ) = 1 - \alpha P\left ( -t_{\alpha/2;n-1} \leqslant \frac{\overline{X} - \mu}{\frac{S}{\sqrt{n}}} \leqslant t_{\alpha/2;n-1}\right ) = 1 - \alpha P\left ( \overline{X} -t_{\alpha/2;n-1}*\frac{S}{\sqrt{n}} \leqslant \mu \leqslant \overline{X} + t_{\alpha/2;n-1}*\frac{S}{\sqrt{n}}\right ) = 1 - \alpha \left [ \overline{X} -t_{\alpha/2;n-1}*\frac{S}{\sqrt{n}}; \overline{X} +t_{\alpha/2;n-1}*\frac{S}{\sqrt{n}} \right ]$
+</math>
 
 
 Ou seja, o intervalo de confiança para µ de nível de confiança 1 − α é:
 
-
-    $\left [ \bar{X}-t_{n-1;\alpha /2}\cdot \frac{S}{\sqrt{n}};\bar{X}+t_{n-1;\alpha /2}\cdot \frac{S}{\sqrt{n}} \right ]$
+$\left [ \bar{X}-t_{n-1;\alpha /2}\cdot \frac{S}{\sqrt{n}};\bar{X}+t_{n-1;\alpha /2}\cdot \frac{S}{\sqrt{n}} \right ]$
 
 onde $t_{n−1, α/2}$ é o valor crítico da distribuição t-Student com n−1 graus de liberdade que deixa área $\frac{α}{2}$ acima dele.
 
@@ -472,9 +472,9 @@ Seja ${X_{1}, X_{2}, ..., X_{n}}$ uma amostra aleatórial proveniente de uma pop
 $\frac{\hat{p} - p}{\sqrt{\frac{p(1-p)}{n}}} \sim N(0, 1)$
 
 Logo,
-
-
-$\alpha \ \in \ (0, 1) \therefore P\left ( -z_{\alpha /2} \leqslant \frac{\hat{p} - p}{\sqrt{\frac{p(1-p)}{n}}} \leqslant z_{\alpha /2}\right ) = 1 - \alpha \\\ P\left ( \hat{p} - z_{\alpha /2}\sqrt{\frac{p(1-p)}{n}} \leqslant p \leqslant \hat{p}+z_{\alpha /2}\sqrt{\frac{p(1-p)}{n}} \right ) = 1 - \alpha \therefore \\\ P\left ( \hat{p} - z_{\alpha /2}\sqrt{\frac{p(1-p)}{n}} \leqslant p \leqslant \hat{p}+z_{\alpha /2}\sqrt{\frac{p(1-p)}{n}} \right ) = 1 - \alpha \therefore \\\ Logo, \ IC:\left [ \hat{p} - z_{\alpha /2}\sqrt{\frac{p(1-p)}{n}}; \hat{p} + z_{\alpha /2}\sqrt{\frac{p(1-p)}{n}} \right ]$ 
+<math display="block">
+$\alpha \ \in \ (0, 1) \therefore P\left ( -z_{\alpha /2} \\ \leqslant \frac{\hat{p} - p}{\sqrt{\frac{p(1-p)}{n}}} \leqslant z_{\alpha /2}\right ) = 1 - \alpha \\\ P\left ( \hat{p} - z_{\alpha /2}\sqrt{\frac{p(1-p)}{n}} \leqslant p \leqslant \hat{p}+z_{\alpha /2}\sqrt{\frac{p(1-p)}{n}} \right ) = 1 - \alpha \therefore \\\ P\left ( \hat{p} - z_{\alpha /2}\sqrt{\frac{p(1-p)}{n}} \leqslant p \leqslant \hat{p}+z_{\alpha /2}\sqrt{\frac{p(1-p)}{n}} \right ) = 1 - \alpha \therefore \\\ Logo, \ IC:\left [ \hat{p} - z_{\alpha /2}\sqrt{\frac{p(1-p)}{n}}; \hat{p} + z_{\alpha /2}\sqrt{\frac{p(1-p)}{n}} \right ]$ 
+</math>
 
 Como não sabemos o parâmetro populacional `p`, temos duas opções para substitui-lo no Intervalo de Confiança:
 
@@ -520,8 +520,9 @@ $\frac{(n - 1)S^{2}}{\sigma ^{2}} \sim X^{2}_{n-1}$
 
 Logo,
 
-
+<math display="block">
 $\alpha \ \in \ (0, 1) \therefore P\left ( X^{2}_{n-1, 1 - \alpha/2} \leqslant X^{2}_{n-1} \leqslant X^{2}_{n-1, \alpha/2}\right ) = 1 - \alpha, \ logo: \\\ P\left ( X^{2}_{n-1, 1 - \alpha/2} \leqslant \frac{(n - 1)S^{2}}{\sigma ^{2}} \leqslant X^{2}_{n-1, \alpha/2}\right ) = 1 - \alpha \therefore \\\ P\left (\frac{X^{2}_{n-1, 1 - \alpha/2}}{(n - 1)S^{2}} \leqslant \frac{1}{\sigma ^{2}} \leqslant \frac{X^{2}_{n-1,\alpha/2}}{(n - 1)S^{2}}\right ) = 1 - \alpha \therefore \\\ P\left (\frac{(n - 1)S^{2}}{X^{2}_{n-1, 1 - \alpha/2}} \leqslant \sigma ^{2} \leqslant \frac{(n - 1)S^{2}}{X^{2}_{n-1,\alpha/2}}\right ) = 1 - \alpha \therefore \\\ Logo, \ IC\left [\frac{(n - 1)S^{2}}{X^{2}_{n-1, 1 - \alpha/2}}, \frac{(n - 1)S^{2}}{X^{2}_{n-1, \alpha/2}} \right ]$
+</math>
 
 Nem o `statmodels` e nem o `scipy` possuem funções que geram intervalo de confiança para a variância. Então, vamos construir a nossa!
 

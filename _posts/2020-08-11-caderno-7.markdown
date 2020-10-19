@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Teste de Hipóteses - Parte 2"
+title:  "Testes de Hipóteses - Parte 2"
 date:   2020-09-12 18:50:41 -0300
 lang: python
 category: Estatística
