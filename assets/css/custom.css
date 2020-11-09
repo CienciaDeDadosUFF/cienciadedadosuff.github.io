@@ -79,7 +79,7 @@ math {
     overflow-x: auto;
 }
 
-div {
+.container div {
     overflow-x: auto;
 }
 
