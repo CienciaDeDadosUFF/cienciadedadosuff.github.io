@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Visulização de dados com python"
-date:   2020-08-12 15:07:41
+date:   2020-08-10 15:07:41
 lang: python
 category: Visualização
 description: Um caderno sobre gráficos
