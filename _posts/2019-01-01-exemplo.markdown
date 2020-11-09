@@ -5,8 +5,15 @@ description: Descrição # Descrição
 date: 2020-08-02 23:07:41 -3000 # Data
 lang: python # Linguagem utilizada no tutorial r ou python
 category: Categoria # Categoria do caderno, ou seja, assunto
-published: false # Trocar para true caso seja uma postagem real
+published: true # Trocar para true caso seja uma postagem real
 ---
+# Salvando um Jupyter Notebook em Markdown
+Se você esta querendo adicionar uma postagem ao site que foi feita em um Jupyter Notebook, primeiro você precisará transformar o caderno em Markdown. Apenas vá em: File -> Download As -> Markdown (md)
+
+![notebook_to_md]({{ site.url }}/assets/example/img/saving_markdown.png)
+
+# Salvando um Rmd em Markdown
+FALTA FALAR DISSO
 
 # Formato
 O nome do arquivo da postagem deve seguir o seguinte padrão: 
