@@ -39,25 +39,17 @@ cuja distribuição de probabilidade depende de algum parâmetro θ. O interesse
 
 A hipótese nula, representada por $H_{0}$, é a hipótese básica que queremos testar. Consideraremos apenas hipóteses nulas simples, isto é, hipóteses que estabelecem que o parâmetro de interesse é igual a um determinado valor. A forma geral é:
 
-
-
-$H_{0} : θ = θ_{0}$
-
-onde $ \theta_0 \in \mathbb{R} $.
+$H_{0} : θ = θ_{0}$ onde $\theta_0 \in \mathbb{R}$.
 
 Alguns exemplos são:
-    
 
-$H_{0} : µ = 6\space\space\space\space$         $H_{0} : p = 0,5\space\space\space\space\space$       $H_{0} : σ² = 25$
+$H_{0} : µ = 6\space\space\space\space$$H_{0} : p = 0,5\space\space\space\space\space$$H_{0} : σ² = 25$
     
     
 O procedimento de teste de hipótese resultará em uma regra de decisão que nos permitirá rejeitar ou não rejeitar $H_{0}$. A hipótese alternativa, representada por $H_{1}$, é a hipótese que devemos considerar no caso de rejeição da hipótese nula. A forma mais geral de $H_{1}$ é a hipótese bilateral.
-    
-
-
+  
 $H_{1} : θ \neq  θ_{0}$
-    
-    
+  
 Em algumas situações, podemos ter informação que nos permita restringir o domínio da hipótese
 alternativa.Temos, então, hipóteses unilaterais à esquerda
     
@@ -168,26 +160,23 @@ onde $ \bar{X} $ e $ S $ são a média amostral e a variância amostral, respect
 Após a definição das hipóteses e da estatística de teste, temos que o p-valor é calculado por:
 
 - Se $H_{1}: \mu \neq \mu_{0}$:
- 
-  
- $p-valor = P (\left | T \right |>\left | T_{obs} \right |\mid H_{0})$
+
+$p-valor = P (\left | T \right |>\left | T_{obs} \right |\mid H_{0})$
 
 
 - Se $H_{1}: \mu  > \mu_{0}$:
 
-  
- $p-valor = P (T > T_{obs}\mid H_{0})$
+$p-valor = P (T > T_{obs}\mid H_{0})$
 
     
 - Se $H_{1}: \mu  < \mu_{0}$:
 
-      
- $p-valor = P (T < T_{obs}\mid H_{0})$
+$p-valor = P (T < T_{obs}\mid H_{0})$
 
 
 onde 
-      
-     $T_{obs} = \frac{\bar{X}-\mu_{0}}{\frac{S}{\sqrt{n}}}$
+
+$T_{obs} = \frac{\bar{X}-\mu_{0}}{\frac{S}{\sqrt{n}}}$
 
 >Para se aplicar o teste de média para uma população com variância desconhecida, utilizamos a função `ttest_1samp` da biblioteca **scipy**, cujo argumentos de entrada obrigatórios são:
 - `a` : a amostra observada.
@@ -1041,23 +1030,20 @@ Após as definições das hipóteses e da estatística de teste, temos que o p-v
 
 - Se $H_{1}: p \neq p_{0}$, 
 
-  
- $p-valor = P(Z \geq \left | Z_{obs} \right |\mid H_{0})$
+$p-valor = P(Z \geq \left | Z_{obs} \right |\mid H_{0})$
 
 - Se $H_{1}: p > p_{0}$,
 
-     
- $p-valor = P (Z > Z_{obs}\mid H_{0})$
+$p-valor = P (Z > Z_{obs}\mid H_{0})$
 
 - Se $H_{1}: p < p_{0}$,
 
-      
- $p-valor = P (Z < Z_{obs}\mid H_{0})$
+$p-valor = P (Z < Z_{obs}\mid H_{0})$
 
 
 onde
-       
-      $Z_{obs} = \frac{\hat{p}-p_{0}}{\sqrt{\frac{p_{0}\left ( 1 - p_{0} \right )}{n}}}$
+
+$Z_{obs} = \frac{\hat{p}-p_{0}}{\sqrt{\frac{p_{0}\left ( 1 - p_{0} \right )}{n}}}$
 
 > Para se aplicar o teste para proporção populacional, utilizamos a função `ztest` da biblioteca **statsmodels** que retorna o  $Z_{obs}$ e o p-valor, e possui como argumentos de entrada obrigatórios:
 - `x1`: a amostra observada.
@@ -1728,24 +1714,22 @@ $Q = \frac{(n-1)S^{2}}{\sigma^{2}}\sim \chi^{2}_{(n-1)}$
 Após as definições das hipóteses e da estatística de teste, temos que o p-valor é calculado por:
 
 - Se $H_{1}: \sigma^{2} \neq \sigma^{2}_{0}$,
- 
-  
- $p-valor = 2\times min \left \{ P(Q < Q_{obs}\mid H_{0}),P (Q > Q_{obs}\mid H_{0}) \right \}$
+
+$p-valor = 2\times min \left \{ P(Q < Q_{obs}\mid H_{0}),P (Q > Q_{obs}\mid H_{0}) \right \}$
 
 
 - Se $H_{1}: \sigma^{2} > \sigma^{2}_{0}$,
- 
- $p-valor = P (Q > Q_{obs}\mid H_{0})$
+
+$p-valor = P (Q > Q_{obs}\mid H_{0})$
 
 - Se $H_{1}: \sigma^{2} < \sigma^{2}_{0}$,
 
-     
- $p-valor = P (Q < Q_{obs}\mid H_{0})$
+$p-valor = P (Q < Q_{obs}\mid H_{0})$
 
 
 onde 
-                              
-                             $Q_{obs} = \frac{(n-1)S^{2}}{\sigma_{0}^{2}}$
+
+$Q_{obs} = \frac{(n-1)S^{2}}{\sigma_{0}^{2}}$
 
 >Como não há funções pertencentes às bibliotecas **statsmodels** e **scipy** que realizam o teste para a variância, criamos uma função própria chamada `test_var` que retorna o $Q_{obs}$ e o p-valor, e recebe como argumentos de entrada:
 - `amostra`: amostra observada.
@@ -2038,8 +2022,9 @@ Como p-valor = 0.00001 é menor que o nível de significância proposto, rejeita
 ## Inferência sobre Duas Populações
 
 ## Teste de Hipóteses para Comparação de Duas Proporções
-
-Sejam ${X_{1} \sim N(µ_{1}, σ^2_{1})}$ e ${X_{2} \sim N(µ_{2}, σ^2_{2})}$ duas amostras independentes de tamanho ${n_{1}}$ e ${n_{2}}$, respectivamente, e ${ \hat{p_{1}} }$ e ${ \hat{p_{2}} }$ estimadores de ${p_{1}}$ e ${p_{2}}$, proporção de ocorrência de um certo evento. Então, aproximadamente, ${\hat{p_{1}} \sim N\left ( p_{1}, \frac{p_{1}(1 - p_{1})}{n_{1}} \right )}$ e ${\hat{p_{2}} \sim N\left ( p_{2}, \frac{p_{2}(1 - p_{2})}{n_{2}} \right )}$ implicando ${\hat{p_{1}} - \hat{p_{2}} \sim N\left ( p_{1} - p_{2}, \frac{p_{1}(1 - p_{1})}{n_{1}}+ \frac{p_{2}(1 - p_{2})}{n_{2}} \right )}$. Portanto:
+{% raw %}
+Sejam $${X_{1} \sim N(\mu_{1}, \sigma^2_{1})}$$ e $${X_{2} \sim N(µ_{2}, σ^2_{2})}$$ duas amostras independentes de tamanho $${n_{1}}$$ e $${n_{2}}$$, respectivamente, e $${ \hat{p_{1}} }$$ e $${ \hat{p_{2}} }$$ estimadores de $${p_{1}}$$ e $${p_{2}}$$, proporção de ocorrência de um certo evento. Então, aproximadamente, $${\hat{p_{1}} \sim N\left ( p_{1}, \frac{p_{1}(1 - p_{1})}{n_{1}} \right )}$$ e $${\hat{p_{2}} \sim N\left ( p_{2}, \frac{p_{2}(1 - p_{2})}{n_{2}} \right )}$$ implicando $${\hat{p_{1}} - \hat{p_{2}} \sim N\left ( p_{1} - p_{2}, \frac{p_{1}(1 - p_{1})}{n_{1}}+ \frac{p_{2}(1 - p_{2})}{n_{2}} \right )}$$. Portanto:
+{% endraw %}
 
  
 $Z = \frac{(\hat{p_{1}} - \hat{p_{2}}) - (p_{1} - p_{2})}{\sqrt{\frac{\hat{p_{1}}(1 - \hat{p_{1}})}{n_{1}} + \frac{\hat{p_{2}}(1 - \hat{p_{2}})}{n_{2}}}} \sim N(0, 1)$
@@ -2051,13 +2036,11 @@ $H_{0}: p_{1} - p_{2} = p_{0} \ \ \times \ \ H_{1}: p_{1} - p_{2} \neq p_{0}$
 
 ou
 
-    
-    $H_{0}: p_{1} - p_{2} = p_{0} \ \ \times \ \ H_{1}: p_{1} - p_{2} > p_{0}$
+$H_{0}: p_{1} - p_{2} = p_{0} \ \ \times \ \ H_{1}: p_{1} - p_{2} > p_{0}$
 
 ou
 
- 
-    $H_{0}: p_{1} - p_{2} = p_{0} \ \ \times \ \ H_{1}: p_{1} - p_{2} < p_{0}$
+$H_{0}: p_{1} - p_{2} = p_{0} \ \ \times \ \ H_{1}: p_{1} - p_{2} < p_{0}$
 
 onde $ p_0 \in (0,1) $.
 
@@ -2065,21 +2048,17 @@ Através da estatística de teste e a definição das hipóteses, para a tomada 
 
 - Se $H_{1} : p_{X} - p_{Y}\neq p_{0}$,
 
-  
- $p-valor = P(|Z| \geq \left | Z_{obs} \right |\mid H_{0})$
+$p-valor = P(|Z| \geq \left | Z_{obs} \right |\mid H_{0})$
 - Se $H_{1} : p_{X} - p_{Y} > p_{0}$,
-    
-  
- $p-valor = P(Z > Z_{obs}\mid H_{0} )$
-- Se $H_{1} : p_{X} - p_{Y} < p_{0}$,
 
-      
+$p-valor = P(Z > Z_{obs}\mid H_{0} )$
+- Se $H_{1} : p_{X} - p_{Y} < p_{0}$,
  $p-valor = P(Z < Z_{obs}\mid H_{0} )$
 
 
 onde 
-      
-     $Z_{obs} = \frac{(\hat{p}_{1} - \hat{p}_{2}) - p_{0}}{\sqrt{\frac{\hat{p}_{1}(1 - \hat{p}_{1})}{n_{1}} + \frac{\hat{p}_{2}(1 - \hat{p}_{2})}{n_{2}}}}$
+
+$Z_{obs} = \frac{(\hat{p}_{1} - \hat{p}_{2}) - p_{0}}{\sqrt{\frac{\hat{p}_{1}(1 - \hat{p}_{1})}{n_{1}} + \frac{\hat{p}_{2}(1 - \hat{p}_{2})}{n_{2}}}}$
 
 > Para realizar esses cálculos no Python, utilizaremos a função `ztest()` da biblioteca **statsmodels**, já apresentado anteriormente, com os seguintes argumentos de entrada:
 
@@ -2369,23 +2348,17 @@ ou
 Através da estatística de teste e a definição das hipóteses, para a tomada de decisão é preciso calcular o p-valor, cujas fórmulas são dadas por:
 
 - Se $H_{1} : \frac{\sigma^2_{X}}{\sigma^2_{Y}}\neq \sigma^2_{0}$
-
-     
-    $p-valor = 2\times min\left \{ P\left ( F \geq F_{obs} \mid H_{0}\right ), P\left ( F \leq F_{obs} \mid H_{0}\right ) \right \}$
+$p-valor = 2\times min\left \{ P\left ( F \geq F_{obs} \mid H_{0}\right ), P\left ( F \leq F_{obs} \mid H_{0}\right ) \right \}$
 
 - Se $H_{1} : \frac{\sigma^2_{X}}{\sigma^2_{Y}}< \sigma^2_{0}$
-
-     
-    $p-valor = P\left ( F < F_{obs}\mid H_{0} \right )$
+ $p-valor = P\left ( F < F_{obs}\mid H_{0} \right )$
 
 - Se $H_{1} : \frac{\sigma^2_{X}}{\sigma^2_{Y}}> \sigma^2_{0}$
- 
-         
-    $p-valor = P\left ( F > F_{obs} \mid H_{0}\right )$
+$p-valor = P\left ( F > F_{obs} \mid H_{0}\right )$
 
 onde
-         
-        $F_{obs} = \frac{\frac{S^{2}_{1}}{S^{2}_{2}}}{\frac{\sigma^{2}_{1}}{\sigma ^{2}_{2}}}$
+
+$F_{obs} = \frac{\frac{S^{2}_{1}}{S^{2}_{2}}}{\frac{\sigma^{2}_{1}}{\sigma ^{2}_{2}}}$
 
 >Infelizmente, assim como no caso de uma população, o Python não possui função para avaliar a razão das variâncias. Por isso, construímos a nossa própria função, cujos argumentos de entrada são:
 - `x1`: primeira amostra;
