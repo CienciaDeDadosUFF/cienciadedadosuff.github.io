@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Utilizando o Python"
-date:   2020-08-02 23:07:41
+date: 2020-08-02 23:07:41
 lang: python
 category: Básico
 ---

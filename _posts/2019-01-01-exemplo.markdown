@@ -2,10 +2,11 @@
 layout: post
 title:  Exemplo # Título
 description: Descrição # Descrição
-date: 2020-08-02 23:07:41 -3000 # Data
-lang: python # Linguagem utilizada no tutorial r ou python
-category: Categoria # Categoria do caderno, ou seja, assunto
+# date: 2020-08-02 23:07:41 -3000 # Data
+# lang: exemplo # Linguagem utilizada no tutorial r ou python
+# category: Categoria # Categoria do caderno, ou seja, assunto
 published: true # Trocar para true caso seja uma postagem real
+permalink: exemplo.html
 ---
 # Salvando um Jupyter Notebook em Markdown
 Se você esta querendo adicionar uma postagem ao site que foi feita em um Jupyter Notebook, primeiro você precisará transformar o caderno em Markdown. Apenas vá em: File -> Download As -> Markdown (md)
