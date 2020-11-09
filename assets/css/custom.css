@@ -79,6 +79,10 @@ math {
     overflow-x: auto;
 }
 
+.dataframe {
+    overflow-x: auto;
+}
+
 @media(max-width: 800px){
     aside {
         display: none;

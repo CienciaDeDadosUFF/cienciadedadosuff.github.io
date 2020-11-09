@@ -5,7 +5,7 @@ description: Descrição # Descrição
 date: 2020-08-02 23:07:41 -3000 # Data
 lang: python # Linguagem utilizada no tutorial r ou python
 category: Categoria # Categoria do caderno, ou seja, assunto
-published: true # Trocar para true caso seja uma postagem real
+published: false # Trocar para true caso seja uma postagem real
 ---
 
 
