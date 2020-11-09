@@ -79,7 +79,7 @@ math {
     overflow-x: auto;
 }
 
-.dataframe {
+div {
     overflow-x: auto;
 }
 
@@ -88,7 +88,3 @@ math {
         display: none;
     }
 }
-
-/* .card-group {
-    display: flex;
-} */
