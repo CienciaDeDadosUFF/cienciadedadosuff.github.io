@@ -8,6 +8,13 @@ category: Categoria # Categoria do caderno, ou seja, assunto
 published: false # Trocar para true caso seja uma postagem real
 ---
 
+# Formato
+O nome do arquivo da postagem deve seguir o seguinte padrão: 
+
+aaaa-mm-dd-nome_da_postagem.markdown
+- a -> Ano
+- m -> Mês
+- d -> Dia
 
 # Título da postagem 
 
@@ -73,9 +80,20 @@ class Carro:
 
 ![tela_0]({{ site.url }}/assets/python/courses/machine_learning/02/images/anaconda_tut0.png)
 
+**IMPORTANTE:** Ao colocar um novo caderno com figuras, as imagens devem estar em uma pasta separada, da seguinte forma:
+- /assets/linguage_do_cadenro/courses/nome_do_curso/numero_do_caderno/images/nome_da_imagem.extensão
+
+**Exemplo:** - /assets/r/courses/amostragem/01/images/amostra_aleatoria.jpg
+
 ## Latex
 
-O site também tem suporte a latex
+O site também tem suporte a latex.
 {% raw  %}
 $$1 + 1 = 2$$
 {% endraw %}
+
+**IMPORTANTE:** Evite utilizar geradores automáticos de $\LaTeX$.
+
+## Outras considerações
+
+É extramemente importante que a postagem se mantenha toda em Markdown, evitado ao máximo usar HTML e CSS. A página já adiciona os estilos necessários para a postagem funcionar corretamente, se adicionar CSS novos a postagem, estes podem sobrescrever  o CSS padrão do site, atrapalhando na experiência final.
