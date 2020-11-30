@@ -1,0 +1,1289 @@
+---
+layout: post
+title: "Support Vector Machine"
+date: 2020-09-09 23:07:41 
+lang: R 
+category: Outros Métodos
+description: "Criação: Maqueise Pinheiro e Thaís Machado. Orientação: Douglas Rodrigues (UFF) e Karina Yaginuma (UFF). Colaboradores: Gabriel Miranda e Thiago Augusto."
+---
+
+### *Support Vector Machine (SVM)*{#link14}
+
+O Máquina de Vetores de Suporte - ou *Support Vector Machine* - é um algoritmo de aprendizado supervisionado que analisa os dados e os divide em diferentes grupos, de acordo com seus padrões, para assim classificar as observações. É mais utilizado em problemas de classificação, o qual será o maior foco deste capítulo, mas também pode ser utilizado para regressão.
+
+#### em Classificação
+
+Para entender como esse método funciona, vamos utilizar a seguinte situação: queremos verificar se as vendas de um produto em diferentes mercados foram altas ou baixas baseado nos gastos com publicidade desse produto para TV. Para tal temos a amostra treino abaixo:
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/svm1.png)
+
+
+Podemos observar que os mercados que possuíram um maior investimento em publicidade tiveram maiores vendas, estando naturalmente agrupados mais à direita do gráfico. O objetivo do algoritmo é criar um classificador no formato de um separador, ou seja, um ponto que melhor separe os dados entre os que foram classificados como baixas ou altas vendas, de acordo com os gastos com publicidade.
+
+Esse separador é criado como sendo o ponto médio entre os elementos de cada grupo. Dessa forma, é natural perceber que o melhor separador para a amostra é a média entre o mercado que obteve a maior venda dentre os que tiveram baixas vendas e o mercado que obteve a menor venda dentre os que tiveram altas vendas (as bordas de cada agrupamento).
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/svm2.png)
+
+
+Assim, quando novas amostras chegarem para serem analisadas, podemos classificá-las de acordo com nosso classificador. Se ela tiver à esquerda dele será classificada como vendas baixas e se tiver à direita como vendas altas.
+
+> **Definição 1:** a menor distância entre o classificador e as observações utilizadas para calculá-lo é chamada de **margem**.
+
+Como nosso classificador está no ponto médio entre os dois elementos da borda de cada grupo, a margem é a distância de uma dessas observações até ele. Caso ele estivesse mais à esquerda, por exemplo, a margem seria a distância entre ele e o elemento que está na borda do agrupamento das vendas baixas.
+
+> **Definição 2:** o classificador que dá a maior margem para fazer classificações é chamado de **classificador de margem máxima**.
+
+O classificador de margem máxima performa bem em bases onde os elementos estejam bem agrupados, mas ele se torna um classificador falho quando a base possui *outliers*. Por exemplo, se um dos mercados do nosso conjunto treino gastou pouco com publicidade para TV, mas obteve vendas altas, o classificador de margem máxima estaria muito próximo ao agrupamento das vendas baixas.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/svm3.png)
+
+
+Dessa forma, novas amostras à direita do classificador seriam classificadas como vendas altas, mesmo que elas estivessem mais próximas ao grupo das vendas baixas. Ou seja, isso implicaria em muitos erros de classificação. 
+
+Para melhorarmos essa situação precisamos de um classificador que não seja tão sensível a *outliers*. Para isso teremos que permitir alguns erros de classificação no conjunto treino, aumentando o viés do classificador para que, assim, quando o algoritmo receber novas amostras, a variância dele seja menor.
+
+> **Definição 3:** Quando é utilizado um classificador que permite erros de classificação, a distância entre ele e os elementos utilizados para obtê-lo é chamada de **margem suave**.
+
+Como temos várias margens suaves a se considerar, o algoritmo utiliza *cross validation* para determinar qual é a melhor delas, escolhendo o melhor separador para ser utilizado.
+
+> **Definição 4:** As observações utilizadas para calcular a margem suave são chamadas de vetores de suporte (**support vectors**).
+
+> **Definição 5:** O classificador escolhido quando é utilizado a melhor margem suave é chamado de **classificador de margem suave** ou classificador de vetor de suporte (SVC - **support vector classifier**).
+
+Vamos adicionar agora mais uma variável ao nosso problema. Queremos analisar as vendas do produto com base nos gastos com publicidade para TV e nos gastos com publicidade para o rádio.
+
+
+```r
+library(readxl); library(kableExtra)
+vendas = read_excel("sales.xlsx")
+vendas %>% kable() %>% kable_styling()
+```
+
+<table class="table" style="margin-left: auto; margin-right: auto;">
+ <thead>
+  <tr>
+   <th style="text-align:left;"> TV </th>
+   <th style="text-align:left;"> radio </th>
+   <th style="text-align:left;"> newspaper </th>
+   <th style="text-align:left;"> sales </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> 8.6 </td>
+   <td style="text-align:left;"> 2.1 </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> low </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 75.5 </td>
+   <td style="text-align:left;"> 10.8 </td>
+   <td style="text-align:left;"> 6 </td>
+   <td style="text-align:left;"> low </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 107.4 </td>
+   <td style="text-align:left;"> 14 </td>
+   <td style="text-align:left;"> 10.9 </td>
+   <td style="text-align:left;"> low </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 120.2 </td>
+   <td style="text-align:left;"> 19.6 </td>
+   <td style="text-align:left;"> 11.6 </td>
+   <td style="text-align:left;"> low </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 120.5 </td>
+   <td style="text-align:left;"> 28.5 </td>
+   <td style="text-align:left;"> 14.2 </td>
+   <td style="text-align:left;"> low </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 191.1 </td>
+   <td style="text-align:left;"> 28.7 </td>
+   <td style="text-align:left;"> 18.2 </td>
+   <td style="text-align:left;"> high </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 248.4 </td>
+   <td style="text-align:left;"> 30.2 </td>
+   <td style="text-align:left;"> 20.3 </td>
+   <td style="text-align:left;"> high </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 281.4 </td>
+   <td style="text-align:left;"> 39.6 </td>
+   <td style="text-align:left;"> 55.8 </td>
+   <td style="text-align:left;"> high </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 283.6 </td>
+   <td style="text-align:left;"> 42 </td>
+   <td style="text-align:left;"> 66.2 </td>
+   <td style="text-align:left;"> high </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 290.7 </td>
+   <td style="text-align:left;"> 4.1 </td>
+   <td style="text-align:left;"> 8.5 </td>
+   <td style="text-align:left;"> high </td>
+  </tr>
+</tbody>
+</table>
+
+Note que à medida que os gastos com publicidade nas duas mídias aumentam, as vendas do produto também aumentam. Vamos verificar graficamente o comportamento dessas variáveis.
+
+
+```r
+library(dplyr)
+library(ggplot2)
+
+# Transformando a variável resposta em fator:
+vendas$sales = as.factor(vendas$sales)
+
+# Transformando as demais variáveis em números:
+vendas = mutate_if(vendas, is.character, as.numeric)
+
+# Desenhando o gráfico:
+vendas %>% ggplot(aes(x = TV, y = radio, color = sales)) + geom_point(size = 3) + theme_minimal() +
+  ggtitle("Vendas de um Produto em Diferentes Mercados") + xlab("Publicidade para TV") +
+  ylab("Publicidade para Radio") + scale_color_manual(values = c("blue", "orange"))
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-213-1.png)
+
+Repare que as amostras, assim como anteriormente, estão agrupadas em *clusters*. E, novamente, para escolher o melhor classificador, o algoritmo irá utilizar *cross validation* para determinar qual é a melhor margem suave. Como o problema possui duas variáveis, o *support vector classifier* será uma linha dividindo os dois grupos.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-214-1.png)
+
+
+Assim, as novas amostras que estiverem à direita da linha serão classificadas como vendas altas, e as que estiverem à esquerda como vendas baixas. 
+
+Agora vamos adicionar uma terceira variável, ou seja, vamos levar em conta também a terceira coluna da base de dados, os gastos com publicidade para os jornais. Vamos verificar o comportamento das variáveis graficamente. O pacote `scatterplot3d`[@scatterplot3d] é utilizado para plotar gráficos em três dimensões.
+
+
+```r
+# Pacote para plotar gráfico de pontos em 3 dimensões:
+library(scatterplot3d)
+# Escolhendo as cores dos pontos:
+cores = c("blue", "orange")
+# Colorindo-os de acordo com as classificações das vendas:
+cores = cores[as.numeric(vendas$sales)]
+# Desenhando o gráfico:
+scatterplot3d(vendas$TV, vendas$radio, vendas$newspaper, color = cores, pch = 19,
+              xlab = "Publicidade para TV", ylab = "Publicidade para Radio",
+              zlab = "Publicidade para Jornais", main = "Vendas de um Produto em Diferentes Mercados")
+# Adicionando legenda ao gráfico:
+legend("top", legend = c("Vendas baixas", "Vendas altas"), col = c("orange", "blue"), pch = 19,
+       horiz = T)
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-215-1.png)
+
+Note que, novamente, os dados estão agrupados naturalmente. Quando a base de dados é tridimensional, o classificador de vetor de suporte é um plano e classificamos as novas observações determinando em qual lado do plano elas se encontram.
+
+E se a base de dados possuí-se mais uma variável, por exemplo, publicidade para internet? Nesse caso, o classificador seria um **hiperplano**. Matematicamente, em um espaço p-dimensional, um hiperplano é definido como um subespaço plano de dimensão p-1. Ele é a generalização do plano em diferentes números de dimensões. Quando a base é unidimensional, o classificador de vetor de suporte é um ponto, ou seja, um hiperplano de dimensão 0. Quando a base é bidimensional, o classificador de vetor de suporte é uma linha, ou seja, um hiperplano de dimensão 1. E quando a base é tridimensional, o classificador de vetor de suporte é um plano comum (hiperplano de dimensão 2). Então, generalizando, quando a base é p-dimensional, o classificador de vetor de suporte é um hiperplano de dimensão p-1.
+
+Em suma, SVC são ótimos classificadores, mas eles só performam bem em base de dados linearmente separáveis. Por exemplo, suponha que a amostra abaixo seja o nosso conjunto treino.
+
+
+```r
+(v = read_excel("sales2.xlsx"))
+```
+
+```
+## # A tibble: 16 x 2
+##    TV    sales
+##    <chr> <chr>
+##  1 230.1 high 
+##  2 44.5  low  
+##  3 17.2  high 
+##  4 151.5 low  
+##  5 180.8 low  
+##  6 8.7   high 
+##  7 57.5  low  
+##  8 120.2 low  
+##  9 8.6   high 
+## 10 199.8 high 
+## 11 66.1  low  
+## 12 214.7 high 
+## 13 23.8  high 
+## 14 97.5  low  
+## 15 204.1 high 
+## 16 195.4 high
+```
+
+
+```r
+# Transformando a variável de interesse em fator:
+v$sales = as.factor(v$sales)
+# Transformando a variável com os valores dos gastos com publicidade para TV em números:
+v$TV = as.numeric(v$TV)
+# Gráfico das vendas baseado na puclicidade para TV:
+v %>% ggplot(aes(x = TV, y = 0, color = sales)) + geom_point(size = 3) + xlab("Publicidade para TV") +
+  ggtitle("Vendas de um Produto em Diferentes Mercados") + scale_color_manual(values = c("blue", "orange")) +
+  theme(axis.title.y = element_blank(), axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+        panel.background = element_blank())
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-217-1.png)
+
+Utilizar um classificador de vetor de suporte seria inviável nesse caso, visto que onde quer que ele se encontre existiriam muitos erros de classificação. Para esse tipo de situação em que os dados não são linearmente separáveis, que é o mais habitual de se encontrar na realidade, precisamos utilizar máquina de vetores de suporte.
+
+>**Definição 6: Máquina de Vetores de Suporte** (*Support vector machine*) é uma extensão do SVC que resulta da ampliação do espaço característico de um jeito específico, utilizando kernels.
+
+Em outras palavras, o que o SVM faz é aumentar a dimensão da nossa base de dados por meio de funções (conhecidas como *kernels*) para que a base se torne linearmente separável, tornando possível o uso dos classificadores de vetores de suporte. Por exemplo, vamos criar uma nova variável definida como sendo os valores da variável que representa os gastos com publicidade para TV elevados ao quadrado.
+
+
+```r
+# Adicionando a nova variável com os valores elevados ao quadrado:
+v = v %>% mutate(TV2 = TV**2)
+# Gráfico das vendas baseado nos valores da publicidade e publicidade ao quadrado:
+v %>% ggplot(aes(x = TV, y = TV2, color = sales)) + geom_point(size = 3) + xlab("Publicidade para TV") +
+  ylab("Publicidade para TV ao quadrado") + ggtitle("Vendas de um Produto em Diferentes Mercados") +
+  scale_color_manual(values = c("blue", "orange")) + theme_minimal()
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-218-1.png)
+
+Repare que, aumentando a dimensão da nossa base de 1 para 2 com a transformação que eleva os valores da publicidade ao quadrado, a nossa base agora se tornou linearmente separável. Então podemos utilizar um classificador de vetor de suporte no formato de uma linha para separar os dados.
+
+![tela_0]({{ site.url }}//assets/r/courses/machine_learning/01/images/unnamed-chunk-219-1.png)
+
+Assim, quando uma nova observação chegar, será calculado o valor da sua publicidade para TV ao quadrado e, de acordo com o lugar que esse valor ficar em relação a linha, a observação será classificada como vendas baixas ou vendas altas. E, resumidamente, é dessa forma que o SVM opera para todas as bases de dados.
+
+Por último, mas não menos importante, para escolher as funções que tornem a base possível de ser separada, o SVM utiliza as funções *kernel*. 
+
+> A **função *kernel*** é uma função que computa as relações entre cada par de observações, e essas relações são utilizadas afim de encontrar um classificador de vetor de suporte. Ela é a responsável por aumentar a dimensão da base de dados por meio das transformações que a tornem linearmente separável.
+
+Denota-se a função *kernel* como $K(x,y)$, onde **x** e **y** se referem a duas diferentes observações no conjunto de dados. O *kernel* utilizado no exemplo acima foi o polinomial. Juntamente com esse, os mais utilizados são os lineares, radiais e *sigmoid*. Um parâmetro presente em todos os *kernels* (exceto o linear) é o **$\gamma$**, cuja função é escalar a quantidade de influência que duas observações têm uma sobre a outra. Quanto maior o $\gamma$, menor a influência.
+
+**Linear:**
+
+$$ K(x,y) = x^{T}y $$
+
+Nada mais é do que um produto vetorial entre as observações. É utilizados quando a base de dados já é, naturalmente, linearmente separável. 
+
+**Polinomial:**
+
+$$ K(x,y) = [\gamma(x^{T}y) + c]^{d} $$
+
+onde:
+
+- **c** é o parâmetro de penalidade do modelo, o parâmetro que controla seu ajuste. Para grandes valores de c, o algoritmo não pode classificar observações do conjunto treino de forma errada.
+
+- **d** determina o grau do polinômio.
+
+Como o nome sugere, ele utiliza uma transformação polinomial nos dados para torná-los linearmente separáveis. Para escolher os valores do c e do d o mais recomendado é utilizar *cross validation*.
+
+**Radial:**
+
+O *kernel* radial, também conhecido como *kernel* RBF (*radial basis function*), é comumente o *kernel* mais utilizado. Ele encontra classificadores de vetores de suporte em infinitas dimensões, por isso não é possível visualizá-lo graficamente. Seu comportamento se resume a separar as amostras do conjunto treino em círculos, de acordo com seus agrupamentos. Assim, a classificação das novas observações é altamente influenciada pelas observações que estão próximas a ela, e poucamente influenciada pelas que estão distantes. Sua fórmula é dada por:
+
+$$ K(x,y) = e^{-\gamma||x-y||^{2}} $$
+
+onde $||x-y||$ é a norma (ou comprimento) do vetor $x-y$.
+
+***Sigmoid:***
+
+O *kernel sigmoid*, também conhecido como *kernel* da tangente hiperbólica, é bastante popular por ser proveniente dos estudos das redes neurais, e por ter um bom desempenho no geral. Sua fórmula é dada por:
+
+$$ K(x,y) = tanh(\gamma[x^{T}y] + c) $$
+
+onde, assim como no *kernel* polinomial, o parâmetro **c** é o parâmetro de penalidade do modelo, o parâmetro que controla seu ajuste.
+
+#### em Regressão
+
+O *support vector machine* para regressão - mais conhecido como *support vector regression* (SVR) - usa os mesmos princípios que o SVM para classificação, com algumas poucas diferenças. Para começar, como não temos classes nos dados, o objetivo não é tentar agrupá-los de acordo com elas, visto que agora o que queremos prever são números reais. 
+
+Vamos supor que queremos prever as vendas de um produto em unidades monetárias (U.M.) em diferentes mercados baseado nos gastos com publicidade para TV (em U.M.) que o mercado teve com esse produto. Para tal, suponha que a amostra abaixo seja nossa amostra de treino.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/svr1.png)
+
+
+Note que agora é necessário termos um eixo para representar a variável de interesse. Podemos reparar também que, em geral, à medida que os gastos com publicidade aumentam, as vendas também aumentam. 
+
+Ao invés de encontrar uma linha para separar os dados, o objetivo do SVR é encontrar uma linha com o objetivo de **ajustar os dados sobre ela**. A ideia é parecida com a de regressão linear simples, exceto pelo fato de que, ao invés de minimizar a soma dos quadrados dos resíduos, seu objetivo é **minimizar a norma do vetor de coeficiente**, um assunto que está fora dos escopos deste material. Para mais informações, consulte o livro [*The Elements of Statistical Learning*](#link13).
+
+Para definirmos o quanto de erro é aceitável no nosso modelo, utilizamos o parâmetro $\varepsilon$. A figura abaixo apresenta a linha azul que representa a linha de melhor ajuste de acordo com a margem de erro escolhida ($\varepsilon$), representada pelas linhas verdes.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/svr3.png)
+
+O algoritmo ajusta o modelo da melhor forma possível, mas ainda assim alguns pontos ainda ficam fora da margem de erro. Para definirmos a tolerância que o algoritmo deve ter desse número de pontos que ficam fora da margem utilizamos o parâmetro *c*. Conforme *c* aumenta, a tolerância do número de pontos também aumenta, e quando *c* é pequeno a tolerância também fica pequena. 
+
+Dependendo dos valores escolhidos para o $\varepsilon$ e para o *c* o algoritmo pode não ser capaz de encontrar um regressor para os dados. Por exemplo, se escolhermos um *c* e um $\varepsilon$ muito pequenos quando as observações são muito dispersas. É preciso cuidado.
+
+Generalizando para maiores dimensões, ao invés do SVR utilizar uma linha para ajustar os dados, ele utiliza hiperplanos. Assim, quando uma nova observação chegar, seu valor de saída será predito de acordo com as coordenadas do hiperplano em que ela se encontra.
+
+#### SVM com a função `svm()` do pacote `e1071`
+
+Vamos utilizar a base de dados `mtcars` do pacote básico do R. Essa base contém algumas informações de desempenho e design que permitem comparar diferentes modelos de automóveis, como `mpg` que indica a quantidade de milhas que é possivel percorrer com um galão (*miles per gallon*), `hp` que indica a potência em cavalos (*horsepower*), `wt` indica o peso em libras (*weight*) e `qsec` que indica o tempo em segundo pra percorrer 1/4 de milha (*quarter mile time in seconds*). Nossa variável de interesse é `am` que indica se o câmbio é automático ou manual.
+
+
+```r
+library(caret)
+data("mtcars")
+mtcars$am = factor(mtcars$am, labels = c("automatic","manual"))
+head(mtcars)
+```
+
+```
+##                    mpg cyl disp  hp drat    wt  qsec vs        am gear carb
+## Mazda RX4         21.0   6  160 110 3.90 2.620 16.46  0    manual    4    4
+## Mazda RX4 Wag     21.0   6  160 110 3.90 2.875 17.02  0    manual    4    4
+## Datsun 710        22.8   4  108  93 3.85 2.320 18.61  1    manual    4    1
+## Hornet 4 Drive    21.4   6  258 110 3.08 3.215 19.44  1 automatic    3    1
+## Hornet Sportabout 18.7   8  360 175 3.15 3.440 17.02  0 automatic    3    2
+## Valiant           18.1   6  225 105 2.76 3.460 20.22  1 automatic    3    1
+```
+
+```r
+set.seed(5)
+noTreino = caret::createDataPartition(y = mtcars$am, p = 0.7, list = F)
+treino = mtcars[noTreino,]
+teste = mtcars[-noTreino,]
+```
+
+##### Utilizando Kernel linear
+
+Para melhor visualização, vamos utilizar apenas duas variáveis explicativas no começo. Observe essas duas variáveis.
+
+
+```r
+library(ggplot2)
+ggplot(data = treino, aes(x = qsec, y = wt, color = am)) + 
+  geom_point(size = 3) +
+  scale_color_manual(values=c("darkolivegreen3", "brown2")) +
+  theme_minimal()
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-221-1.png)
+
+Parece ser possível separar as observações em dois grupos, manual e automático, apenas com uma linha. Vamos tentar treinar um modelo de **svm linear** então. Para isso, utilizaremos a função `svm()` do pacote `e1071`[@e1071].
+
+
+```r
+library(dplyr); library(e1071)
+# treinando o modelo
+set.seed(645)
+svmfit = e1071::svm(am ~ ., data = select(treino, am, wt, qsec),
+                    kernel = "linear", cost = 1, scale = T)
+svmfit
+```
+
+```
+## 
+## Call:
+## svm(formula = am ~ ., data = select(treino, am, wt, qsec), kernel = "linear", 
+##     cost = 1, scale = T)
+## 
+## 
+## Parameters:
+##    SVM-Type:  C-classification 
+##  SVM-Kernel:  linear 
+##        cost:  1 
+## 
+## Number of Support Vectors:  10
+```
+
+Os principais argumentos dessa função são:
+
++ **kernel** = indica o tipo de kernel. Os mais comuns são 'linear', 'polynomial' e 'radial' (sendo esse último o *default*).
++ **cost** = quantifica a penalidade associada a uma predição incorreta. *Default=1*.
++ **scale** = se TRUE (*default*), padroniza as variáveis. 
++ **gamma** = parâmetro usado no cálculo exceto quando o kernel é linear. *Default =* $\frac{1}{nº colunas\ da\ base}$
++ **coef0** = parâmetro usado no cálculo quando o kernel é polinomial. *Default=0*.
++ **degree** = usado quando o kernel é polinomial. Indica o grau do polinômio. *Default=3*.
+
+
+```r
+# visualizando o modelo
+plot(svmfit, select(treino, am, qsec, wt), col=c("cornflowerblue", "darkred"))
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-223-1.png)
+
+As observações em vermelho, são as rotuladas como manuais, e as pretas como automaticas. 
+
+Segundo nosso modelo toda nova observação que estiver acima da linha, parte azul, será classificada/predita como automatico. Caso contrário, classificada como manual. 
+
+Por fim, as observações com forma de "X" são as que foram usadas como vetores de suporte (se observar a descrição do modelo, verá que são 9 os vetores de suporte).
+
+Agora, vamos avaliar nosso preditor
+
+
+```r
+# realizando a predicao sob o conjunto de teste
+predicao = predict(svmfit, select(teste, am, wt, qsec))
+# obtendo a matriz de confusao
+confusionMatrix(data = predicao, reference = teste$am)
+```
+
+```
+## Confusion Matrix and Statistics
+## 
+##            Reference
+## Prediction  automatic manual
+##   automatic         5      0
+##   manual            0      3
+##                                      
+##                Accuracy : 1          
+##                  95% CI : (0.6306, 1)
+##     No Information Rate : 0.625      
+##     P-Value [Acc > NIR] : 0.02328    
+##                                      
+##                   Kappa : 1          
+##                                      
+##  Mcnemar's Test P-Value : NA         
+##                                      
+##             Sensitivity : 1.000      
+##             Specificity : 1.000      
+##          Pos Pred Value : 1.000      
+##          Neg Pred Value : 1.000      
+##              Prevalence : 0.625      
+##          Detection Rate : 0.625      
+##    Detection Prevalence : 0.625      
+##       Balanced Accuracy : 1.000      
+##                                      
+##        'Positive' Class : automatic  
+## 
+```
+
+```r
+# outra forma de obter a precisao
+mean(predicao == teste$am)
+```
+
+```
+## [1] 1
+```
+
+Agora, na hora de treinar o modelo, note que utilizamos `cost=1`. Mas e se esse não for o melhor custo? Podemos utilizar a função `tune()` também do pacote `e1071` para testar vários valores de parâmetros. 
+
+
+```r
+library(e1071)
+set.seed(645)
+tunefit = e1071::tune(svm, am ~ ., data = select(treino, am, qsec, wt),
+                 kernel = "linear",
+                 ranges = list(cost = seq(0.1, 2, length = 10)))
+tunefit$best.model
+```
+
+```
+## 
+## Call:
+## best.tune(method = svm, train.x = am ~ ., data = select(treino, 
+##     am, qsec, wt), ranges = list(cost = seq(0.1, 2, length = 10)), 
+##     kernel = "linear")
+## 
+## 
+## Parameters:
+##    SVM-Type:  C-classification 
+##  SVM-Kernel:  linear 
+##        cost:  0.3111111 
+## 
+## Number of Support Vectors:  15
+```
+
+Dessa forma, foram feitos 10 treinamentos (cost = 0.1, 0.31, 0.52, 0.73, 0.94, 1.16, 1.37, 1.58, 1.79, 2) e concluído que o melhor (maior precisão) foi quando o custo era 0.31.
+
+
+```r
+# realizando a predicao sob o conjunto de teste
+predicao = predict(tunefit$best.model, select(teste, am, wt, qsec))
+# obtendo a matriz de confusao
+confusionMatrix(data = predicao, reference = teste$am)
+```
+
+```
+## Confusion Matrix and Statistics
+## 
+##            Reference
+## Prediction  automatic manual
+##   automatic         5      0
+##   manual            0      3
+##                                      
+##                Accuracy : 1          
+##                  95% CI : (0.6306, 1)
+##     No Information Rate : 0.625      
+##     P-Value [Acc > NIR] : 0.02328    
+##                                      
+##                   Kappa : 1          
+##                                      
+##  Mcnemar's Test P-Value : NA         
+##                                      
+##             Sensitivity : 1.000      
+##             Specificity : 1.000      
+##          Pos Pred Value : 1.000      
+##          Neg Pred Value : 1.000      
+##              Prevalence : 0.625      
+##          Detection Rate : 0.625      
+##    Detection Prevalence : 0.625      
+##       Balanced Accuracy : 1.000      
+##                                      
+##        'Positive' Class : automatic  
+## 
+```
+
+```r
+# outra forma de obter a precisao
+mean(predicao == teste$am)
+```
+
+```
+## [1] 1
+```
+
+##### Utilizando Kernel polinomial
+
+Agora, observe o gráfico novamente
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-227-1.png)
+
+Será que se usarmos uma curva no lugar de uma reta para separar os grupos, teriamos um modelo melhor? Vamos treinar um modelo usando o kernel **polinomial**.
+
+
+```r
+set.seed(987)
+svmfit.p = svm(am ~ ., data = select(treino, am, wt, qsec),
+              kernel = "polynomial", cost = 1,
+              gamma=0.3, coef0=0.1, degree=3, scale = T)
+svmfit.p
+```
+
+```
+## 
+## Call:
+## svm(formula = am ~ ., data = select(treino, am, wt, qsec), kernel = "polynomial", 
+##     cost = 1, gamma = 0.3, coef0 = 0.1, degree = 3, scale = T)
+## 
+## 
+## Parameters:
+##    SVM-Type:  C-classification 
+##  SVM-Kernel:  polynomial 
+##        cost:  1 
+##      degree:  3 
+##      coef.0:  0.1 
+## 
+## Number of Support Vectors:  19
+```
+
+Note que com o kernel polinomial utilizamos mais parâmetros. São eles *gamma, coef0* e *degree*. Naquela fórmula explicada mais acima ( $K(x,y) = [\gamma(x^{T}y) + r]^{d}$ ), esses parâmetros são respectivamente $\gamma$, $r$ e $d$.
+
+
+```r
+plot( svmfit.p, select(treino, am, wt, qsec), 
+      col=c("cornflowerblue", "darkred"))
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-229-1.png)
+
+Da mesma forma, podemos usar a função `tune` para testar mais de um valor em cada parâmetro.
+
+
+```r
+set.seed(59)
+tunefit.p = tune(svm, am ~ ., data = select(treino, am, qsec, wt),
+                 kernel = "polynomial",
+                 ranges = list(cost   = c(0.001, 0.01, 0.1, 1, 5, 10, 50),
+                               gamma  = c(0.5, 1, 2, 3, 4),
+                               coef0  = c(0, 0.1, 0.5, 1),
+                               degree = c(1, 2, 3)))
+tunefit.p$best.model
+```
+
+```
+## 
+## Call:
+## best.tune(method = svm, train.x = am ~ ., data = select(treino, 
+##     am, qsec, wt), ranges = list(cost = c(0.001, 0.01, 0.1, 1, 
+##     5, 10, 50), gamma = c(0.5, 1, 2, 3, 4), coef0 = c(0, 0.1, 
+##     0.5, 1), degree = c(1, 2, 3)), kernel = "polynomial")
+## 
+## 
+## Parameters:
+##    SVM-Type:  C-classification 
+##  SVM-Kernel:  polynomial 
+##        cost:  50 
+##      degree:  3 
+##      coef.0:  0.5 
+## 
+## Number of Support Vectors:  7
+```
+
+Com isso, podemos avaliar o modelo
+
+
+```r
+# realizando a predicao sob o conjunto de teste
+predicao = predict(tunefit.p$best.model,  select(teste, am, wt, qsec))
+# obtendo a matriz de confusao
+confusionMatrix(data = predicao, reference = teste$am)
+```
+
+```
+## Confusion Matrix and Statistics
+## 
+##            Reference
+## Prediction  automatic manual
+##   automatic         5      0
+##   manual            0      3
+##                                      
+##                Accuracy : 1          
+##                  95% CI : (0.6306, 1)
+##     No Information Rate : 0.625      
+##     P-Value [Acc > NIR] : 0.02328    
+##                                      
+##                   Kappa : 1          
+##                                      
+##  Mcnemar's Test P-Value : NA         
+##                                      
+##             Sensitivity : 1.000      
+##             Specificity : 1.000      
+##          Pos Pred Value : 1.000      
+##          Neg Pred Value : 1.000      
+##              Prevalence : 0.625      
+##          Detection Rate : 0.625      
+##    Detection Prevalence : 0.625      
+##       Balanced Accuracy : 1.000      
+##                                      
+##        'Positive' Class : automatic  
+## 
+```
+
+```r
+# outra forma de obter a precisao
+mean(predicao == teste$am)
+```
+
+```
+## [1] 1
+```
+
+##### Utilizando Kernel radial
+
+Observe agora a distribuição das variáveis `mpg` e `qsec`
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-232-1.png)
+
+Vamos treinar um modelo com kernel **radial** utilizando elas
+
+
+```r
+set.seed(751)
+svmfit.r = svm(am ~ ., data = select(treino, am, mpg, qsec),
+               kernel = "radial", gamma=0.5, cost = 10, scale = T)
+svmfit.r
+```
+
+```
+## 
+## Call:
+## svm(formula = am ~ ., data = select(treino, am, mpg, qsec), kernel = "radial", 
+##     gamma = 0.5, cost = 10, scale = T)
+## 
+## 
+## Parameters:
+##    SVM-Type:  C-classification 
+##  SVM-Kernel:  radial 
+##        cost:  10 
+## 
+## Number of Support Vectors:  10
+```
+
+```r
+plot(svmfit.r, select(treino, am, qsec, mpg), 
+      col=c("cornflowerblue", "darkred"))
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-233-1.png)
+
+Para o modelo com kernel radial, precisamos informar apenas o parâmetro `gamma` (O mesmo $\gamma$ da fórmula $K(x,y) = e^{-\gamma||x-y||^{2}}$ ). Vamos testar com outros valores de parâmetros
+
+
+```r
+set.seed(751)
+tunefit.r = tune(svm, am ~ ., data = select(treino, am, qsec, mpg),
+                 kernel = "radial",
+                 ranges = list(cost = c(0.001, 0.01, 0.1, 1, 5, 10, 100),
+                               gamma = c(0.5,1,2,3,4)))
+tunefit.r$best.model
+```
+
+```
+## 
+## Call:
+## best.tune(method = svm, train.x = am ~ ., data = select(treino, 
+##     am, qsec, mpg), ranges = list(cost = c(0.001, 0.01, 0.1, 
+##     1, 5, 10, 100), gamma = c(0.5, 1, 2, 3, 4)), kernel = "radial")
+## 
+## 
+## Parameters:
+##    SVM-Type:  C-classification 
+##  SVM-Kernel:  radial 
+##        cost:  10 
+## 
+## Number of Support Vectors:  13
+```
+
+e avaliando, 
+
+
+```r
+# realizando a predicao sob o conjunto de teste
+predicao = predict(tunefit.r$best.model,  select(teste, am, mpg, qsec))
+# obtendo a matriz de confusao
+confusionMatrix(data = predicao, reference = teste$am)
+```
+
+```
+## Confusion Matrix and Statistics
+## 
+##            Reference
+## Prediction  automatic manual
+##   automatic         5      0
+##   manual            0      3
+##                                      
+##                Accuracy : 1          
+##                  95% CI : (0.6306, 1)
+##     No Information Rate : 0.625      
+##     P-Value [Acc > NIR] : 0.02328    
+##                                      
+##                   Kappa : 1          
+##                                      
+##  Mcnemar's Test P-Value : NA         
+##                                      
+##             Sensitivity : 1.000      
+##             Specificity : 1.000      
+##          Pos Pred Value : 1.000      
+##          Neg Pred Value : 1.000      
+##              Prevalence : 0.625      
+##          Detection Rate : 0.625      
+##    Detection Prevalence : 0.625      
+##       Balanced Accuracy : 1.000      
+##                                      
+##        'Positive' Class : automatic  
+## 
+```
+
+```r
+# outra forma de obter a precisao
+mean(predicao == teste$am)
+```
+
+```
+## [1] 1
+```
+
+#### SVM com a função `ksvm()` do pacote `kernlab`
+
+Novamente, vamos trabalhar com a base `mtcars`.
+
+
+```r
+data("mtcars")
+mtcars$am = factor(mtcars$am, labels = c("automatic","manual"))
+set.seed(95)
+noTreino = caret::createDataPartition(y = mtcars$am, p = 0.7, list = F)
+treino = mtcars[noTreino,]
+teste = mtcars[-noTreino,]
+```
+
+##### Utilizando Kernel linear
+
+
+```r
+library(ggplot2)
+ggplot(data = treino, aes(x = hp, y = wt, color = am)) + 
+  geom_point(size = 3) +
+  scale_color_manual(values=c("darkolivegreen3", "brown2")) +
+  theme_minimal()
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-237-1.png)
+
+Também podemos criar modelos de SVM utilizando a função `ksvm` presente no pacote 
+
+
+```r
+library(kernlab)
+kernfit.l = ksvm(am ~ ., data = dplyr::select(treino, am, wt, hp), 
+                 type = "C-svc", kernel = 'vanilladot', C=1)
+```
+
+```
+##  Setting default kernel parameters
+```
+Os principais argumentos dessa função são:
+
++ **type** = Precisa ser informado. Indica qual é o tipo de preditor que queremos criar. Para classificadores, podemos usar 'C-svc'. Para regressores, podemos usar 'eps-svr'. Para outros ***types***, veja a documentação da função no *Help* do RStudio ou neste [link](https://www.rdocumentation.org/packages/kernlab/versions/0.9-29/topics/ksvm).
++ **kernel** = Indica o tipo de kernel. Vamos explorar o 'vanilladot' para linear, 'polydot' para polinomial e 'rbfdot' para radial (*default*), mas existem outros. 
++ **C** = Quantifica a penalidade associada a uma predição incorreta. *Default=1*.
++ **scaled** = Se TRUE (*default*), padroniza as variáveis.
++ **kpar** = Lista os parâmetros necessários para o kernel utilizado. Seu default é *automatico*, ou seja, ele encontra o(s) parâmetros que melhor ajustam o modelo automaticamente. Mas podemos alterar se quisermos.
+  - **kernel linear** -> não possui parâmetros
+  - **kernel polinomial** -> Utiliza os parâmetros `degree`, `scale` e `offset`.
+  - **kernel radial** -> Utiliza o parâmetro `sigma`.
+  
+
+```r
+kernfit.l
+```
+
+```
+## Support Vector Machine object of class "ksvm" 
+## 
+## SV type: C-svc  (classification) 
+##  parameter : cost C = 1 
+## 
+## Linear (vanilla) kernel function. 
+## 
+## Number of Support Vectors : 9 
+## 
+## Objective Function Value : -5.7975 
+## Training error : 0
+```
+
+```r
+# obtendo a precisão dentro da amostra
+1 - kernfit.l@error
+```
+
+```
+## [1] 1
+```
+
+```r
+plot(kernfit.l, data = dplyr::select(treino, am, wt, hp))
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-239-1.png)
+
+E podemos avaliar, obtendo a precisão fora da amostra
+
+
+```r
+# realizando a predicao sob o conjunto de teste
+predicao = kernfit.l %>% predict(select(teste, am, wt, hp))
+# obtendo a matriz de confusao
+caret::confusionMatrix(data = predicao, reference = teste$am)
+```
+
+```
+## Confusion Matrix and Statistics
+## 
+##            Reference
+## Prediction  automatic manual
+##   automatic         4      0
+##   manual            1      3
+##                                           
+##                Accuracy : 0.875           
+##                  95% CI : (0.4735, 0.9968)
+##     No Information Rate : 0.625           
+##     P-Value [Acc > NIR] : 0.135           
+##                                           
+##                   Kappa : 0.75            
+##                                           
+##  Mcnemar's Test P-Value : 1.000           
+##                                           
+##             Sensitivity : 0.800           
+##             Specificity : 1.000           
+##          Pos Pred Value : 1.000           
+##          Neg Pred Value : 0.750           
+##              Prevalence : 0.625           
+##          Detection Rate : 0.500           
+##    Detection Prevalence : 0.500           
+##       Balanced Accuracy : 0.900           
+##                                           
+##        'Positive' Class : automatic       
+## 
+```
+
+```r
+# outra forma de obter a precisao
+mean(predicao == teste$am)
+```
+
+```
+## [1] 0.875
+```
+
+##### Utilizando Kernel polinomial
+
+Para treinar um modelo svm com kernel polinomial, usamos o argumento 'kernel='polydot'' e passamos a lista de parametros necessários (`degree`, `offset` e `scale`). 
+
+
+```r
+set.seed(284)
+kernfit.p = ksvm(am ~ ., data = dplyr::select(treino, am, qsec, wt), 
+                 type = "C-svc", kernel = 'polydot',
+                 C=1, kpar=list(degree=3, offset=0.1))
+kernfit.p
+```
+
+```
+## Support Vector Machine object of class "ksvm" 
+## 
+## SV type: C-svc  (classification) 
+##  parameter : cost C = 1 
+## 
+## Polynomial kernel function. 
+##  Hyperparameters : degree =  3  scale =  1  offset =  0.1 
+## 
+## Number of Support Vectors : 9 
+## 
+## Objective Function Value : -5.3132 
+## Training error : 0.083333
+```
+
+```r
+plot(kernfit.p, data = dplyr::select(treino, am, qsec, wt))
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-241-1.png)
+
+a avaliação é feita da mesma forma que as anteriores:
+As observações marcadas com um triângulo são as rotuladas com câmbio automático, enquanto as marcadas com círculo são as de câmbio manual.
+As formas preenchidas são as que foram usadas como vetor de suporte.
+Finalmente, a região azulada é onde as novas observações presentes ali serão classificadas com câmbio manual, enquanto na região avermelhada, serão classificadas automático
+
+##### Utilizando Kernel radial
+
+No caso radial, usamos 'kernel='rdfdot'' e passamos o valor `sigma`.
+
+
+```r
+set.seed(614)
+kernfit.r = ksvm(am ~ ., data = select(treino, am, qsec, mpg), 
+                 type = "C-svc", kernel = 'rbfdot',
+                 C=10, kpar=list(sigma=0.5))
+kernfit.r
+```
+
+```
+## Support Vector Machine object of class "ksvm" 
+## 
+## SV type: C-svc  (classification) 
+##  parameter : cost C = 10 
+## 
+## Gaussian Radial Basis kernel function. 
+##  Hyperparameter : sigma =  0.5 
+## 
+## Number of Support Vectors : 11 
+## 
+## Objective Function Value : -34.0858 
+## Training error : 0
+```
+
+```r
+plot(kernfit.r, data = select(treino, am, qsec, mpg))
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-242-1.png)
+
+#### SVM com a função `train()` do pacote `caret`
+
+Ainda usando a base `mtcars`, vamos ver como utilizar a função `train` do `caret` para treinar um modelo de SVM. Os principais argumentos dessa função são:
+
++ **method** = Para SVM com kernel linear, ele recebe 'svmLinear'. Para polinomial, 'svmPoly'. E para radial, 'svmRadial'.
++ **tuneGrid** ou **tuneLength** = usando para testar alguns valores dos parâmetros usados. (Vamos entender melhor usando)
+
+##### Utilizando Kernel linear
+
+
+```r
+library(caret); library(dplyr)
+# treinando o modelo
+set.seed(24)
+modelfit.l = caret::train(am ~ ., data = select(treino, am, wt, qsec),
+                   method="svmLinear", preProcess = c("center","scale"),
+                   tuneGrid = expand.grid(C = seq(0, 2, length = 15) ) )
+```
+
+O kernel linear não possui parâmetros, portanto só precisamos passar o custo aqui representado por `C`. Usando `tuneGrid = expand.grid()` podemos passar um ou mais valores para cada parâmetro da função e para o `C` e ele testa todos eles e decide qual é o melhor.
+
+
+```r
+modelfit.l
+```
+
+```
+## Support Vector Machines with Linear Kernel 
+## 
+## 24 samples
+##  2 predictor
+##  2 classes: 'automatic', 'manual' 
+## 
+## Pre-processing: centered (2), scaled (2) 
+## Resampling: Bootstrapped (25 reps) 
+## Summary of sample sizes: 24, 24, 24, 24, 24, 24, ... 
+## Resampling results across tuning parameters:
+## 
+##   C          Accuracy   Kappa    
+##   0.0000000        NaN        NaN
+##   0.1428571  0.8339278  0.6074720
+##   0.2857143  0.8844228  0.6865752
+##   0.4285714  0.8735036  0.6672053
+##   0.5714286  0.8829481  0.6874628
+##   0.7142857  0.8869481  0.6955080
+##   0.8571429  0.8847258  0.6923804
+##   1.0000000  0.8883622  0.6996517
+##   1.1428571  0.8883622  0.6996517
+##   1.2857143  0.8883622  0.6996517
+##   1.4285714  0.9053622  0.7343507
+##   1.5714286  0.9053622  0.7343507
+##   1.7142857  0.9093622  0.7414732
+##   1.8571429  0.9093622  0.7669594
+##   2.0000000  0.9128066  0.7704828
+## 
+## Accuracy was used to select the optimal model using the largest value.
+## The final value used for the model was C = 2.
+```
+
+Aqui, ele testou 15 valores para `C` e concluiu que a melhor precisão ocorria quando `C = 2`.
+
+
+```r
+plot(modelfit.l)
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-245-1.png)
+
+Aqui podemos observar a distribuição da precisão para cada valor de custo que testamos.
+
+##### Utilizando Kernel polinomial
+
+
+```r
+set.seed(882)
+modelfit.p = caret::train(am ~ ., data = select(treino, am, qsec, wt),
+                   method="svmPoly", tuneLength = 4,
+                  preProcess = c("center","scale"))
+```
+
+Para o kernel polinomial, os parâmetros são `degree` e `scale` além do `C`.
+Usando o `tuneLength`, podemos passar uma quantidade n e ele testará todas as combinação com os n primeiros valores default de cada parâmetro.
+
+
+```r
+modelfit.p
+```
+
+```
+## Support Vector Machines with Polynomial Kernel 
+## 
+## 24 samples
+##  2 predictor
+##  2 classes: 'automatic', 'manual' 
+## 
+## Pre-processing: centered (2), scaled (2) 
+## Resampling: Bootstrapped (25 reps) 
+## Summary of sample sizes: 24, 24, 24, 24, 24, 24, ... 
+## Resampling results across tuning parameters:
+## 
+##   degree  scale  C     Accuracy   Kappa    
+##   1       0.001  0.25  0.5161659  0.1189539
+##   1       0.001  0.50  0.5161659  0.1189539
+##   1       0.001  1.00  0.5161659  0.1189539
+##   1       0.001  2.00  0.5161659  0.1189539
+##   1       0.010  0.25  0.5161659  0.1189539
+##   1       0.010  0.50  0.5161659  0.1189539
+##   1       0.010  1.00  0.5161659  0.1189539
+##   1       0.010  2.00  0.5161659  0.1189539
+##   1       0.100  0.25  0.5436912  0.1793538
+##   1       0.100  0.50  0.6534387  0.3891840
+##   1       0.100  1.00  0.8405094  0.7183571
+##   1       0.100  2.00  0.8765743  0.7878575
+##   1       1.000  0.25  0.8998470  0.8091447
+##   1       1.000  0.50  0.9273925  0.8454360
+##   1       1.000  1.00  0.9507431  0.8910997
+##   1       1.000  2.00  0.9551876  0.9020088
+##   2       0.001  0.25  0.5161659  0.1189539
+##   2       0.001  0.50  0.5161659  0.1189539
+##   2       0.001  1.00  0.5161659  0.1189539
+##   2       0.001  2.00  0.5161659  0.1189539
+##   2       0.010  0.25  0.5161659  0.1189539
+##   2       0.010  0.50  0.5161659  0.1189539
+##   2       0.010  1.00  0.5161659  0.1189539
+##   2       0.010  2.00  0.6264704  0.3271633
+##   2       0.100  0.25  0.6846782  0.4521554
+##   2       0.100  0.50  0.8412237  0.7195571
+##   2       0.100  1.00  0.8765743  0.7828179
+##   2       0.100  2.00  0.9237561  0.8417467
+##   2       1.000  0.25  0.9058167  0.7886891
+##   2       1.000  0.50  0.9198817  0.8181146
+##   2       1.000  1.00  0.9227258  0.8284860
+##   2       1.000  2.00  0.9227258  0.8255929
+##   3       0.001  0.25  0.5161659  0.1189539
+##   3       0.001  0.50  0.5161659  0.1189539
+##   3       0.001  1.00  0.5161659  0.1189539
+##   3       0.001  2.00  0.5161659  0.1189539
+##   3       0.010  0.25  0.5161659  0.1189539
+##   3       0.010  0.50  0.5161659  0.1189539
+##   3       0.010  1.00  0.5586912  0.2125406
+##   3       0.010  2.00  0.7107734  0.4831787
+##   3       0.100  0.25  0.8275570  0.6946523
+##   3       0.100  0.50  0.8592237  0.7463197
+##   3       0.100  1.00  0.8954055  0.8078916
+##   3       0.100  2.00  0.9294704  0.8464987
+##   3       1.000  0.25  0.8975195  0.7884825
+##   3       1.000  0.50  0.9196003  0.8289326
+##   3       1.000  1.00  0.9236003  0.8343143
+##   3       1.000  2.00  0.9336003  0.8529297
+## 
+## Accuracy was used to select the optimal model using the largest value.
+## The final values used for the model were degree = 1, scale = 1 and C = 2.
+```
+
+```r
+modelfit.p$bestTune
+```
+
+```
+##    degree scale C
+## 16      1     1 2
+```
+
+e então ele utiliza a combinação que possui a melhor precisão.
+
+
+```r
+plot(modelfit.p)
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-248-1.png)
+
+O plot nos mostra a distribuição da precisão em cada combinação de custo, *degree* e *scale*. Por exemplo, podemos ver que usando $degree=1$ (Primeiro quadro), $scale=0.1$ (eixo x/abscissa) e $C=2$ (linha vermelha) alcançamos uma precisão em torno de $0.88$ (eixo y/ordenadas).
+
+Avaliando o modelo:
+
+
+```r
+predicao = modelfit.p %>% predict( select(teste, am, qsec, wt) )
+# obtendo a matriz de confusao
+confusionMatrix(data = predicao, reference = teste$am)
+```
+
+```
+## Confusion Matrix and Statistics
+## 
+##            Reference
+## Prediction  automatic manual
+##   automatic         4      0
+##   manual            1      3
+##                                           
+##                Accuracy : 0.875           
+##                  95% CI : (0.4735, 0.9968)
+##     No Information Rate : 0.625           
+##     P-Value [Acc > NIR] : 0.135           
+##                                           
+##                   Kappa : 0.75            
+##                                           
+##  Mcnemar's Test P-Value : 1.000           
+##                                           
+##             Sensitivity : 0.800           
+##             Specificity : 1.000           
+##          Pos Pred Value : 1.000           
+##          Neg Pred Value : 0.750           
+##              Prevalence : 0.625           
+##          Detection Rate : 0.500           
+##    Detection Prevalence : 0.500           
+##       Balanced Accuracy : 0.900           
+##                                           
+##        'Positive' Class : automatic       
+## 
+```
+
+```r
+# outra forma de obter a precisao
+mean(predicao == teste$am)
+```
+
+```
+## [1] 0.875
+```
+
+##### Utilizando Kernel radial
+
+
+```r
+set.seed(109)
+modelfit.r = caret::train(am ~ ., data = select(treino, am, qsec, mpg),
+                  method = "svmRadial", preProcess = c("center","scale"),
+                  tuneGrid=expand.grid(C=c(0.5,1,5,10),
+                                       sigma=seq(0.5,1.5, length=5)))
+```
+
+Para o kernel radial, temos o parâmetro `sigma`.
+
+
+```r
+modelfit.r
+```
+
+```
+## Support Vector Machines with Radial Basis Function Kernel 
+## 
+## 24 samples
+##  2 predictor
+##  2 classes: 'automatic', 'manual' 
+## 
+## Pre-processing: centered (2), scaled (2) 
+## Resampling: Bootstrapped (25 reps) 
+## Summary of sample sizes: 24, 24, 24, 24, 24, 24, ... 
+## Resampling results across tuning parameters:
+## 
+##   C     sigma  Accuracy   Kappa    
+##    0.5  0.50   0.7916118  0.5710319
+##    0.5  0.75   0.7870693  0.5735315
+##    0.5  1.00   0.7660996  0.5332282
+##    0.5  1.25   0.7629076  0.5247248
+##    0.5  1.50   0.7433045  0.4873416
+##    1.0  0.50   0.7769913  0.5500594
+##    1.0  0.75   0.7529105  0.5013235
+##    1.0  1.00   0.7524488  0.5055922
+##    1.0  1.25   0.7430981  0.4930791
+##    1.0  1.50   0.7380981  0.4816286
+##    5.0  0.50   0.7794156  0.5438133
+##    5.0  0.75   0.7563377  0.5038143
+##    5.0  1.00   0.7420346  0.4818703
+##    5.0  1.25   0.7460346  0.4960802
+##    5.0  1.50   0.7308759  0.4725168
+##   10.0  0.50   0.7890188  0.5662949
+##   10.0  0.75   0.7762107  0.5495060
+##   10.0  1.00   0.7584156  0.5178123
+##   10.0  1.25   0.7517489  0.5119656
+##   10.0  1.50   0.7251616  0.4630399
+## 
+## Accuracy was used to select the optimal model using the largest value.
+## The final values used for the model were sigma = 0.5 and C = 0.5.
+```
+
+
+```r
+plot(modelfit.r)
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-252-1.png)
+
+Podemos ver aqui um **resumo dos argumentos equivalentes** em cada função e seus valores *default*. A primeira nomeclatura é referente as [fórmulas apresentadas](#link14).
+
+| **Argumento** | **e1071::svm** | **kernlab::ksvm** | **caret::train** | **Observações** |
+|-|-|-|-|-|
+| **Custo** | `cost` = 1 | `C` = 1 | `C` | Quantifica a penalidade associada a uma predição incorreta. |
+| **Kernel linear** | 'linear' | 'vanilladot' | 'svmLinear' | Não necessita de parâmetros. |
+| **Kernel polinomial** | 'polynomial' | 'polydot' | 'svmPoly' | Utiliza os parâmetros $\gamma$, $r$ e $degree$. |
+| **Kernel radial** | 'radial' | 'rdfdot' | 'svmRadial' | Utiliza o parâmetro $\gamma$. |
+| $\gamma$ | `gamma` = $\frac{1}{nº colunas\ da\ base}$ | `scale` se o kernel for polinomial. `sigma` se o kernel for radial. | `scale` se o kernel for polinomial. `sigma` se o kernel for radial. | Escala a quantidade de influência que duas observações têm uma sobre a outra. |
+| $r$ | `coef0` = 0 | `offset` |  | Determina o coeficiente do polinômio. |
+| $d$ | `degree` = 3 | `degree` = 1 | `degree` | Determina p grau do polinômio. |
+| **Padronizar** | `scale` = T | `scaled` = T | `preProcess = c("center","scale")` | Padroniza as variáveis deixando todas na mesma escala. |
+
+
+
+
+
+
+---
