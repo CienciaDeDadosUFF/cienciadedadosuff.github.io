@@ -1,0 +1,119 @@
+---
+
+layout: post
+
+title: "Validação Cruzada"
+
+date: 2020-11-21 23:50:41 
+
+lang: R
+category: Avaliação
+description: "Apresenta métodos de reamostragem utilizados na validação cruzada"
+---
+
+
+## *Cross Validation* (Validação Cruzada)
+
+Existem diversos métodos de aprendizado de máquina que podemos usar para construir um preditor. Então como saber qual método é melhor? Um jeito de fazer isso é usando a validação cruzada. Ela nos permite comparar diferentes métodos de aprendizado de máquina ou parâmetros para o método escolhido e avaliar qual funcionará melhor na prática.
+
+Sabendo que não é uma boa ideia usar toda a base de dados para treinar o preditor, podemos dividir, por exemplo, os primeiros 75% dos dados para treino e os 25% finais para teste. Mas e se esse não for o melhor jeito de dividir os dados? E se o melhor jeito de fazer essa divisão for usando os primeiros 25% para teste e o restante para treino? A validação cruzada leva em consideração todas essas divisões, usando uma de cada vez e tirando a média dos resultados no final. 
+
+Assim, iremos apresentar alguns métodos de reamostragem que podem ser utilizados em 3 circunstâncias distintas:
+
+1) Reduzir a variância do preditor no treinamento;
+
+2) Realizar aprendizado de máquinas com amostras pequenas, onde não é possível fazer a divisão treino/teste;
+
+3) Realizar comparações entre métodos de treinamento distintos ou entre diferentes hiperparâmetros de um método, com o objetivo de reduzir a dependência da amostra.
+
+### *K-fold*
+
+Este método consiste em fatiar os dados em $k$ pedaços iguais, e então utilizar um pedaço para o teste e os demais para o treino. Esse procedimento é realizado $k$ vezes, de modo que em cada repetição um novo pedaço seja utilizado para o teste. Para avaliar o erro tira-se a média de todos os erros de todas as replicações.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/kfold.png)
+
+Quanto maior o $k$ escolhido obtemos menos viés, porém mais variância. Quanto menor o $k$ escolhido, mais viés e menos variância.
+
+> **OBS**: Quando o $k$ é igual ao tamanho da amostra, o método é também conhecido como **leave-one-out**.
+
+Vamos utilizar reamostragem por k-fold no conjunto de dados "spam":
+
+
+```r
+library(caret)
+library(kernlab)
+data(spam)
+# Para fazer a reamostragem por k-fold vamos utilizar o comando createFolds():
+folds = createFolds(y = spam$type, k = 10, list = T, returnTrain = T)
+```
+
+Os principais argumentos da função `createFolds()` são:
+
+- y = a variável de interesse (no nosso caso, o tipo do e-mail);
+- k = o número (inteiro) de partições que você deseja.
+- list = argumento do tipo *logical*, onde, se TRUE $\rightarrow$ os resultados serão mostrados em uma lista, se FALSE $\rightarrow$ os resultados serão mostrados em uma matriz.
+- returnTrain = argumento do tipo *logical*, onde, se TRUE, retorna amostras treino, se FALSE, retorna amostras teste.
+
+Vamos verificar o tamanho de cada partição da nossa amostra treino:
+
+
+```r
+sapply(folds,length)
+```
+
+```
+## Fold01 Fold02 Fold03 Fold04 Fold05 Fold06 Fold07 Fold08 Fold09 Fold10 
+##   4140   4141   4141   4141   4140   4141   4141   4141   4141   4142
+```
+
+Agora vamos fazer o mesmo para a amostra teste:
+
+
+```r
+folds = createFolds(y = spam$type, k = 10, list = T, returnTrain = F)
+sapply(folds,length)
+```
+
+```
+## Fold01 Fold02 Fold03 Fold04 Fold05 Fold06 Fold07 Fold08 Fold09 Fold10 
+##    460    461    460    461    460    460    459    460    460    460
+```
+
+Outra opção de realizar a reamostragem por k-fold é aplicá-la diretamente na função `train()`, através do argumento "*method*" da função `trainControl()`:
+
+
+```r
+controle = trainControl(method = "cv", number = 10)
+modelo = caret::train(type ~ ., data = spam, method = "glm", trControl = controle)
+```
+
+### *Repeated K-fold*
+
+O *repeated k-fold* se resume a repetir o método *k-fold* várias vezes, com o objetivo de melhorar a reamostragem.
+
+**Ex.:** Vamos aplicar um método de treino 3 vezes em 10 folds:
+
+
+```r
+controle = trainControl(method = "repeatedcv", number = 10, repeats = 3)
+modelo = caret::train(type ~ ., data = spam, method = "glm", trControl = controle)
+```
+
+### *Bootstrap* {#link5}
+
+O *bootstrap* é uma técnica de reamostragem com o propósito de reduzir desvios e realizar amostragem dos dados **com repetição**. Já vimos anteriormente que este é o método default do comando `train()`, onde é feito 25 reamostragens por *bootstrap*. Embora esse seja o padrão, podemos alterar a quantidade de reamostragens através do comando `trainControl()`. Por exemplo, vamos alterar o número de reamostragens de 25 para 10:
+
+
+```r
+controle = trainControl(method = "boot", number = 10)
+modelo = train(type ~ ., data = spam, method = "glm", trControl = controle)
+```
+
+Podemos também realizar *bootstrap* fora da função `train()`, utilizando o comando `createResample()`:
+
+
+```r
+folds = createResample(y = spam$type, times = 10, list = F)
+```
+
+>OBS: repare que utilizamos a base toda para fazer as reamostragens, e não separamos em treino e teste. Quando o objetivo da validação cruzada é encontrar o melhor modelo para os dados, podemos utilizar a base toda para isso. Agora, dado que já temos o modelo que será utilizado, e o objetivo é tunar seus hiperparâmetros e/ou reduzir a variância do preditor, devemos sempre realizar a validação cruzada no conjunto de treino. Lembre-se que o conjunto de teste é para simular uma nova amostra, então ao usarmos ela para esses últimos fins estaríamos utilizando o teste para treinar o modelo.

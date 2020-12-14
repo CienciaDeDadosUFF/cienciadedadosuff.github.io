@@ -1,0 +1,46 @@
+---
+layout: post
+title: "Normalização dos Dados"
+date: 2020-11-21 22:50:58 
+lang: R
+category: Pré-Processamento
+description: "Apresenta as principais transformações utilizadas para normalizar os dados."
+---
+
+### Normalização dos Dados
+
+#### Transformação de Box-Cox
+
+A transformação de Box-Cox é uma transformação feita nos dados (contínuos) para tentar normalizá-los. Considerando $X_1,...,X_n$ as variáveis do conjunto de dados original, essa transformação consiste em encontrar um $\lambda$ tal que as variáveis transformadas $Y_1,...Y_n$ se aproximem de uma distribuição normal com variância constante. 
+
+Essa transformação é dada pela seguinte forma: $$Y_i(\lambda)=\frac{X_i^{\lambda}-1}{\lambda} \hbox{ , se } \lambda \neq 0.$$ O parâmetro $\lambda$ é estimado utilizando o método de máxima verossimilhança.
+
+O método de Box-Cox é o método mais simples e o mais eficiente computacionalmente. Podemos aplicar a transformação de Box-Cox nos dados através da função preProcess().
+
+> **OBS:** a transformação de Box-Cox só pode ser utilizada com dados positivos.
+
+
+```r
+treinoBC = preProcess(treino, method = "BoxCox") 
+```
+
+#### Outras Transformações
+
+##### Transformação de Yeo-Johnson
+
+A transformação de Yeo-Johnson é semelhante à transformação de Box-Cox, porém ela aceita preditores com dados nulos e/ou dados negativos. Também podemos aplicá-la aos dados através da função preProcess().
+
+
+```r
+treinoYJ = preProcess(treino, method = "YeoJohnson")
+```
+
+
+##### Transformação Exponencial de Manly
+
+O método exponencial de Manly também consiste em estimar um $\lambda$ tal que as variáveis transformadas se aproximem de uma distribuição normal. Assim como a transformação de Yeo-Johnson, ela também aceita dados positivos, nulos e negativos. Essa transformação é dada pela seguinte forma: $$Y_i(\lambda)=\frac{e^{X\lambda}-1}{\lambda} \hbox{ , se } \lambda \neq 0.$$
+
+
+```r
+treinoEXP = preProcess(treino, method = "expoTrans")
+```

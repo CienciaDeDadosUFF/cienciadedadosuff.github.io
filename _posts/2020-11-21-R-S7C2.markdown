@@ -1,0 +1,175 @@
+---
+layout: post
+title: "Suposições do Modelo de Regressão Linear"
+date: 2020-11-21 22:50:58 
+lang: R
+category: Apêndice
+description: "Apresenta os pressupostos que devem ser satisfeitos para a aplicação de um modelo de regressão linear."
+---
+
+### Suposições do Modelo de Regressão Linear{#link17}
+
+A construção do modelo de regressão linear está fundamentada em algumas suposições que devem ser verificadas. Para isso, vamos utilizar a mesma base de dados do exemplo usado no capítulo de [Modelos Lineares](#link18).
+
+
+```r
+vendas = readRDS("Vendas_Empresas.rds")
+modelo = lm(Venda~Prop_outros_meios+Prop_nacional, data = vendas)
+summary(modelo)
+```
+
+```
+## 
+## Call:
+## lm(formula = Venda ~ Prop_outros_meios + Prop_nacional, data = vendas)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -5.5280 -1.0787  0.1309  1.2272  3.5302 
+## 
+## Coefficients:
+##                   Estimate Std. Error t value       Pr(>|t|)    
+## (Intercept)         0.7184     1.3531   0.531         0.5987    
+## Prop_outros_meios   1.5217     0.1764   8.628 0.000000000218 ***
+## Prop_nacional       0.8145     0.3947   2.063         0.0461 *  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 1.868 on 37 degrees of freedom
+## Multiple R-squared:  0.7411,	Adjusted R-squared:  0.7271 
+## F-statistic: 52.96 on 2 and 37 DF,  p-value: 0.00000000001387
+```
+
+**1) Linearidade**
+
+Como já comentado anteriormente, é preciso que haja uma relação aproximadamente linear entre a variável Y e as variáveis explicativas do modelo. Essa relação pode ser facilmente verificada através de um gráfico entre as variáveis.
+
+
+```r
+vendas = readRDS("Vendas_Empresas.rds")
+modelo = lm(Venda~Prop_outros_meios+Prop_nacional, data = vendas)
+# Pacote para plotar gráfico de pontos em 3 dimensões:
+library(lattice)
+cloud(Venda~Prop_outros_meios*Prop_nacional, data = vendas,
+      xlab = "Prop. Outros Meios", ylab = "Prop. Mídia Nacional",
+      zlab = "Vendas", main = "Vendas de 40 Empresas baseado nos Gastos com Propagandas")
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-317-1.png)
+
+**2) Normalidade dos Resíduos**
+
+Uma das suposições do modelo é de que os erros aleatórios ($\varepsilon_i$) devem seguir uma distribuição Normal com média 0 e variância constante $\sigma^{2}$. Para verificar a hipótese de normalidade utilizamos os resíduos do modelo, os quais são estimativas para os erros.
+
+Porém, em primeiro lugar, é necessário realizar uma transformação nos resíduos, obtendo os chamados **resíduos estudentizados**. Devemos fazer isso pois a variância dos resíduos $e_i$'s não é constante. Além disso, se o modelo se adequa bem aos dados, os resíduos estudentizados apresentam distribuição aproximadamente normal com média zero e variância 1. 
+
+Utilizaremos a função `rstandard()` para obtermos os resíduos estudentizados do modelo. Para mais informações de como essa transformação é feita, consulte <https://en.wikipedia.org/wiki/Studentized_residual>.
+
+
+```r
+# Obtendo os resíduos estudentizados do modelo:
+ris = rstandard(modelo)
+# Obtendo o histograma:
+library(ggplot2)
+ggplot() + geom_histogram(aes(x = ris, y = ..density..), bins = 5, color="darkblue", fill="lightblue") +
+  stat_function(fun = dnorm, col = "red") + xlab("Resíduos Estudentizados") + ylab("Frequência") +
+  ggtitle("Histograma dos Resíduos Estudentizados") + theme_minimal()
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-318-1.png)
+
+Podemos observar que os resíduos seguem aproximadamente uma normal padrão, visto que a distribuição dos dados estão próximas à curva de densidade da normal. Podemos também realizar o teste de Kolmogorov-Smirnov para comprovação dessa afirmação.
+
+
+```r
+ks.test(ris, "pnorm")
+```
+
+```
+## 
+## 	One-sample Kolmogorov-Smirnov test
+## 
+## data:  ris
+## D = 0.084302, p-value = 0.9159
+## alternative hypothesis: two-sided
+```
+Com base em um nível de significância de 5% não rejeita-se a hipótese nula do teste, pois p-valor = 0,9159 > 0,05. Logo, os resíduos estudentizados seguem uma distribuição normal com média 0 e variância 1.
+
+**3) Homocedasticidade**
+
+Agora vamos verificar a hipótese de homocedasticidade dos erros, ou seja, a hipótese de que os erros possuem uma variância constante. Para isso vamos novamente utilizar os resíduos estudentizados. 
+
+Podemos verificar a hipótese de homocedasticidade através de um gráfico dos resíduos estudentizados (eixo das ordenadas) *vs* uma das variáveis explicativas (eixo das abscissas) do modelo. Para veracidade da hipótese os pontos nesse gráfico devem estar distribuídos de forma aleatória, sem seguir nenhum padrão, em torno do eixo 0.
+
+
+```r
+plot(vendas$Prop_nacional, ris, pch = 19, ylim = c(-3, 3), ylab = "Resíduos Estudentizados",
+     xlab = "Gastos com Propaganda na Mídia Nacional",
+     main = "Resíduos Estudentizados vs Gastos com Prop. na Mídia Nacional")
+abline(h = 0, col = "red")
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-320-1.png)
+
+Com base no gráfico podemos identificar que há uma nuvem de pontos distribuídas aleatoriamente em torno do eixo 0, o que implica que a hipótese de homocedasticidade está satisfeita.
+
+**4) Independência** 
+
+A 4ª hipótese do modelo é a de que os erros devem ser independentes entre si. Para verificação dessa hipótese podemos utilizar o teste de Durbin-Watson. Ele é utilizado para detectar a presença de autocorrelação (dependência) nos resíduos de uma análise de regressão, onde a hipótese nula do teste assume que não há dependência entre os resíduos.
+
+
+```r
+# Vamos utilizar a função dwtest do pacote lmtest para realizarmos o teste:
+lmtest::dwtest(modelo)
+```
+
+```
+## 
+## 	Durbin-Watson test
+## 
+## data:  modelo
+## DW = 1.844, p-value = 0.3003
+## alternative hypothesis: true autocorrelation is greater than 0
+```
+
+Com base em um nível de significância de 5% não rejeita-se a hipótese nula do teste, pois p-valor = 0,3003 > 0,05. Logo, os resíduos são independentes.
+
+**5) Ausência de** ***Outliers***
+
+A presença de *outliers* pode causar prejuízos para o ajuste de uma reta de regressão, pois a reta pode ser deslocada desproporcionalmente para esse valor. Ou seja, eles influenciam na estimação dos parâmetros do modelo. Para identificar se há possíveis *outliers* na amostra podemos utilizar novamente o gráfico dos resíduos estudentizados (eixo das ordenadas) vs uma das variáveis explicativas (eixo das abscissas) do modelo. Os candidatos a *outliers* são aquelas observações que ficam fora do intervalo [-2, 2].
+
+
+```r
+plot(vendas$Prop_nacional, ris, pch = 19, ylim = c(-3, 3), ylab = "Resíduos Estudentizados",
+     xlab = "Gastos com Propaganda na Mídia Nacional",
+     main = "Resíduos Estudentizados vs Gastos com Prop. na Mídia Nacional")
+abline(h = 0, col = "1")
+abline(h = c(-2, 2), col = "red", lty = c(2, 2))
+# Identificando a observação que é um possível outlier:
+id = which(abs(ris) > 2)
+# Adicionando a numeração da observação ao gráfico:
+text(vendas$Prop_nacional[id], ris[id], rownames(vendas)[id], pos = 3, cex = .8)
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-322-1.png)
+
+Podemos notar que a observação 30 é um provável *outlier* na amostra. Para comprovação dessa hipótese vamos obter as **distâncias de Cook** das observações.
+
+A distância de Cook é uma medida global do diagnóstico da influência de uma observação sobre as estimativas dos parâmetros do modelo. A regra prática para lidar com ela pode ser definida como:
+
+> Distância de Cook > 1 $\Rightarrow$ a observação é excessivamente influente e devemos retirá-la da base de dados.
+
+Em geral, se o maior valor da distância de Cook for inferior a 1, então a eliminação da observação não vai alterar substancialmente as estimativas dos parâmetros. Podemos obtê-las através da função `cooks.distance()`:
+
+
+```r
+dc = cooks.distance(modelo)
+# Identificando as observações cuja distância de Cook é maior do que 1:
+subset(dc, subset = dc > 1)
+```
+
+```
+## named numeric(0)
+```
+
+Não há nenhuma observação cuja distância de Cook tenha sido maior do que 1. Logo, não há observações excessivamente influentes na amostra.
