@@ -208,7 +208,7 @@ amostra_normal[:10]                          # Visualizar os 10 primeiros valore
 
 
 
-O método `sns.distplot` irá gerar um gráfico da nossa distribuição. O argumento `kde` recebe um booleano, em caso de `False` ele irá gerar um simples histograma de nossa distribuição pos omitirá a curva de densidade da distribuição da nossa amostra.
+O método `sns.distplot` irá gerar um gráfico da nossa distribuição. O argumento `kde` recebe um booleano, em caso de `False` ele irá gerar um simples histograma de nossa distribuição pois omitirá a curva de densidade estimada da nossa amostra.
 
 
 ```python
