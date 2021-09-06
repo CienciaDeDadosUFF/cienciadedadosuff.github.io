@@ -15,7 +15,7 @@ Quando precisamos expôr resultados de forma objetiva e clara, devemos recorrer 
 
 # Matplotlib
 
-O `matplotlib` é a principal biblioteca de visualização de dados no Python. Trata-se de uma biblioteca muito completa, sendo ideal para gerar qualquer tipo de gráfico. No entanto, as opções de personalização dos gráficos podem ser massantes e complexas quando utilizamos apenas o `matplotlib` para gerar nossas visualizações, e por isso ferramentas como o `seaborn` facilitam a execução desta tarefa.
+O `matplotlib` é a principal biblioteca de visualização de dados no Python. Trata-se de uma biblioteca muito completa, sendo ideal para gerar qualquer tipo de gráfico. No entanto, as opções de personalização dos gráficos podem ser maçantes e complexas quando utilizamos apenas o `matplotlib` para gerar nossas visualizações, e por isso ferramentas como o `seaborn` facilitam a execução desta tarefa.
 
 # Seaborn
 
