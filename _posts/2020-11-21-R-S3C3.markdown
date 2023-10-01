@@ -1,0 +1,260 @@
+---
+layout: post
+title: "Variável Dummy"
+date: 2020-11-21 22:50:58 
+lang: R
+category: Pré-Processamento
+description: "Apresenta meios de transformar variáveis categóricas em variáveis dummies."
+---
+
+### Variável *Dummy*
+
+As variáveis *dummies* ou variáveis indicadoras são formas de agregar informações qualitativas em modelos estatísticos. Ela atribui 1 se o elemento possui determinada característica, ou 0 caso ele não possua. Esse tipo de transformação é importante para alguns modelos pois ela torna possível trabalhar com variáveis qualitativas.
+
+Vamos utilizar o banco de dados Wage, do pacote `ISLR`[@islr]. Este banco possui informações sobre 3000 trabalhadores do sexo masculino de uma região dos EUA, como por exemplo idade (*age*), tipo de trabalho (*jobclass*), salário (*wage*), entre outras. Nosso objetivo é tentar prever o salário do indivíduo em função das outras variáveis. 
+
+
+```r
+library(ISLR)
+data(Wage)
+head(Wage)
+```
+
+```
+##        year age           maritl     race       education
+## 231655 2006  18 1. Never Married 1. White    1. < HS Grad
+## 86582  2004  24 1. Never Married 1. White 4. College Grad
+## 161300 2003  45       2. Married 1. White 3. Some College
+## 155159 2003  43       2. Married 3. Asian 4. College Grad
+## 11443  2005  50      4. Divorced 1. White      2. HS Grad
+## 376662 2008  54       2. Married 1. White 4. College Grad
+##                    region       jobclass         health health_ins  logwage
+## 231655 2. Middle Atlantic  1. Industrial      1. <=Good      2. No 4.318063
+## 86582  2. Middle Atlantic 2. Information 2. >=Very Good      2. No 4.255273
+## 161300 2. Middle Atlantic  1. Industrial      1. <=Good     1. Yes 4.875061
+## 155159 2. Middle Atlantic 2. Information 2. >=Very Good     1. Yes 5.041393
+## 11443  2. Middle Atlantic 2. Information      1. <=Good     1. Yes 4.318063
+## 376662 2. Middle Atlantic 2. Information 2. >=Very Good     1. Yes 4.845098
+##             wage
+## 231655  75.04315
+## 86582   70.47602
+## 161300 130.98218
+## 155159 154.68529
+## 11443   75.04315
+## 376662 127.11574
+```
+
+Vamos olhar para 2 variáveis: *jobclass* (tipo de trabalho) e *health_ins* (indica se o trabalhador possui plano de saúde) utilizando o pacote `ggplot2`[@ggplot] para plotar os dados.
+
+
+```r
+library(ggplot2)
+Wage %>% ggplot(aes(x=jobclass)) + geom_bar(aes(fill=jobclass)) +
+  ylab("Frequência") + guides(fill=F) + theme_light() +
+  ggtitle("Gráfico de Barras para o Tipo de Trabalho")
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-86-1.png)
+
+
+```r
+Wage %>% ggplot(aes(x=health_ins)) + geom_bar(aes(fill=health_ins)) +
+  ylab("Frequência") + guides(fill=F) + theme_light() +
+  ggtitle("Gráfico de Barras para o Plano de Saúde")
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-87-1.png)
+
+Vamos transformar essas 2 variáveis em *dummies* por meio da função dummyVars().
+
+
+```r
+dummies = dummyVars(wage~jobclass+health_ins, data = Wage)
+
+# Aplicando ao modelo:
+Dummies = predict(dummies, newdata = Wage)
+
+head(Dummies)
+```
+
+```
+##        jobclass.1. Industrial jobclass.2. Information health_ins.1. Yes
+## 231655                      1                       0                 0
+## 86582                       0                       1                 0
+## 161300                      1                       0                 1
+## 155159                      0                       1                 1
+## 11443                       0                       1                 1
+## 376662                      0                       1                 1
+##        health_ins.2. No
+## 231655                1
+## 86582                 1
+## 161300                0
+## 155159                0
+## 11443                 0
+## 376662                0
+```
+
+Note que ele transforma cada categoria numa variável *dummy*. Ou seja, como temos 2 categorias para *jobclass*, cada uma delas vira uma variável *dummy*. Então se para um indivíduo temos um "1" na categoria "*jobclass=industrial*", isso implica que terá um "0" na categoria "*jobclass=information*", pois ou o indivíduo tem um tipo de trabalho, ou tem outro. O mesmo vale para as categorias de plano de saúde.
+
+Observe também que esse novo modelo criado é uma matriz:
+
+
+```r
+class(Dummies)
+```
+
+```
+## [1] "matrix" "array"
+```
+
+Vamos anexar esse novo objeto aos dados:
+
+
+```r
+Wage_dummy = cbind(Wage, Dummies)
+head(Wage_dummy)
+```
+
+```
+##        year age           maritl     race       education
+## 231655 2006  18 1. Never Married 1. White    1. < HS Grad
+## 86582  2004  24 1. Never Married 1. White 4. College Grad
+## 161300 2003  45       2. Married 1. White 3. Some College
+## 155159 2003  43       2. Married 3. Asian 4. College Grad
+## 11443  2005  50      4. Divorced 1. White      2. HS Grad
+## 376662 2008  54       2. Married 1. White 4. College Grad
+##                    region       jobclass         health health_ins  logwage
+## 231655 2. Middle Atlantic  1. Industrial      1. <=Good      2. No 4.318063
+## 86582  2. Middle Atlantic 2. Information 2. >=Very Good      2. No 4.255273
+## 161300 2. Middle Atlantic  1. Industrial      1. <=Good     1. Yes 4.875061
+## 155159 2. Middle Atlantic 2. Information 2. >=Very Good     1. Yes 5.041393
+## 11443  2. Middle Atlantic 2. Information      1. <=Good     1. Yes 4.318063
+## 376662 2. Middle Atlantic 2. Information 2. >=Very Good     1. Yes 4.845098
+##             wage jobclass.1. Industrial jobclass.2. Information
+## 231655  75.04315                      1                       0
+## 86582   70.47602                      0                       1
+## 161300 130.98218                      1                       0
+## 155159 154.68529                      0                       1
+## 11443   75.04315                      0                       1
+## 376662 127.11574                      0                       1
+##        health_ins.1. Yes health_ins.2. No
+## 231655                 0                1
+## 86582                  0                1
+## 161300                 1                0
+## 155159                 1                0
+## 11443                  1                0
+## 376662                 1                0
+```
+
+
+```r
+# Removendo as variáveis categóricas do banco de dados completo (opcional):
+Wage_dummy = dplyr::select(Wage_dummy, -c(jobclass,health_ins))
+head(Wage_dummy)
+```
+
+```
+##        year age           maritl     race       education
+## 231655 2006  18 1. Never Married 1. White    1. < HS Grad
+## 86582  2004  24 1. Never Married 1. White 4. College Grad
+## 161300 2003  45       2. Married 1. White 3. Some College
+## 155159 2003  43       2. Married 3. Asian 4. College Grad
+## 11443  2005  50      4. Divorced 1. White      2. HS Grad
+## 376662 2008  54       2. Married 1. White 4. College Grad
+##                    region         health  logwage      wage
+## 231655 2. Middle Atlantic      1. <=Good 4.318063  75.04315
+## 86582  2. Middle Atlantic 2. >=Very Good 4.255273  70.47602
+## 161300 2. Middle Atlantic      1. <=Good 4.875061 130.98218
+## 155159 2. Middle Atlantic 2. >=Very Good 5.041393 154.68529
+## 11443  2. Middle Atlantic      1. <=Good 4.318063  75.04315
+## 376662 2. Middle Atlantic 2. >=Very Good 4.845098 127.11574
+##        jobclass.1. Industrial jobclass.2. Information health_ins.1. Yes
+## 231655                      1                       0                 0
+## 86582                       0                       1                 0
+## 161300                      1                       0                 1
+## 155159                      0                       1                 1
+## 11443                       0                       1                 1
+## 376662                      0                       1                 1
+##        health_ins.2. No
+## 231655                1
+## 86582                 1
+## 161300                0
+## 155159                0
+## 11443                 0
+## 376662                0
+```
+
+Como comentado acima, nós temos uma variável *dummy* para cada categoria. Como tínhamos 2 variáveis qualitativas, então ficamos com 4 variáveis *dummies*. Porém isso não é necessário, pois estaríamos inserindo 2 variáveis com colinearidade perfeita no modelo: "*jobclass=industrial*" é totalmente correlacionada com "*jobclass=information*", pois o resultado de uma influencia totalmente o da outra (o mesmo vale para as variáveis do plano de saúde). Dessa forma, vamos remover essas variáveis desnecessárias.
+
+
+```r
+Wage_dummy = dplyr::select(Wage_dummy, -c("jobclass.2. Information","health_ins.2. No"))
+head(Wage_dummy)
+```
+
+```
+##        year age           maritl     race       education
+## 231655 2006  18 1. Never Married 1. White    1. < HS Grad
+## 86582  2004  24 1. Never Married 1. White 4. College Grad
+## 161300 2003  45       2. Married 1. White 3. Some College
+## 155159 2003  43       2. Married 3. Asian 4. College Grad
+## 11443  2005  50      4. Divorced 1. White      2. HS Grad
+## 376662 2008  54       2. Married 1. White 4. College Grad
+##                    region         health  logwage      wage
+## 231655 2. Middle Atlantic      1. <=Good 4.318063  75.04315
+## 86582  2. Middle Atlantic 2. >=Very Good 4.255273  70.47602
+## 161300 2. Middle Atlantic      1. <=Good 4.875061 130.98218
+## 155159 2. Middle Atlantic 2. >=Very Good 5.041393 154.68529
+## 11443  2. Middle Atlantic      1. <=Good 4.318063  75.04315
+## 376662 2. Middle Atlantic 2. >=Very Good 4.845098 127.11574
+##        jobclass.1. Industrial health_ins.1. Yes
+## 231655                      1                 0
+## 86582                       0                 0
+## 161300                      1                 1
+## 155159                      0                 1
+## 11443                       0                 1
+## 376662                      0                 1
+```
+
+Uma maneira mais simples de fazer isso, sem precisarmos retirar cada variável, é utilizar o argumento "*fullRank*" da função `dummyVars()`.
+
+
+```r
+dummies = dummyVars(wage~jobclass+health_ins, data = Wage, fullRank = T)
+
+# Aplicando ao modelo:
+Dummies = predict(dummies, newdata = Wage)
+```
+
+Note que o comando "fullRank=T" removeu a primeira variável de cada classificação.
+
+
+```r
+# Anexando esse novo objeto aos dados:
+Wage_dummy = cbind(Wage, Dummies)
+head(Wage_dummy)
+```
+
+```
+##        year age           maritl     race       education
+## 231655 2006  18 1. Never Married 1. White    1. < HS Grad
+## 86582  2004  24 1. Never Married 1. White 4. College Grad
+## 161300 2003  45       2. Married 1. White 3. Some College
+## 155159 2003  43       2. Married 3. Asian 4. College Grad
+## 11443  2005  50      4. Divorced 1. White      2. HS Grad
+## 376662 2008  54       2. Married 1. White 4. College Grad
+##                    region       jobclass         health health_ins  logwage
+## 231655 2. Middle Atlantic  1. Industrial      1. <=Good      2. No 4.318063
+## 86582  2. Middle Atlantic 2. Information 2. >=Very Good      2. No 4.255273
+## 161300 2. Middle Atlantic  1. Industrial      1. <=Good     1. Yes 4.875061
+## 155159 2. Middle Atlantic 2. Information 2. >=Very Good     1. Yes 5.041393
+## 11443  2. Middle Atlantic 2. Information      1. <=Good     1. Yes 4.318063
+## 376662 2. Middle Atlantic 2. Information 2. >=Very Good     1. Yes 4.845098
+##             wage jobclass.2. Information health_ins.2. No
+## 231655  75.04315                       0                1
+## 86582   70.47602                       1                1
+## 161300 130.98218                       0                0
+## 155159 154.68529                       1                0
+## 11443   75.04315                       1                0
+## 376662 127.11574                       1                0
+```

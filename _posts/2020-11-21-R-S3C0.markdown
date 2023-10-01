@@ -1,0 +1,12 @@
+---
+layout: post
+title: "Motivação"
+date: 2020-11-21 22:50:58 
+lang: R
+category: Pré-Processamento
+description: "Apresenta as ideias centrais do pré-processamento"
+---
+
+## Motivação
+
+Antes de criarmos um modelo de predição, é importante plotarmos as variáveis do nosso modelo antecipadamente para observarmos se há algum comportamento estranho entre elas. Por exemplo, podemos ter uma variável que assuma frequentemente um único valor (possui muito pouca variabilidade), o que não acrescenta informações relevantes ao modelo, ou uma que possua alguns dados faltantes (NA's). O que podemos fazer nesses casos, que é o que iremos estudar neste capítulo, é realizar alterações em tais variáveis, afim de melhorar/otimizar a nossa predição/classificação. Essa é a ideia de **pré-processar**.

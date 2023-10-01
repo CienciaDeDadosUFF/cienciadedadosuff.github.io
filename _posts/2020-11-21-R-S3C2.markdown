@@ -1,0 +1,467 @@
+---
+layout: post
+title: "Tratamento de Dados Faltantes"
+date: 2020-11-21 22:50:58 
+lang: R
+category: Pré-Processamento
+description: "Apresenta meios de tratar dados faltantes (NA's) utilizando algoritmos de aprendizado de máquina."
+---
+
+### Tratando NA's{#link15}
+
+É muito comum encontrar alguns dados faltantes (NA's) em uma base de dados. E quando você usa essa base para fazer predições, o algoritmo preditor muitas vezes falha, pois eles são criados para não manipular dados ausentes (na maioria dos casos). O mais recomendado a se fazer é descartar esses dados, principalmente se o número de variáveis for muito pequeno. Porém, em alguns casos, podemos tentar substituir os NA's da amostra por dados de outros elementos que possuam características parecidas.
+
+> **Obs:** Este é um procedimento que deve ser feito com muito cuidado, apenas em situações de real necessidade.
+
+#### Método *k-Nearest Neighbors* (*knn*)
+
+O método *k-Nearest Neighbors* (*knn*) consiste em procurar os k vizinhos mais próximos do elemento que possui o dado faltante de uma variável de interesse, calculando a média dos valores observados dessa variável dos k vizinhos e imputando esse valor ao elemento.
+
+Vamos utilizar, novamente, a variável "capitalAve" do banco de dados "spam", como um exemplo.
+
+
+```r
+library(kernlab)
+library(caret)
+data(spam)
+set.seed(13343)
+# Criando amostras treino e teste:
+noTreino = createDataPartition(y = spam$type, p = 0.75, list = F)
+treino = spam[noTreino,]
+teste = spam[-noTreino,]
+```
+
+Originalmente, a variável "capitalAve"" não possui NA's. Mas para o objetivo de compreendermos como esse método funciona, vamos inserir alguns valores NA's.
+
+
+```r
+NAs = rbinom(dim(treino)[1], size = 1, p = 0.05)==1
+```
+
+O que fizemos com a função `rbinom()` é criar uma amostra de tamanho "dim(treino)[1]" (quantidade de elementos no treino) de uma variável Bernoulli com probabilidade de sucesso = 0,05. Ou seja, o vetor NAs será um vetor do tipo *logical*, onde será TRUE se o elemento gerado pela rbinom() é "1" (probabilidade de 0,05 de acontecer) e FALSE se é "0" (probabilidade 0,95 de acontecer).
+
+Para preservar os valores originais, vamos criar uma nova coluna de dados no treino chamada capAve, que será uma réplica da variável capitalAve, mas com os NA's inseridos em alguns valores. Vamos utilizar o pacote `dplyr`[@dplyr] para a manipulação dos dados.
+
+
+```r
+library(dplyr)
+# Criando a nova variável capAve com os mesmos valores da capitalAve:
+treino = treino %>% mutate(capAve = capitalAve)
+# Inserindo os Na's:
+treino$capAve[NAs] = NA 
+```
+
+Agora podemos aplicar o método KNN para imputar valores aos NA's, escolhendo essa opção por meio do argumento "*method*" da função `preProcess()`. O padrão da função é utilizar k=5.
+
+
+```r
+imput = preProcess(treino, method = "knnImpute")
+
+# Aplicando o modelo de pré-processamento ao banco de dados treino:
+treino$capAve = predict(imput,treino)$capAve
+
+# Olhando para a variável capAve após o pré-processamento:
+head(treino$capAve, n = 20)
+```
+
+```
+##  [1] -0.046596612 -0.008173931  0.125003949 -0.052792906 -0.052792906
+##  [6] -0.067986558 -0.105588726 -0.083548027  0.122825344 -0.115746121
+## [11] -0.047388832 -0.093931771 -0.097100652 -0.021245565  0.850451334
+## [16] -0.115519772 -0.044418006 -0.015445381 -0.120867259  0.001785409
+```
+
+Note que além de ter imputado valores aos NA's a função também padronizou os dados.
+
+> **Obs.:** O método knnImpute só resolve os NA's quando os dados faltantes são NUMÉRICOS.
+
+E se quiséssemos aplicar o método de imputar valores aos NA's em **todo** o conjunto de dados, e não só em apenas 1 variável? Também podemos fazer isso utilizando a função preProcess().
+
+Vamos utilizar a base de dados "*airquality*", já disponível no R, como exemplo.
+
+
+```r
+base = airquality
+head(base, n = 15)
+```
+
+```
+##    Ozone Solar.R Wind Temp Month Day
+## 1     41     190  7.4   67     5   1
+## 2     36     118  8.0   72     5   2
+## 3     12     149 12.6   74     5   3
+## 4     18     313 11.5   62     5   4
+## 5     NA      NA 14.3   56     5   5
+## 6     28      NA 14.9   66     5   6
+## 7     23     299  8.6   65     5   7
+## 8     19      99 13.8   59     5   8
+## 9      8      19 20.1   61     5   9
+## 10    NA     194  8.6   69     5  10
+## 11     7      NA  6.9   74     5  11
+## 12    16     256  9.7   69     5  12
+## 13    11     290  9.2   66     5  13
+## 14    14     274 10.9   68     5  14
+## 15    18      65 13.2   58     5  15
+```
+
+Note que essa base possui alguns valores NA's em algumas variáveis.
+
+
+```r
+# Utilizando o método KNN para imputar valores aos NA's:
+imput = preProcess(base, method = "knnImpute")
+
+# Aplicando o modelo em toda a base de dados:
+nova_base = predict(imput, base)
+
+# Vamos olhar para a nova base:
+head(nova_base, n = 15)
+```
+
+```
+##          Ozone      Solar.R        Wind       Temp     Month        Day
+## 1  -0.03423409  0.045176154 -0.72594816 -1.1497140 -1.407294 -1.6700195
+## 2  -0.18580489 -0.754304874 -0.55563883 -0.6214670 -1.407294 -1.5572102
+## 3  -0.91334473 -0.410083876  0.75006604 -0.4101682 -1.407294 -1.4444009
+## 4  -0.73145977  1.410956244  0.43783226 -1.6779609 -1.407294 -1.3315917
+## 5  -0.81027658 -0.221317522  1.23260914 -2.3118573 -1.407294 -1.2187824
+## 6  -0.42831817  0.007422883  1.40291847 -1.2553634 -1.407294 -1.1059732
+## 7  -0.57988897  1.255501599 -0.38532950 -1.3610128 -1.407294 -0.9931639
+## 8  -0.70114561 -0.965279034  1.09068470 -1.9949091 -1.407294 -0.8803546
+## 9  -1.03460136 -1.853591288  2.87893266 -1.7836103 -1.407294 -0.7675454
+## 10 -0.64051729  0.089591767 -0.38532950 -0.9384152 -1.407294 -0.6547361
+## 11 -1.06491552  0.749163615 -0.86787260 -0.4101682 -1.407294 -0.5419268
+## 12 -0.79208809  0.778033763 -0.07309573 -0.9384152 -1.407294 -0.4291176
+## 13 -0.94365889  1.155566471 -0.21502017 -1.2553634 -1.407294 -0.3163083
+## 14 -0.85271641  0.977904020  0.26752293 -1.0440646 -1.407294 -0.2034991
+## 15 -0.73145977 -1.342811742  0.92037537 -2.1005585 -1.407294 -0.0906898
+```
+
+Note que ela não possui mais NA's e todas as variáveis foram padronizadas.
+
+#### Utilizando Algoritmos de Aprendizado de Máquinas com o Pacote mlr
+
+O pacote `mlr`[@mlr] fornece vários métodos de imputação para dados faltantes. Alguns desses métodos possuem técnicas padrões como, por exemplo, imputação por uma constante (uma constante fixa, a média, a mediana ou a moda) ou números aleatórios (da distribuição empírica dos dados em consideração ou de uma determinada família de distribuições). Para mais informações sobre como utilizar essas imputações padrões, consulte <https://mlr.mlr-org.com/reference/imputations.html>. Entretanto, a principal vantagem desse pacote - que é o que abordaremos nessa seção - é a possibilidade de imputação dos valores faltantes de uma variável por meio de predições de um algoritmo de aprendizado de máquinas, utilizando como base as outras variáveis. Ou seja, além de aceitar valores faltantes de variáveis numéricas para a imputação, ele também aceita de variáveis categóricas.
+
+Podemos observar todos os algoritmos de *machine learning* possíveis de serem utilizados nesse pacote através da função `listLearners()`.
+
+- Para um problema de imputação de NA's de variáveis **numéricas** temos os seguintes métodos:
+
+
+```r
+library(mlr)
+knitr::kable(listLearners("regr", properties = "missings")["class"])
+```
+
+
+
+|class                 |
+|:---------------------|
+|regr.bartMachine      |
+|regr.cforest          |
+|regr.ctree            |
+|regr.cubist           |
+|regr.featureless      |
+|regr.gbm              |
+|regr.h2o.deeplearning |
+|regr.h2o.gbm          |
+|regr.h2o.glm          |
+|regr.h2o.randomForest |
+|regr.randomForestSRC  |
+|regr.rpart            |
+|regr.xgboost          |
+
+- Para um problema de imputação de NA's de variáveis **categóricas** temos os seguintes métodos:
+
+
+```r
+knitr::kable(listLearners("classif", properties = "missings")["class"])
+```
+
+
+
+|class                    |
+|:------------------------|
+|classif.bartMachine      |
+|classif.boosting         |
+|classif.C50              |
+|classif.cforest          |
+|classif.ctree            |
+|classif.featureless      |
+|classif.gbm              |
+|classif.h2o.deeplearning |
+|classif.h2o.gbm          |
+|classif.h2o.glm          |
+|classif.h2o.randomForest |
+|classif.J48              |
+|classif.JRip             |
+|classif.naiveBayes       |
+|classif.OneR             |
+|classif.PART             |
+|classif.randomForestSRC  |
+|classif.rpart            |
+|classif.xgboost          |
+
+Vamos utilizar o banco de dados "heart" para realizarmos a imputação de dados faltantes categóricos.
+
+
+```r
+library(caret)
+library(readr)
+library(dplyr)
+
+heart = read_csv("Heart.csv")
+
+# Verificando se a base "heart" possui valores NA's em alguma variável:
+apply(heart, 2, function(x) any(is.na(x)))
+```
+
+```
+##           X1          Age          Sex    ChestPain       RestBP 
+##        FALSE        FALSE        FALSE        FALSE        FALSE 
+##         Chol          Fbs      RestECG        MaxHR        ExAng 
+##        FALSE        FALSE        FALSE        FALSE        FALSE 
+##      Oldpeak        Slope           Ca         Thal HeartDisease 
+##        FALSE        FALSE        FALSE        FALSE        FALSE
+```
+
+Note que a base não possui dados faltantes. Para fins didáticos, vamos inserir alguns na variável "Thal".
+
+
+```r
+# Criando um novo banco de dados que possuirá NA's:
+new.heart = as.data.frame(heart)
+
+set.seed(133)
+# Criando um vetor do tipo logical, onde será TRUE se o elemento gerado pela rbinom() é "1"
+# (probabilidade de 0,1 de acontecer):
+NAs = rbinom(dim(new.heart)[1], size = 1, p = 0.1)==1
+
+# Inserindo os NA's na variável Thal:
+new.heart$Thal[NAs] = NA 
+new.heart$Thal
+```
+
+```
+##   [1] "fixed"      "normal"     "reversable" "normal"     "normal"    
+##   [6] "normal"     "normal"     "normal"     "reversable" "reversable"
+##  [11] "fixed"      "normal"     "fixed"      "reversable" "reversable"
+##  [16] "normal"     "reversable" "normal"     "normal"     "normal"    
+##  [21] NA           "normal"     "normal"     "reversable" "reversable"
+##  [26] "normal"     "normal"     "normal"     "normal"     NA          
+##  [31] "normal"     "reversable" "normal"     "reversable" "normal"    
+##  [36] "normal"     "reversable" "fixed"      "reversable" "normal"    
+##  [41] "reversable" "reversable" "normal"     "normal"     "normal"    
+##  [46] "reversable" "normal"     "reversable" "normal"     "normal"    
+##  [51] "normal"     "reversable" "normal"     "normal"     "reversable"
+##  [56] NA           "reversable" "reversable" "normal"     "normal"    
+##  [61] NA           "normal"     "reversable" "normal"     NA          
+##  [66] "reversable" "normal"     "reversable" "reversable" "normal"    
+##  [71] "normal"     "reversable" "reversable" "fixed"      NA          
+##  [76] "normal"     "reversable" "normal"     "normal"     NA          
+##  [81] "normal"     "normal"     "normal"     "reversable" "normal"    
+##  [86] "normal"     "normal"     "normal"     "normal"     "normal"    
+##  [91] "reversable" "reversable" "normal"     "normal"     "reversable"
+##  [96] "reversable" "reversable" "normal"     "normal"     "normal"    
+## [101] "normal"     NA           "normal"     "reversable" "reversable"
+## [106] "reversable" "reversable" "reversable" "reversable" "reversable"
+## [111] "normal"     "fixed"      "reversable" "reversable" "fixed"     
+## [116] "normal"     "normal"     "reversable" "reversable" "reversable"
+## [121] "reversable" "normal"     NA           "normal"     NA          
+## [126] "reversable" "reversable" "normal"     "normal"     "reversable"
+## [131] "reversable" "normal"     "normal"     "normal"     "normal"    
+## [136] NA           "reversable" "reversable" "normal"     "normal"    
+## [141] "reversable" "normal"     "reversable" "reversable" "normal"    
+## [146] "reversable" "normal"     "normal"     NA           "reversable"
+## [151] "normal"     "reversable" "reversable" "normal"     "normal"    
+## [156] "reversable" "reversable" NA           "reversable" "reversable"
+## [161] NA           "normal"     "normal"     "normal"     "reversable"
+## [166] "normal"     NA           "normal"     "reversable" "reversable"
+## [171] "normal"     "normal"     "fixed"      "reversable" "reversable"
+## [176] "fixed"      "normal"     "normal"     "reversable" "reversable"
+## [181] "normal"     "reversable" "normal"     "normal"     "reversable"
+## [186] "fixed"      "reversable" "reversable" "normal"     "reversable"
+## [191] "normal"     "normal"     "normal"     "normal"     "normal"    
+## [196] "normal"     "normal"     "normal"     "normal"     NA          
+## [201] "reversable" NA           "reversable" NA           "reversable"
+## [206] "normal"     "normal"     "normal"     "reversable" "normal"    
+## [211] "reversable" "normal"     "reversable" "normal"     "normal"    
+## [216] "normal"     "normal"     "normal"     "normal"     "normal"    
+## [221] "reversable" "normal"     "normal"     "normal"     "normal"    
+## [226] "normal"     "normal"     "normal"     "normal"     NA          
+## [231] "normal"     "normal"     "normal"     "reversable" "reversable"
+## [236] "normal"     "normal"     "normal"     "normal"     "normal"    
+## [241] "normal"     "normal"     "normal"     "reversable" "normal"    
+## [246] "reversable" "normal"     "fixed"      "reversable" "reversable"
+## [251] "normal"     "normal"     "normal"     "normal"     "normal"    
+## [256] "normal"     "reversable" "normal"     "normal"     "normal"    
+## [261] "normal"     "normal"     "fixed"      "fixed"      "reversable"
+## [266] "normal"     "reversable" "fixed"      "reversable" "normal"    
+## [271] "normal"     "reversable" "normal"     "normal"     "normal"    
+## [276] "normal"     "reversable" "normal"     "reversable" NA          
+## [281] "reversable" "fixed"      "fixed"      "reversable" "normal"    
+## [286] "reversable" "normal"     "fixed"      "reversable" "normal"    
+## [291] NA           "fixed"      NA           "reversable" "reversable"
+## [296] "reversable" "normal"
+```
+
+Agora vamos imputar categorias aos dados faltantes da variável Thal. Iremos fazer isso através da função `impute()`. O único problema é que possuímos variáveis do tipo *character* na base de dados, e a função não aceita esta classe nos dados. 
+
+
+```r
+str(new.heart)
+```
+
+```
+## 'data.frame':	297 obs. of  15 variables:
+##  $ X1          : num  1 2 3 4 5 6 7 8 9 10 ...
+##  $ Age         : num  63 67 67 37 41 56 62 57 63 53 ...
+##  $ Sex         : num  1 1 1 1 0 1 0 0 1 1 ...
+##  $ ChestPain   : chr  "typical" "asymptomatic" "asymptomatic" "nonanginal" ...
+##  $ RestBP      : num  145 160 120 130 130 120 140 120 130 140 ...
+##  $ Chol        : num  233 286 229 250 204 236 268 354 254 203 ...
+##  $ Fbs         : num  1 0 0 0 0 0 0 0 0 1 ...
+##  $ RestECG     : num  2 2 2 0 2 0 2 0 2 2 ...
+##  $ MaxHR       : num  150 108 129 187 172 178 160 163 147 155 ...
+##  $ ExAng       : num  0 1 1 0 0 0 0 1 0 1 ...
+##  $ Oldpeak     : num  2.3 1.5 2.6 3.5 1.4 0.8 3.6 0.6 1.4 3.1 ...
+##  $ Slope       : num  3 2 2 3 1 1 3 1 2 3 ...
+##  $ Ca          : num  0 3 2 0 0 0 2 0 1 0 ...
+##  $ Thal        : chr  "fixed" "normal" "reversable" "normal" ...
+##  $ HeartDisease: chr  "No" "Yes" "Yes" "No" ...
+##  - attr(*, "spec")=
+##   .. cols(
+##   ..   X1 = col_double(),
+##   ..   Age = col_double(),
+##   ..   Sex = col_double(),
+##   ..   ChestPain = col_character(),
+##   ..   RestBP = col_double(),
+##   ..   Chol = col_double(),
+##   ..   Fbs = col_double(),
+##   ..   RestECG = col_double(),
+##   ..   MaxHR = col_double(),
+##   ..   ExAng = col_double(),
+##   ..   Oldpeak = col_double(),
+##   ..   Slope = col_double(),
+##   ..   Ca = col_double(),
+##   ..   Thal = col_character(),
+##   ..   HeartDisease = col_character()
+##   .. )
+```
+
+Vamos transformar essas categorias em fatores.
+
+
+```r
+new.heart = mutate_if(new.heart, is.character, as.factor)
+```
+
+Vamos separar os dados em treino e teste.
+
+
+```r
+set.seed(133)
+noTreino = caret::createDataPartition(y = new.heart$HeartDisease, p = 0.75, list = F)
+treino = new.heart[noTreino,]
+teste = new.heart[-noTreino,]
+```
+
+
+
+Agora vamos imputar os dados no conjunto treino com a função `impute()`.
+
+Para isso passamos como argumento:
+
+1. A base de dados que possui os valores faltantes;
+
+2. A variável resposta do modelo, ou seja, a variável de interesse para predição. No nosso exemplo essa variável é a "HeartDisease", que indica se uma pessoa possui uma doença cardíaca;
+
+3. Lista contendo o método de imputação para cada coluna do banco de dados. Como apenas temos NA's na variável "Thal", a lista só possuirá essa variável, seguida do método de imputação que desejamos para ela. Vamos utilizar o método de árvores de decisão ("rpart").
+
+
+```r
+treino = mlr::impute(treino, target = "HeartDisease",
+                     cols = list(Thal = imputeLearner("classif.rpart")))
+```
+
+Essa função retorna uma lista de tamanho 2, onde primeiro se encontra a base de dados após a imputação dos valores e em seguida detalhes do método utilizado. 
+
+Vamos olhar para a variável após a imputação dos dados:
+
+
+```r
+treino$data[,"Thal"]
+```
+
+```
+##   [1] normal     normal     normal     normal     normal     normal    
+##   [7] reversable reversable fixed      normal     fixed      reversable
+##  [13] normal     normal     normal     reversable reversable reversable
+##  [19] normal     normal     normal     normal     reversable normal    
+##  [25] normal     reversable reversable reversable normal     reversable
+##  [31] reversable normal     reversable normal     normal     normal    
+##  [37] normal     reversable normal     normal     reversable reversable
+##  [43] reversable reversable normal     normal     reversable normal    
+##  [49] reversable reversable reversable normal     normal     reversable
+##  [55] reversable fixed      reversable normal     reversable normal    
+##  [61] normal     reversable normal     normal     normal     reversable
+##  [67] normal     normal     normal     normal     normal     reversable
+##  [73] reversable normal     reversable reversable reversable normal    
+##  [79] normal     normal     reversable reversable reversable reversable
+##  [85] reversable reversable fixed      normal     reversable reversable
+##  [91] normal     reversable normal     normal     reversable reversable
+##  [97] normal     normal     normal     normal     normal     reversable
+## [103] reversable normal     reversable normal     normal     reversable
+## [109] normal     normal     normal     reversable reversable normal    
+## [115] normal     reversable reversable normal     normal     normal    
+## [121] reversable reversable normal     reversable reversable normal    
+## [127] normal     reversable reversable fixed      normal     normal    
+## [133] reversable reversable reversable normal     normal     fixed     
+## [139] reversable reversable normal     reversable normal     normal    
+## [145] normal     normal     normal     normal     reversable reversable
+## [151] reversable reversable reversable reversable normal     normal    
+## [157] reversable reversable normal     normal     normal     normal    
+## [163] normal     reversable normal     normal     normal     normal    
+## [169] normal     normal     normal     normal     normal     normal    
+## [175] normal     reversable reversable normal     normal     normal    
+## [181] normal     normal     reversable reversable normal     fixed     
+## [187] reversable normal     normal     normal     normal     normal    
+## [193] reversable normal     normal     normal     fixed      fixed     
+## [199] reversable normal     reversable fixed      reversable normal    
+## [205] reversable normal     normal     normal     normal     reversable
+## [211] normal     reversable reversable fixed      fixed      reversable
+## [217] normal     normal     fixed      reversable normal     normal    
+## [223] normal    
+## Levels: fixed normal reversable
+```
+
+Para implementarmos esse algoritmo no conjunto de dados teste basta utilizarmos a função `reimpute()`, que implementaremos o mesmo método com os mesmos critérios criados no conjuno treino. Basta passar os seguintes argumentos nessa função:
+
+1. A base de dados que possui os valores faltantes;
+
+2. O mesmo método utilizado no treino.
+
+A função retorna a base de dados com os valores imputados.
+
+
+```r
+teste = reimpute(teste, treino$desc)
+teste$Thal
+```
+
+```
+##  [1] fixed      reversable reversable reversable normal     normal    
+##  [7] normal     reversable normal     normal     fixed      normal    
+## [13] normal     reversable normal     normal     normal     reversable
+## [19] normal     normal     normal     normal     normal     reversable
+## [25] normal     reversable reversable fixed      normal     reversable
+## [31] reversable normal     reversable reversable normal     normal    
+## [37] reversable reversable normal     reversable reversable reversable
+## [43] reversable normal     normal     fixed      normal     reversable
+## [49] normal     normal     normal     normal     normal     reversable
+## [55] normal     normal     normal     normal     normal     normal    
+## [61] normal     normal     reversable normal     normal     normal    
+## [67] normal     normal     reversable normal     fixed      reversable
+## [73] reversable reversable
+## Levels: fixed normal reversable
+```

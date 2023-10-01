@@ -1,0 +1,190 @@
+---
+layout: post
+title: "Padronização dos Dados"
+date: 2020-11-21 22:50:58 
+lang: R
+category: Pré-Processamento
+description: "Apresenta meios de realizar a padronização dos dados."
+---
+
+### Padronizando os Dados
+
+Vamos carregar o banco de dados spam e criar amostras treino e teste.
+
+
+```r
+library(kernlab)
+library(caret)
+data(spam)
+set.seed(123)
+noTreino = createDataPartition(y = spam$type, p = 0.75, list = F)
+treino = spam[noTreino,]
+teste = spam[-noTreino,]
+# Vamos olhar para a variável capitalAve (média de letras maiúsculas por linha):
+hist(treino$capitalAve,
+     ylab = "Frequência",
+     xlab = "Média de Letras Maiúsculas por Linha",
+     main = "Histograma da Média de Letras Maiúsculas por Linha",
+     col="steelblue", breaks = 4)
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-54-1.png)
+
+Podemos notar que muitos elementos estão próximos do 0 e os outros estão muito espalhados. Ou seja, essa variável não está trazendo muita informação para o modelo.
+
+
+```r
+mean(treino$capitalAve)
+```
+
+```
+## [1] 4.863991
+```
+
+
+```r
+sd(treino$capitalAve)
+```
+
+```
+## [1] 27.80173
+```
+
+Podemos ver que a média é pequena mas o desvio padrão é muito grande.
+
+Para que os algoritmos de *machine learning* não sejam enganados pelo fato de a variável ser altamente variável, vamos realizar um pré-processamento. Vamos padronizar os dados da variável pela amostra **treino** pegando cada valor dela e subtraindo pela sua média e dividindo pelo seu desvio padrão.
+
+
+```r
+treinoCapAve = treino$capitalAve
+# Padronizando a variável:
+treinoCapAveP = (treino$capitalAve-mean(treinoCapAve))/sd(treinoCapAve)
+# Média da variável padronizada:
+mean(treinoCapAveP)
+```
+
+```
+## [1] 0.000000000000000009854945
+```
+
+Agora temos média 0.
+
+
+```r
+# Desvio padrão da variável padronizada:
+sd(treinoCapAveP)
+```
+
+```
+## [1] 1
+```
+
+E variância 1.
+
+
+```r
+# Vamos olhar para a variável capitalAve (média de letras maiúsculas por linha):
+hist(treinoCapAveP, ylab = "Frequência", xlab = "Média de Letras Maiúsculas por Linha",
+     main = "Histograma da Média de Letras Maiúsculas por Linha",col="steelblue", breaks =4)
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-59-1.png)
+
+Agora vamos aplicar a mesma transformação na amostra teste. Uma coisa a ter em mente é que ao aplicar um algoritmo no conjunto de teste, só podemos usar os parâmetros que estimamos no conjunto de treino. Ou seja, **temos que usar a média e o desvio padrão da variável capitalAve do TREINO**.
+
+
+```r
+testeCapAve = teste$capitalAve
+# Aplicando a transformação:
+testeCapAveP = (testeCapAve-mean(treinoCapAve))/sd(treinoCapAve)
+# Média da variável transformada do conjunto teste:
+mean(testeCapAveP)
+```
+
+```
+## [1] 0.04713308
+```
+
+
+```r
+# Desvio Padrão da variável transformada do conjunto teste:
+sd(testeCapAveP)
+```
+
+```
+## [1] 1.486708
+```
+
+Nesse caso não obtemos média 0 e variância 1, afinal nós utilizamos os parâmetros do treino para a padronização. Mas podemos notar que os valores estão relativamente próximos disso.
+
+#### Padronizando os Dados com a Função preProcess()
+
+Podemos realizar a padronização dos dados utilizando a função `preProcess()` do pacote *caret*. Ela realiza vários tipos de padronizações, mas para utilizarmos a mesma (subtrair a média e dividir pelo desvio padrão) utilizamos os métodos "*center*" e "*scale*".
+
+
+```r
+padronizacao = preProcess(treino, method = c("center","scale"))
+# O comando acima cria um modelo de padronização. Para ter efeito ele deve ser aplicado nos dados com o
+# comando predict().
+treinoCapAveS = predict(padronizacao,treino)$capitalAve
+# Média da variável padronizada:
+mean(treinoCapAveS)
+```
+
+```
+## [1] 0.000000000000000008680584
+```
+
+
+```r
+# Desvio padrão da variável padronizada:
+sd(treinoCapAveS)
+```
+
+```
+## [1] 1
+```
+
+Note que chegamos à mesma média e variância de quando padronizamos sem o preProcess().
+
+Agora vamos aplicar essa padronização no conjunto de teste:
+
+
+```r
+testeCapAveS = predict(padronizacao,teste)$capitalAve
+# Note que aplicamos o modelo de padronização criado com a amostra treino.
+```
+
+Observe que também encontramos o mesmo valor da média e desvio padrão de quando padronizamos a variável do conjunto teste anteriormente:
+
+
+```r
+mean(testeCapAveS)
+```
+
+```
+## [1] 0.04713308
+```
+
+
+```r
+sd(testeCapAveS)
+```
+
+```
+## [1] 1.486708
+```
+
+##### `preProcess` como argumento da função `train()`
+
+Também podemos utilizar o `preProcess` dentro da função `train()` da seguinte forma:
+
+
+```r
+modelo = train(type~., data = treino, preProcess = c("center","scale"), 
+               method = "glm")
+```
+
+A única limitação é que esse método aplica a padronização em **todas** as variáveis numéricas.
+
+> **Obs.:** Quando for padronizar uma variável da sua base para depois treinar seu algoritmo, lembre-se de colocar a variável padronizada de volta na sua base.

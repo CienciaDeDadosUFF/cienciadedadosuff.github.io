@@ -1,0 +1,372 @@
+---
+
+layout: post
+
+title: "Medidas de Avaliação"
+
+date: 2020-11-21 23:50:41 
+
+lang: R
+category: Avaliação
+description: "Apresenta medidas e métodos de avaliação de classificadores e regressores"
+---
+
+
+## Avaliando Preditores - Introdução ao Pacote Caret
+
+O pacote caret [@caret] (abreviação de *Classification And Regression Training*) é um pacote muito útil para o *machine learning* pois envolve algoritmos que possibilitam que as previsões sejam feitas de forma mais prática, simplificando o processo de criação de modelos preditivos. Neste [guia detalhado](http://topepo.github.io/caret/index.html) pode ser encontrado mais informações sobre o pacote.
+
+### Avaliando Classificadores {#link3}
+
+Vamos utilizar a base de dados "spam" novamente para realizarmos o procedimento de predição para um e-mail (se ele é spam ou não spam), mas dessa vez utilizando o pacote caret. Para fazer a separação da amostra em treino e teste vamos primeiramente particionar a base de dados com a função `createDataPartition()`.
+ 
+
+```r
+library(caret)
+library(kernlab)
+data(spam)
+set.seed(371)
+noTreino = createDataPartition(y = spam$type, p = .75, list = F)
+```
+
+Essa função retorna os números das linhas a serem selecionadas para o treino. Os principais argumentos são:
+
+- **y** = classe dos dados que deverá ser mantida a mesma proporção nos conjuntos treino e teste. Para o nosso exemplo, escolhemos manter a mesma proporção do tipo do e-mail. Sendo assim, tanto no treino como no teste teremos a mesma proporção de e-mails spam e não spam.
+- **p** = porcentagem da amostra que será utilizada para o treino. Para o nosso exemplo, escolhemos 75%.
+- **list** = argumento do tipo *logical*; se TRUE $\rightarrow$ os resultados serão mostrados em uma lista, se FALSE $\rightarrow$ os resultados serão mostrados em uma matriz.
+
+> **OBS:** Esse comando deve ser utilizado apenas quando os dados são amostras independentes. 
+
+Agora vamos separar o que irá para o treino e o que irá para o teste.
+
+
+```r
+# Separando as linhas para o treino:
+treino = spam[noTreino,]
+# Separando as linhas para o teste:
+teste = spam[-noTreino,]
+```
+
+Dado que já foi feito a separação das amostras treino e teste, o próximo passo é realizarmos o treinamento. Para isso é preciso escolher um dos modelos para ser utilizado. Uma lista com todos os modelos implementados no pacote caret pode ser vista com o seguinte comando:
+
+
+```r
+names(getModelInfo())
+```
+
+```
+##   [1] "ada"                 "AdaBag"              "AdaBoost.M1"        
+##   [4] "adaboost"            "amdai"               "ANFIS"              
+##   [7] "avNNet"              "awnb"                "awtan"              
+##  [10] "bag"                 "bagEarth"            "bagEarthGCV"        
+##  [13] "bagFDA"              "bagFDAGCV"           "bam"                
+##  [16] "bartMachine"         "bayesglm"            "binda"              
+##  [19] "blackboost"          "blasso"              "blassoAveraged"     
+##  [22] "bridge"              "brnn"                "BstLm"              
+##  [25] "bstSm"               "bstTree"             "C5.0"               
+##  [28] "C5.0Cost"            "C5.0Rules"           "C5.0Tree"           
+##  [31] "cforest"             "chaid"               "CSimca"             
+##  [34] "ctree"               "ctree2"              "cubist"             
+##  [37] "dda"                 "deepboost"           "DENFIS"             
+##  [40] "dnn"                 "dwdLinear"           "dwdPoly"            
+##  [43] "dwdRadial"           "earth"               "elm"                
+##  [46] "enet"                "evtree"              "extraTrees"         
+##  [49] "fda"                 "FH.GBML"             "FIR.DM"             
+##  [52] "foba"                "FRBCS.CHI"           "FRBCS.W"            
+##  [55] "FS.HGD"              "gam"                 "gamboost"           
+##  [58] "gamLoess"            "gamSpline"           "gaussprLinear"      
+##  [61] "gaussprPoly"         "gaussprRadial"       "gbm_h2o"            
+##  [64] "gbm"                 "gcvEarth"            "GFS.FR.MOGUL"       
+##  [67] "GFS.LT.RS"           "GFS.THRIFT"          "glm.nb"             
+##  [70] "glm"                 "glmboost"            "glmnet_h2o"         
+##  [73] "glmnet"              "glmStepAIC"          "gpls"               
+##  [76] "hda"                 "hdda"                "hdrda"              
+##  [79] "HYFIS"               "icr"                 "J48"                
+##  [82] "JRip"                "kernelpls"           "kknn"               
+##  [85] "knn"                 "krlsPoly"            "krlsRadial"         
+##  [88] "lars"                "lars2"               "lasso"              
+##  [91] "lda"                 "lda2"                "leapBackward"       
+##  [94] "leapForward"         "leapSeq"             "Linda"              
+##  [97] "lm"                  "lmStepAIC"           "LMT"                
+## [100] "loclda"              "logicBag"            "LogitBoost"         
+## [103] "logreg"              "lssvmLinear"         "lssvmPoly"          
+## [106] "lssvmRadial"         "lvq"                 "M5"                 
+## [109] "M5Rules"             "manb"                "mda"                
+## [112] "Mlda"                "mlp"                 "mlpKerasDecay"      
+## [115] "mlpKerasDecayCost"   "mlpKerasDropout"     "mlpKerasDropoutCost"
+## [118] "mlpML"               "mlpSGD"              "mlpWeightDecay"     
+## [121] "mlpWeightDecayML"    "monmlp"              "msaenet"            
+## [124] "multinom"            "mxnet"               "mxnetAdam"          
+## [127] "naive_bayes"         "nb"                  "nbDiscrete"         
+## [130] "nbSearch"            "neuralnet"           "nnet"               
+## [133] "nnls"                "nodeHarvest"         "null"               
+## [136] "OneR"                "ordinalNet"          "ordinalRF"          
+## [139] "ORFlog"              "ORFpls"              "ORFridge"           
+## [142] "ORFsvm"              "ownn"                "pam"                
+## [145] "parRF"               "PART"                "partDSA"            
+## [148] "pcaNNet"             "pcr"                 "pda"                
+## [151] "pda2"                "penalized"           "PenalizedLDA"       
+## [154] "plr"                 "pls"                 "plsRglm"            
+## [157] "polr"                "ppr"                 "PRIM"               
+## [160] "protoclass"          "qda"                 "QdaCov"             
+## [163] "qrf"                 "qrnn"                "randomGLM"          
+## [166] "ranger"              "rbf"                 "rbfDDA"             
+## [169] "Rborist"             "rda"                 "regLogistic"        
+## [172] "relaxo"              "rf"                  "rFerns"             
+## [175] "RFlda"               "rfRules"             "ridge"              
+## [178] "rlda"                "rlm"                 "rmda"               
+## [181] "rocc"                "rotationForest"      "rotationForestCp"   
+## [184] "rpart"               "rpart1SE"            "rpart2"             
+## [187] "rpartCost"           "rpartScore"          "rqlasso"            
+## [190] "rqnc"                "RRF"                 "RRFglobal"          
+## [193] "rrlda"               "RSimca"              "rvmLinear"          
+## [196] "rvmPoly"             "rvmRadial"           "SBC"                
+## [199] "sda"                 "sdwd"                "simpls"             
+## [202] "SLAVE"               "slda"                "smda"               
+## [205] "snn"                 "sparseLDA"           "spikeslab"          
+## [208] "spls"                "stepLDA"             "stepQDA"            
+## [211] "superpc"             "svmBoundrangeString" "svmExpoString"      
+## [214] "svmLinear"           "svmLinear2"          "svmLinear3"         
+## [217] "svmLinearWeights"    "svmLinearWeights2"   "svmPoly"            
+## [220] "svmRadial"           "svmRadialCost"       "svmRadialSigma"     
+## [223] "svmRadialWeights"    "svmSpectrumString"   "tan"                
+## [226] "tanSearch"           "treebag"             "vbmpRadial"         
+## [229] "vglmAdjCat"          "vglmContRatio"       "vglmCumulative"     
+## [232] "widekernelpls"       "WM"                  "wsrf"               
+## [235] "xgbDART"             "xgbLinear"           "xgbTree"            
+## [238] "xyf"
+```
+
+Para o nosso exemplo vamos utilizar o "glm" (*generalized linear model*). Agora vamos criar o nosso modelo, utilizando apenas a amostra **treino**. Para isso vamos usar o comando `train()`.
+
+
+```r
+set.seed(371)
+modelo = caret::train(type ~ ., data = treino, method = "glm")
+```
+
+No primeiro argumento colocamos qual variável estamos tentando prever em função de qual(is). No nosso caso, queremos prever "*type*" em função ("~") de todas as outras, por isso utilizamos o ".". Em seguida dizemos de qual base de dados queremos construir o modelo e por último o método de treinamento utilizado.
+ 
+Agora vamos observar o modelo construído:
+
+
+```r
+modelo
+```
+
+```
+## Generalized Linear Model 
+## 
+## 3451 samples
+##   57 predictor
+##    2 classes: 'nonspam', 'spam' 
+## 
+## No pre-processing
+## Resampling: Bootstrapped (25 reps) 
+## Summary of sample sizes: 3451, 3451, 3451, 3451, 3451, 3451, ... 
+## Resampling results:
+## 
+##   Accuracy   Kappa   
+##   0.9232755  0.838175
+```
+
+Podemos notar que utilizamos uma amostra de tamanho 3451 no treino e 57 preditores (variáveis) para prever a qual classe um e-mail pertence: spam ou não spam. Note, também, que ele utilizou reamostragem por *boostrap* 25 vezes, ou seja, ele construiu 25 amostras ligeiramente diferentes a partir do conjunto de treino. Mais detalhes sobre métodos de reamostragem serão vistos mais à frente. O que essa função faz pode ser resumido da seguinte forma: primeiramente, uma lista de parâmetros para o modelo (se o modelo utiliza parâmetros) é criada e o modelo é treinado em diferentes dados (todas as reamostragens feitas a partir do conjunto de treino) para cada combinação candidata de parâmetros de ajuste. Em cada conjunto de dados é verificado o desempenho das amostras para cada combinação de parâmetros, e a média e o desvio padrão do desempenho de cada combinação é obtido. A combinação com o melhor desempenho é escolhida para o modelo final e todo o conjunto de treino é utilizado para ajustar o modelo final. Caso o modelo não possua parâmetros, como é o caso do GLM, os conjuntos de dados são utilizados para se realizar uma estimação da acurácia e do *kappa*, e é retornado a média de ambas as medidas.
+
+Uma vez que ajustamos o modelo podemos aplicá-lo na amostra **teste**, para estimarmos a precisão do classificador. Para isso utilizamos o comando `predict()`. Dentro da função nós passamos o modelo que ajustamos no treino e em qual base de dados gostaríamos de realizar a predição.
+
+
+```r
+predicao = predict(modelo, newdata = teste)
+head(predicao, n=30)
+```
+
+```
+##  [1] spam    spam    spam    spam    spam    spam    spam    nonspam nonspam
+## [10] spam    spam    spam    nonspam nonspam spam    spam    spam    spam   
+## [19] spam    spam    spam    spam    spam    spam    spam    spam    spam   
+## [28] spam    spam    spam   
+## Levels: nonspam spam
+```
+
+Ao fazermos isso obtemos uma série de predições para as classes dos e-mails do conjunto teste. Podemos, então, realizar a avaliação do modelo, comparando os resultados da predição com as reais classes dos e-mails, por meio do comando `confusionMatrix()`. 
+
+#### Matriz de Confusão (*Confusion Matrix*) {#link2}
+
+A matriz de confusão é a matriz de comparação feita após a predição, onde as linhas correspondem ao que foi previsto e as colunas correspondem à verdade conhecida.
+
+*Exemplo:* A matriz de confusão para o problema de predição dos e-mails em spam ou não spam fica da seguinta forma:
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/Matriz de Confusão Vazia.png)
+
+Onde na primeira coluna se encontram os elementos que possuem a característica de interesse (os e-mails que são spam), e, respectivamente nas linhas, os que foram corretamente identificados - o qual são chamados de **Verdadeiros Positivos (VP)** - e os que foram erroneamente identificados - os **Falsos Negativos (FN)**. Na segunda coluna se encontram os elementos que não possuem a característica de interesse (os e-mails que são ham) e, respectivamente nas linhas, os que foram erroneamente identificados - o qual são chamados de **Falsos Positivos (FP)** - e os que foram corretamente identificados - os **Verdadeiros Negativos (VN)**.
+
+Com as devidas classificações a matriz de confusão fica da seguinte forma:
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/Matriz de Confusão Preenchida.png)
+
+Dentro da função passamos as predições que obtemos pelo modelo ajustado e as reais classificações dos e-mails do conjunto teste.
+
+
+```r
+confusionMatrix(predicao, teste$type)
+```
+
+```
+## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction nonspam spam
+##    nonspam     659   55
+##    spam         38  398
+##                                               
+##                Accuracy : 0.9191              
+##                  95% CI : (0.9018, 0.9342)    
+##     No Information Rate : 0.6061              
+##     P-Value [Acc > NIR] : < 0.0000000000000002
+##                                               
+##                   Kappa : 0.8295              
+##                                               
+##  Mcnemar's Test P-Value : 0.09709             
+##                                               
+##             Sensitivity : 0.9455              
+##             Specificity : 0.8786              
+##          Pos Pred Value : 0.9230              
+##          Neg Pred Value : 0.9128              
+##              Prevalence : 0.6061              
+##          Detection Rate : 0.5730              
+##    Detection Prevalence : 0.6209              
+##       Balanced Accuracy : 0.9120              
+##                                               
+##        'Positive' Class : nonspam             
+## 
+```
+
+A função retorna a matriz de confusão e alguns dados estatísticos, como por exemplo a Precisão (*Accuracy*), o Intervalo de Confiança com 95% de confiança (*95% CI*) para a precisão, a Sensibilidade (*Sensitivity*), Especificidade (*Specificity*), entre outros.
+
+Podemos notar que o GLM foi um bom modelo de treinamento para os nossos dados pois obtivemos altas taxas de acertos: uma precisão de 0,9191, o que indica que acertamos 91,91% das vezes, 0,9455 de sensitividade e 0,8786 de especificidade. A seguir serão apresentadas as definições dessas estatísticas.
+
+> **Precisão/Acurácia (Accuracy)**: é a proporção de amostras classificadas corretamente pelo modelo sobre o total de amostras. 
+
+Ou seja, é somado o número de Verdadeiros Positivos com o número de Verdadeiros Negativos e esse valor é dividido pelo tamanho da amostra: $$Precisão=\frac{VP+VN}{VP+VN+FN+FP}.$$
+
+> **Sensibilidade (Sensitivity):** A sensibilidade de um método de predição é a porcentagem dos elementos da amostra que **possuem** a característica de interesse e foram **corretamente identificados**.
+
+Para o nosso exemplo dos e-mails, a sensabilidade é a porcentagem dos e-mails que são spam e foram classificados pelo nosso algoritmo de predição como spam. Ou seja, pode-se definir a sensibilidade como
+$$Sensibilidade = \frac{VP}{VP+FN}.$$
+
+> **Especificidade (Specificity):** A especificidade de um método de predição é a porcentagem dos elementos da amostra que **não possuem** a característica de interesse e foram **corretamente identificados**.
+
+Para o nosso exemplo dos e-mails, a especificidade é a porcentagem dos e-mails que são *ham* e o algoritmo de predição os classificou como tal. Ou seja, pode-se definir a especificidade como
+$$Especificidade=\frac{VN}{VN+FP}.$$
+
+Quando obtemos as sensibilidades e as especificidades de diferentes preditores, naturalmente surge o questionamente: qual deles é o melhor para estimar as verdadeiras características de interesse? A resposta depende do que é mais importante para o problema:
+
+- Se identificar corretamente os positivos for mais importante, utilizamos o preditor com a maior **sensibilidade**; 
+- Se identificar corretamente os negativos for mais importante, utilizamos o preditor com a maior **especificidade**.
+
+Para mais informações sobre as demais estatísticas liberadas pela função `confusionMatrix()` consulte o [apêndice](#link9).
+
+### Avaliando Regressores
+
+Agora vamos utilizar a base de dados "*faithful*", já presente na documentação do R, para tentar prever o tempo de espera (*waiting*) entre uma erupção e outra de um gêiser dado a duração das erupções (*eruption*).
+
+
+```r
+data("faithful")
+head(faithful)
+```
+
+```
+##   eruptions waiting
+## 1     3.600      79
+## 2     1.800      54
+## 3     3.333      74
+## 4     2.283      62
+## 5     4.533      85
+## 6     2.883      55
+```
+
+Primeiro, vamos separar a amostra em treino e teste.
+
+
+```r
+set.seed(39)
+noTreino = createDataPartition(y = faithful$waiting, p = .7, groups = 5, list = F)
+treino = faithful[noTreino,]; teste = faithful[-noTreino,]
+```
+
+Quando o argumento "y" é numérico, a amostra é dividida em grupos com base nos percentis dos dados e é feita uma amostragem estratificada dentro desses grupos, de forma a manter aproximadamente a mesma proporção de elementos em cada grupo. O número de percentis é definido pelo argumento "groups" (default = 5).
+
+Agora temos que treinar o modelo. Para esse exemplo vamos usar um modelo de Regressão Linear (*LM - Linear Regression*).
+
+> Os métodos disponíveis e seus usos podem ser encontrados no [guia do caret](https://topepo.github.io/caret/available-models.html).
+
+Recapitulando, devemos treinar o modelo sempre utilizando a amostra **treino**.
+
+
+```r
+modelo = caret::train(waiting~eruptions, data = treino, method = "lm")
+```
+
+Novamente, colocamos a variável que tentamos prever em função das outras. Neste exemplo só temos duas variáveis então não precisamos colocar o ponto como no [classificador](#link3).
+
+
+```r
+modelo
+```
+
+```
+## Linear Regression 
+## 
+## 192 samples
+##   1 predictor
+## 
+## No pre-processing
+## Resampling: Bootstrapped (25 reps) 
+## Summary of sample sizes: 192, 192, 192, 192, 192, 192, ... 
+## Resampling results:
+## 
+##   RMSE      Rsquared  MAE     
+##   6.060639  0.805468  4.948071
+## 
+## Tuning parameter 'intercept' was held constant at a value of TRUE
+```
+
+Podemos ver que o modelo utilizou 192 observações do conjunto treino e 1 preditor, pois foi utilizado apenas 1 variável. Como o modelo de regressão linear também não possui parâmetros, é estimado os valores do RMSE, $R^{2}$ e MAE em cada reamostragem, e o que é liberado na saída do modelo são as médias dessas 3 medidas. Mais detalhes sobre como essas medidas são calculadas serão vistos mais à frente. 
+
+Agora vamos aplicar o modelo na amostra teste para avaliar o erro do preditor:
+
+
+```r
+predicao = predict(modelo, newdata = teste)
+```
+
+Assim como no classificador, a função `predict()` retorna a previsão dos tempos entre as erupções dado os tempos das durações das erupções.
+
+#### MSE {#link1}
+
+Assim como há diversas formas de compararmos a qualidade dos classificadores, há também diversas formas de compararmos regressores. O que estudaremos agora é o MSE (*Mean Squared Error* - erro quadrático médio). Mais formas de comparação de regressores também serão vistas futuramente.
+
+O MSE é a média de quanto os valores previstos para as observações se distanciaram dos valores verdadeiros dessa observação. Ele é obtido somando essas distâncias entre os valores previstos e os reais ao quadrado e dividindo pelo tamanho da amostra.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/MSE.png)
+
+Generalizando, o MSE se dá pela seguinte fórmula: $$MSE=\frac{1}{n} \sum\limits_{i=1}^{n} \left( Y_i-\hat{Y_i} \right)^{2},$$ onde $Y_i$ são os valores observados da variável de interesse e $\hat{Y_i}$ são os valores preditos pelo modelo.
+
+Voltando ao exemplo das erupções dos gêiseres, vamos calcular o MSE para o modelo ajustado. Podemos observar graficamente o ajuste do modelo de regressão linear (criado pelo conjunto de treino) no conjunto de teste:
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-27-1.png)
+
+Na reta de regressão estão todos os valores preditos para o tempo de espera entre as erupções dado os tempos das erupções (o modelo criado no conjunto treino). Os dados dispersos pertencem ao conjunto teste. Ou seja, estamos avaliando o ajuste do modelo em uma "nova" base de dados. Podemos, então, calcular o MSE, como uma medida avaliativa do modelo:
+
+
+```r
+mse = sum((teste$waiting-predicao)**2)/nrow(teste)
+mse
+```
+
+```
+## [1] 32.41941
+```
+
+Então temos que, em média, o valor estimado para a variável de interesse no conjunto de teste se distancia do valor real observado em 32,41941 escores. Note que esta é uma medida que soma as distâncias ao quadrado, por isso o MSE é um número relativamente grande.

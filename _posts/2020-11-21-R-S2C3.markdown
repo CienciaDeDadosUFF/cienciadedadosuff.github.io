@@ -1,0 +1,466 @@
+---
+
+layout: post
+
+title: "Comparação de Preditores"
+
+date: 2020-11-21 23:50:41 
+
+lang: R
+category: Avaliação
+description: "Apresenta meios de comparação entre classificadores ou regressores"
+---
+
+
+## Comparando Funções Preditoras
+
+Como já foi mostrado em capítulos anteriores, existem diversas formas de comparar preditores. Neste capítulo, vamos estudar um meio de fazer isso e ver mais detalhadamente as medidas de comparações que o R retorna ao usarmos os métodos de treinamento.
+
+### Exemplo de Comparação de Regressores - base `faithful`
+
+Vamos usar a base de dados `faithful` já presente no R.
+
+
+```r
+data("faithful")
+# verificando a estrutura da base
+str(faithful)
+```
+
+```
+## 'data.frame':	272 obs. of  2 variables:
+##  $ eruptions: num  3.6 1.8 3.33 2.28 4.53 ...
+##  $ waiting  : num  79 54 74 62 85 55 88 85 51 85 ...
+```
+
+Note que a base apresenta apenas duas variáveis: `eruptions`, que contém uma amostra corresponde ao tempo em minutos que o gêiser *Old Faithful* permanece em erupção e `waiting`, que contém uma amostra correspondente ao tempo em minutos até a próxima erupção. Vamos tentar prever a variável `waiting` através da variável `eruptions`. Note ainda que a variável de interesse é quantitativa contínua, portanto queremos construir um **regressor**.
+
+Vamos treinar nosso modelo utilizando 3 métodos separadamente: *Linear Model*, *Projection Pursuit Regression* e *K-Nearest Neighbors*. Para fazer a comparação, vamos colocar a mesma semente antes de cada treino para que todos sejam feitos da mesma forma e assim torne a comparação mais "justa", pois dessa forma o `train()` irá utilizar exatamente as mesmas amostras quando for realizado as reamostragens. Note também que estamos usando toda a base de dados pra treinar o modelo. Isso porque estamos apenas avaliando qual é o melhor modelo para os dados. 
+
+
+```r
+library(caret)
+# usando o método de validação cruzada tiramos a dependência da amostra
+TC = trainControl(method="repeatedcv", number=10,repeats=3)
+set.seed(371)
+modelo_lm = train(waiting~eruptions, data=faithful, method="lm", trControl=TC)
+set.seed(371)
+modelo_ppr = train(waiting~eruptions, data=faithful, method="ppr", trControl=TC)
+set.seed(371)
+modelo_knn = train(waiting~eruptions, data=faithful, method="knn", trControl=TC)
+```
+
+Agora, como sabemos qual desses é o melhor modelo para o nosso regressor?
+
+
+```r
+resultados = resamples(list(LM=modelo_lm, PPR=modelo_ppr, KNN=modelo_knn))
+summary(resultados)
+```
+
+```
+## 
+## Call:
+## summary.resamples(object = resultados)
+## 
+## Models: LM, PPR, KNN 
+## Number of resamples: 30 
+## 
+## MAE 
+##         Min.  1st Qu.   Median     Mean  3rd Qu.     Max. NA's
+## LM  3.816660 4.396526 4.723050 4.792316 5.063279 6.087023    0
+## PPR 3.847465 4.329571 4.638090 4.728487 5.133559 5.980745    0
+## KNN 3.565922 4.380002 4.717796 4.735160 5.167973 5.909983    0
+## 
+## RMSE 
+##         Min.  1st Qu.   Median     Mean  3rd Qu.     Max. NA's
+## LM  4.769227 5.375918 5.919905 5.877351 6.204474 7.037539    0
+## PPR 4.775950 5.258969 5.871960 5.725215 6.099465 6.865713    0
+## KNN 4.564997 5.308376 5.828188 5.773268 6.275956 6.892789    0
+## 
+## Rsquared 
+##          Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA's
+## LM  0.7232859 0.7855436 0.8198045 0.8154236 0.8443912 0.8715797    0
+## PPR 0.7461656 0.7964453 0.8243005 0.8241913 0.8567375 0.8812427    0
+## KNN 0.7636897 0.7964592 0.8227743 0.8218778 0.8453996 0.8771367    0
+```
+
+Repare que foi calculada três diferentes medidas: "MAE", "RMSE", e "Rsquared".
+
+O **Erro Médio Absoluto** (MAE - *Mean Absolute Error*) é dado pelo média dos desvios absolutos. $$MAE = \frac{\sum\limits_{i=1}^{n}\mid estimado_i - real_i\mid}{n}\quad, i=1,2,...,n.$$ 
+
+A **Raiz do Erro Quadrático Médio** (RMSE - *Root Mean Squared Error*), como o nome já diz, não é nada mais que a raiz quadrada do Erro Quadrático Médio já citado no capítulo de [Tipos de Erro](#link1). $$RMSE=\sqrt{MSE}=\sqrt{\frac{\sum\limits_{i=1}^{n} \left( estimado_i-real_i \right)^{2}}{n}}\quad, i=1,2,...,n.$$ 
+
+O **Coeficiente de Determinação**, Também chamado de $R^2$ (*R squared*), é dado pela razão entre o MSE e a Variância subtraído de 1. $$R^2 =1- \frac{MSE}{Var}= 1-\frac{\sum\limits_{i=1}^{n} (real_i - estimado_i)^2}{\sum\limits_{i=1}^{n} (real_i - média)^2}\quad, i=1,2,...,n.$$
+
+Portanto, queremos o modelo que possua MAE e RMSE baixo e $R^2$ alto. Para vizualizar melhor, podemos construir um boxplot comparativo da seguinte forma:
+
+
+```r
+# Ajustando as escalas dos gráficos:
+escala <- list(x=list(relation="free"), y=list(relation="free"))
+# Plotando os dados:
+bwplot(resultados, scales=escala)
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-39-1.png)
+
+Pelos boxplots podemos perceber que o modelo linear é o que possui a pior mediana nas três medidas comparativas e parece ter os dados mais espalhados, principalmente no $R^2$, o que indica que ele possui alta variabilidade. Quanto ao KNN e o PPR, os dados estão mais concentrados no $R^2$, embora tenham bastante *outliers*. Parece que o PPR é levemente melhor que o KNN, mas é preciso uma análise mais profunda. Vamos utilizar o pacote `lattice`[@lattice] para plotar os gráficos.
+
+
+```r
+library(lattice)
+# Comparando o comportamento de cada fold nos modelos KNN e PPR
+xyplot(resultados, models=c("PPR", "KNN"))
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-40-1.png)
+
+Note que a maior parte dos *folds* está acima da diagonal, indicando que o KNN tem um erro absoluto médio (MAE) menor que o PPR neles. Vamos olhar novamente para o cálculo que fizemos mais acima.
+
+
+```r
+resultados = resamples(list(LM=modelo_lm, PPR=modelo_ppr, KNN=modelo_knn))
+summary(resultados)
+```
+
+```
+## 
+## Call:
+## summary.resamples(object = resultados)
+## 
+## Models: LM, PPR, KNN 
+## Number of resamples: 30 
+## 
+## MAE 
+##         Min.  1st Qu.   Median     Mean  3rd Qu.     Max. NA's
+## LM  3.816660 4.396526 4.723050 4.792316 5.063279 6.087023    0
+## PPR 3.847465 4.329571 4.638090 4.728487 5.133559 5.980745    0
+## KNN 3.565922 4.380002 4.717796 4.735160 5.167973 5.909983    0
+## 
+## RMSE 
+##         Min.  1st Qu.   Median     Mean  3rd Qu.     Max. NA's
+## LM  4.769227 5.375918 5.919905 5.877351 6.204474 7.037539    0
+## PPR 4.775950 5.258969 5.871960 5.725215 6.099465 6.865713    0
+## KNN 4.564997 5.308376 5.828188 5.773268 6.275956 6.892789    0
+## 
+## Rsquared 
+##          Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA's
+## LM  0.7232859 0.7855436 0.8198045 0.8154236 0.8443912 0.8715797    0
+## PPR 0.7461656 0.7964453 0.8243005 0.8241913 0.8567375 0.8812427    0
+## KNN 0.7636897 0.7964592 0.8227743 0.8218778 0.8453996 0.8771367    0
+```
+
+Podemos notar que o KNN tem uma posição melhor que o PPR em todas as medidas. Como saber se essa diferença é significativa? Vamos realizar um teste de hipóteses sobre a diferença entre os modelos.
+
+
+```r
+#Calcular diferença entre modelos, e realizar
+#testes de hipótese para as diferenças.
+diferencas = diff(resultados)
+summary(diferencas)
+```
+
+```
+## 
+## Call:
+## summary.diff.resamples(object = diferencas)
+## 
+## p-value adjustment: bonferroni 
+## Upper diagonal: estimates of the difference
+## Lower diagonal: p-value for H0: difference = 0
+## 
+## MAE 
+##     LM   PPR       KNN      
+## LM        0.063829  0.057156
+## PPR 0.18           -0.006673
+## KNN 1.00 1.00               
+## 
+## RMSE 
+##     LM       PPR      KNN     
+## LM            0.15214  0.10408
+## PPR 0.002181          -0.04805
+## KNN 0.422993 0.946570         
+## 
+## Rsquared 
+##     LM      PPR       KNN      
+## LM          -0.008768 -0.006454
+## PPR 0.01111            0.002313
+## KNN 0.54786 1.00000
+```
+
+Observe que, para cada medida, acima da diagonal temos a diferença entre os modelos e abaixo da diagonal o p-valor do teste de comparação entre eles. Portanto, se considerarmos um nível de significância de 1%, é razoável dizer que os modelos PPR e KKN produzem resultados significativamente diferentes. Sendo assim, escolheriamos o método KNN para treinar nosso modelo.
+
+### Exemplo de Comparação de Classificadores - base `Heart` {#link6}
+
+Suponha agora que queremos predizer se uma pessoa tem um problema no coração dado que ela apresentou dor no peito. Considere a seguinte base de dados. Vamos utilizar o pacote `readr`[@readr] para importação da base.
+
+
+```r
+library(readr)
+# Lendo a base de dados:
+heart = read_csv("Heart.csv")
+# Verificando a estrutura da base:
+str(heart)
+```
+
+```
+## tibble [297 x 15] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+##  $ X1          : num [1:297] 1 2 3 4 5 6 7 8 9 10 ...
+##  $ Age         : num [1:297] 63 67 67 37 41 56 62 57 63 53 ...
+##  $ Sex         : num [1:297] 1 1 1 1 0 1 0 0 1 1 ...
+##  $ ChestPain   : chr [1:297] "typical" "asymptomatic" "asymptomatic" "nonanginal" ...
+##  $ RestBP      : num [1:297] 145 160 120 130 130 120 140 120 130 140 ...
+##  $ Chol        : num [1:297] 233 286 229 250 204 236 268 354 254 203 ...
+##  $ Fbs         : num [1:297] 1 0 0 0 0 0 0 0 0 1 ...
+##  $ RestECG     : num [1:297] 2 2 2 0 2 0 2 0 2 2 ...
+##  $ MaxHR       : num [1:297] 150 108 129 187 172 178 160 163 147 155 ...
+##  $ ExAng       : num [1:297] 0 1 1 0 0 0 0 1 0 1 ...
+##  $ Oldpeak     : num [1:297] 2.3 1.5 2.6 3.5 1.4 0.8 3.6 0.6 1.4 3.1 ...
+##  $ Slope       : num [1:297] 3 2 2 3 1 1 3 1 2 3 ...
+##  $ Ca          : num [1:297] 0 3 2 0 0 0 2 0 1 0 ...
+##  $ Thal        : chr [1:297] "fixed" "normal" "reversable" "normal" ...
+##  $ HeartDisease: chr [1:297] "No" "Yes" "Yes" "No" ...
+##  - attr(*, "spec")=
+##   .. cols(
+##   ..   X1 = col_double(),
+##   ..   Age = col_double(),
+##   ..   Sex = col_double(),
+##   ..   ChestPain = col_character(),
+##   ..   RestBP = col_double(),
+##   ..   Chol = col_double(),
+##   ..   Fbs = col_double(),
+##   ..   RestECG = col_double(),
+##   ..   MaxHR = col_double(),
+##   ..   ExAng = col_double(),
+##   ..   Oldpeak = col_double(),
+##   ..   Slope = col_double(),
+##   ..   Ca = col_double(),
+##   ..   Thal = col_character(),
+##   ..   HeartDisease = col_character()
+##   .. )
+```
+
+Note que a variável de interesse `HeartDisease` é categórica, portanto estamos trabalhando com um **classificador**.
+
+Vamos treinar nosso modelo utilizando 3 métodos separadamente: *Recursive Partitioning and Regression Trees*, *Fitting Generalized Linear Models* e *Support Vector Machine*. Novamente, vamos colocar a mesma semente antes de cada treino e utilizar toda a base de dados pra isso.
+
+
+```r
+library(caret)
+# Usando o método de validação cruzada tiramos a dependência da amostra:
+TC = trainControl(method="repeatedcv", number=10,repeats=3)
+set.seed(371)
+modelo_rpart = caret::train(HeartDisease~., data=heart, method="rpart", trControl=TC)
+set.seed(371)
+modelo_glm = caret::train(HeartDisease~., data=heart, method="glm", trControl=TC)
+set.seed(371)
+modelo_svm = caret::train(HeartDisease~., data=heart, method="svmLinear", trControl=TC)
+```
+
+Assim como no caso anterior, vamos comparar os resultados obtidos por cada modelo.
+
+
+```r
+resultados = resamples(list(Rpart=modelo_rpart, GLM=modelo_glm, SVM=modelo_svm))
+summary(resultados)
+```
+
+```
+## 
+## Call:
+## summary.resamples(object = resultados)
+## 
+## Models: Rpart, GLM, SVM 
+## Number of resamples: 30 
+## 
+## Accuracy 
+##            Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA's
+## Rpart 0.5172414 0.7060345 0.7459770 0.7493103 0.8000000 0.8666667    0
+## GLM   0.6896552 0.7948276 0.8477011 0.8438697 0.8916667 0.9666667    0
+## SVM   0.6896552 0.8000000 0.8333333 0.8394253 0.8890805 1.0000000    0
+## 
+## Kappa 
+##             Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA's
+## Rpart 0.06451613 0.4105769 0.4971161 0.4956347 0.5973094 0.7368421    0
+## GLM   0.34912718 0.5912008 0.6918699 0.6832658 0.7809134 0.9327354    0
+## SVM   0.37708831 0.5912008 0.6651719 0.6740506 0.7727163 1.0000000    0
+```
+
+Repare que foi calculada duas diferentes medidas: "Accuracy", e "Kappa".
+
+A **Precisão** (*Accuracy*) como já foi citado no capítulo [Introdução ao pacote caret](#link2), avalia a proporção de acertos na predição.$$\hbox{Precisão}=\frac{\hbox{Predições corretas}}{\hbox{Total de predições}}$$
+
+O **Coeficiente de concordância Kappa** avalia o grau de concordância entre a classificação e o real valor de uma mesma amostra. Assim como a precisão, ele também assume valores no intervalo [0,1], sendo 0 o pior caso e 1 o melhor caso. Ele é calculado da seguinte forma:
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/kappa.jpeg)
+
+$$\hat{K}=\frac{\hat{p_0}-\hat{p_e}}{1-\hat{p_e}},\quad \hat{p_0}=\sum^{r}_{i}\frac{n_{ii}}{n} \quad e \quad\hat{p_e}=\sum^{r}_{i}\frac{n_{i.}*n_{.i}}{n^2}$$
+
+Portanto, queremos que as duas medidas sejam altas. Vamos ver o boxplot.
+
+
+```r
+# Ajustando as escalas dos gráficos:
+escala <- list(x=list(relation="free"), y=list(relation="free"))
+# Plotando os dados:
+bwplot(resultados, scales=escala)
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-46-1.png)
+
+Pelo boxplot podemos ver que o método Rpart possui uma alta variabilidade. O método GLM está com uma mediana melhor e parece mais concentrado. Mas será que ele é mesmo melhor que o SVM?
+
+
+```r
+# Comparando o comportamento de cada fold nos modelos KNN e PPR:
+xyplot(resultados, models=c("GLM", "SVM"))
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-47-1.png)
+
+Por esse plot, não parece haver uma diferença significativa entre os dois métodos. Vamos voltar às nossas medidas.
+
+
+```r
+resultados = resamples(list(Rpart=modelo_rpart, GLM=modelo_glm, SVM=modelo_svm))
+summary(resultados)
+```
+
+```
+## 
+## Call:
+## summary.resamples(object = resultados)
+## 
+## Models: Rpart, GLM, SVM 
+## Number of resamples: 30 
+## 
+## Accuracy 
+##            Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA's
+## Rpart 0.5172414 0.7060345 0.7459770 0.7493103 0.8000000 0.8666667    0
+## GLM   0.6896552 0.7948276 0.8477011 0.8438697 0.8916667 0.9666667    0
+## SVM   0.6896552 0.8000000 0.8333333 0.8394253 0.8890805 1.0000000    0
+## 
+## Kappa 
+##             Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA's
+## Rpart 0.06451613 0.4105769 0.4971161 0.4956347 0.5973094 0.7368421    0
+## GLM   0.34912718 0.5912008 0.6918699 0.6832658 0.7809134 0.9327354    0
+## SVM   0.37708831 0.5912008 0.6651719 0.6740506 0.7727163 1.0000000    0
+```
+
+A precisão e kappa média também parecem próximas entre o GLM e o SVM. Vamos fazer então um teste de hipóteses para confirmar.
+
+
+```r
+#Calcular a diferença entre os modelos e realizar teste de hipóteses para as diferenças:
+diferencas = diff(resultados)
+summary(diferencas)
+```
+
+```
+## 
+## Call:
+## summary.diff.resamples(object = diferencas)
+## 
+## p-value adjustment: bonferroni 
+## Upper diagonal: estimates of the difference
+## Lower diagonal: p-value for H0: difference = 0
+## 
+## Accuracy 
+##       Rpart          GLM       SVM      
+## Rpart                -0.094559 -0.090115
+## GLM   0.000000002107            0.004444
+## SVM   0.000000011839 1                  
+## 
+## Kappa 
+##       Rpart         GLM       SVM      
+## Rpart               -0.187631 -0.178416
+## GLM   0.00000000237            0.009215
+## SVM   0.00000001173 1
+```
+
+Note que o p-valor da diferença é 1. Portanto, concluímos que não existe uma diferença significativa entre os métodos GLM e SVM para este caso.
+
+Mas, e quanto ao tempo de processamento de cada modelo? Vamos usar a função `Sys.time()` para medir o tempo de treinamento nos dois métodos.
+
+
+```r
+inicio1 <- Sys.time()
+set.seed(371)
+modelo_glm = train(HeartDisease~., data=heart, method="glm", trControl=TC)
+fim1 <- Sys.time()
+fim1 - inicio1
+```
+
+```
+## Time difference of 0.844063 secs
+```
+
+```r
+inicio2 <- Sys.time()
+set.seed(371)
+modelo_svm = train(HeartDisease~., data=heart, method="svmLinear", trControl=TC)
+fim2 <- Sys.time()
+fim2 - inicio2
+```
+
+```
+## Time difference of 1.085082 secs
+```
+
+Bem, não parece que a diferença foi muito grande. Mas, pense agora que você queira realizar uma comparação usando a validação cruzada com 20 folds e 100 repetições.
+
+
+```r
+TC = trainControl(method="repeatedcv", number=20,repeats=100)
+
+inicio1 <- Sys.time()
+set.seed(371)
+modelo_glm = train(HeartDisease~., data=heart, method="glm", trControl=TC)
+fim1 <- Sys.time()
+fim1 - inicio1
+```
+
+```
+## Time difference of 21.67954 secs
+```
+
+```r
+inicio2 <- Sys.time()
+set.seed(371)
+modelo_svm = train(HeartDisease~., data=heart, method="svmLinear", trControl=TC)
+fim2 <- Sys.time()
+fim2 - inicio2
+```
+
+```
+## Time difference of 27.36008 secs
+```
+
+A diferença de processamento agora já é um pouco maior. Mas lembre que nossa base de dados contém apenas 297 observações e 15 variáveis. Numa base de dados muito grande e/ou em determinados métodos esse tempo fará diferença.
+
+Também podemos acessar o tempo de processamento de cada modelo através da própria função `resamples()`. Ela guarda todos os tempos dos modelos dentro do *data frame* "*timings*".
+
+
+```r
+resultados = resamples(list(GLM=modelo_glm, SVM=modelo_svm))
+resultados$timings
+```
+
+```
+##     Everything FinalModel Prediction
+## GLM      21.68       0.01         NA
+## SVM      27.36       0.01         NA
+```
+
+Podemos construir um gráfico de barras para os tempos de processamento para melhor visualização e comparação.
+
+
+```r
+barplot(resultados$timings$Everything, names.arg = rownames(resultados$timings),
+        col = c("tomato", "darkblue"), main = "Tempo de Processamento")
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-53-1.png)
+
+Repare que o GLM teve um tempo de processamento um pouco menor apenas, mas estamos utilizando uma base pequena, como já discutido. Sendo assim, escolheríamos o método GLM para treinar o modelo.

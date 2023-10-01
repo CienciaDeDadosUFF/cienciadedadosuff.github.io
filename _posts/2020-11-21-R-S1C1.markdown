@@ -1,0 +1,62 @@
+---
+
+layout: post
+
+title: "Introdução a Aprendizado de Máquinas"
+
+date: 2020-11-21 23:50:41 
+
+lang: R
+category: Introdução
+description: ""
+---
+
+
+## Introdução
+
+Este curso tem como objetivo propagar as ideias básicas de aprendizado de máquina e previsão no *software* estatístico R [@r]. A ideia principal é, primeiramente, cobrir os principais aspectos teóricos e práticos do aprendizado de máquina, e, em seguida, estudar os principais modelos utilizados para este ramo, como os modelos baseados em árvores, regressão linear, regressão logística, entre outros.
+
+Inicialmente será utilizado funções do pacote básico do R para alguns modelos de previsão. Contudo, o foco principal será no pacote *caret* [@caret], o qual tem a finalidade de tornar as técnicas de aprendizado mais simples, combinando um grande número de preditores que foram construídos no R.
+
+As principais referências utilizadas para a construção deste material são os livros *An Introduction to Statistical Learning* [@isl] e *The Elements of Statistical Learning* [@esl], o canal do YouTube *StatQuest* [@statquest], que contém vídeos didáticos sobre aprendizado de máquina, e o curso *Practical Machine Learning* da plataforma *Coursera*.
+
+### Pré-requisitos
+
+Os pré-requisitos que serão úteis para o curso são: análise exploratória de dados no R, programação básica em R e conhecimentos teóricos básicos em estatística.
+
+### O que é o Aprendizado de Máquina?
+
+Em 1959, Arthur Samuel definiu o aprendizado de máquina como o "campo de estudo que dá aos computadores a habilidade de aprender sem serem explicitamente programados". Ou seja, é um método de análise de dados que automatiza a construção de modelos analíticos. É baseado na ideia de que sistemas podem aprender com dados, identificar padrões e tomar decisões com o mínimo de intervenção humana. A importância desse aprendizado se deve principalmente ao fato de que atualmente tem surgido cada vez mais a necessidade de manipulações de grandes volumes e variedades de dados disponíveis.
+
+### Para que serve e onde é usado?
+
+Com o aprendizado de máquinas é possível produzir, rápida e automaticamente, modelos capazes de analisar dados maiores e mais complexos, e entregar resultados e realizar previsões mais rapidamente e de forma mais precisa – mesmo em grande escala. Assim, ao construir modelos precisos, há mais chances de identificar boas oportunidades e de evitar riscos desconhecidos. 
+
+Na prática, podemos citar alguns exemplos reais do uso de aprendizado de máquina:
+
+- Os governos locais podem tentar prever os pagamentos de pensão no futuro para que eles saibam se seus mecanismos de geração de receita têm fundos suficientes gerados para cobrir esses pagamentos de pensão.
+- O Google pode querer prever se você vai clicar em um anúncio para que ele possa mostrar apenas os anúncios com maior probabilidade de receber cliques e, assim, aumentar a receita.
+- A Amazon, a Netflix e outras empresas como essas mostram um filme e querem que você veja um próximo filme. Para fazer isso, eles querem mostrar a você o que você pode estar interessado, para que eles possam mantê-lo assistindo e, novamente, aumentar a receita.
+- As seguradoras empregam grandes grupos de atuários e estatísticos para tentar prever seu risco de todo tipo de coisas diferentes, como por exemplo a morte.
+
+### Como funciona?
+
+A funcionalidade do aprendizado de máquina se resume a tentar prever um certo modelo para o conjunto de dados em questão. Há dois modos de isso ser feito: pelo aprendizado supervisionado e pelo aprendizado não supervisionado. Veremos a definição de cada um deles a seguir.
+
+### Tipos de Aprendizado de Máquina
+
+#### Aprendizado não supervisionado
+
+Na aprendizagem não supervisionada, temos um conjunto de dados não rotulados e queremos de alguma forma agrupá-los por um certo padrão encontrado. Vejamos alguns exemplos:
+
+- **Exemplo 1**: Dada uma imagem de homem/mulher, temos de prever sua idade com base em dados da imagem.
+- **Exemplo 2**: Dada as informações sobre que músicas uma pessoa costuma ouvir, sugerir outras que possam agradá-la também.
+
+#### Aprendizado supervisionado
+
+No aprendizado supervisionado, por outro lado, temos um conjunto de dados já rotulados, ou seja, sabemos qual é a saída correta. Assim, com base nesses dados, queremos ser capazes de classificar outros dados do mesmo tipo que ainda não foram rotulados. Este material focará apenas neste tipo de aprendizado.
+
+- **Exemplo 1**: Dada uma coleção de 1000 pesquisas de uma universidade, encontrar uma maneira de agrupar automaticamente estas pesquisas em grupos que são de alguma forma semelhantes ou relacionadas por diferentes variáveis, tais como a frequência das palavras, frases, contagem de páginas, etc.
+- **Exemplo 2**: Dada uma grande amostra de e-mails, encontrar uma maneira de agrupá-los automaticamente em spam ou não spam, de acordo com as características das palavras, tais como a frequência com que uma certa palavra aparece, a frequência de letras maiúsculas, de cifrões ($), entre outras.
+
+Se os valores da variável rótulo, também chamada de variável de interesse, são valores discretos finitos ou ainda categóricos, então temos um problema de classificação e o algoritmo que criaremos para resolver nosso problema será chamado **classificador**. Se os valores da variável de interesse são valores contínuos, então temos um problema de regressão e o algoritmo que criaremos será chamado **regressor**.

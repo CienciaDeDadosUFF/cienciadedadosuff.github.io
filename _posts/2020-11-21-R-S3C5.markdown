@@ -1,0 +1,199 @@
+---
+layout: post
+title: "Análise de Componentes Principais (PCA)"
+date: 2020-11-21 22:50:58 
+lang: R
+category: Pré-Processamento
+description: "Apresenta as principais ideias da Análise de Componentes Principais e meios de realizá-la em um banco de dados."
+---
+
+### Análise de Componentes Principais (*PCA*)
+
+Muitas vezes podemos ter variáveis em excesso no nosso banco de dados, o que torna difícil a manipulação das mesmas. A ideia geral do *PCA* (*Principal Components Analysis*) é reduzir a quantidade de variáveis, obtendo combinações interpretáveis delas. O *PCA* faz isso tranformando um conjunto de observações de variáveis possivelmente correlacionadas num conjunto de valores de variáveis linearmente não correlacionadas, chamadas de componentes principais. O número de componentes principais é sempre menor ou igual ao número de variáveis originais, e eles são selecionados de forma que expliquem uma alta porcentagem da variância do modelo. 
+
+Para utilizarmos o *PCA* no nosso modelo, basta colocar o argumento `preProcess=“pca”` na função `train()`. Por padrão, são selecionadas componentes que expliquem 95% da variância.
+
+Vamos aplicar o método “glm”, com a opção “pca”, no banco de dados spam.
+
+
+```r
+library(caret)
+library(kernlab)
+data(spam)
+# Criando amostras treino/teste:
+set.seed(36)
+noTreino = createDataPartition(spam$type, p=0.75, list=F)
+treino = spam[noTreino,] 
+teste = spam[-noTreino,]
+```
+
+Agora vamos treinar o nosso modelo com o pré-processamento *PCA*.
+
+
+```r
+set.seed(887)
+modelo = caret::train(type ~ ., method = "glm", preProcess = "pca", data = treino)
+
+# Aplicando o modelo na amostra TESTE:
+testePCA = predict(modelo, teste)
+```
+
+Avaliando nosso modelo com a matriz de confusão:
+
+
+```r
+confusionMatrix(teste$type, testePCA)
+```
+
+```
+## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction nonspam spam
+##    nonspam     653   44
+##    spam         56  397
+##                                              
+##                Accuracy : 0.913              
+##                  95% CI : (0.8952, 0.9287)   
+##     No Information Rate : 0.6165             
+##     P-Value [Acc > NIR] : <0.0000000000000002
+##                                              
+##                   Kappa : 0.817              
+##                                              
+##  Mcnemar's Test P-Value : 0.2713             
+##                                              
+##             Sensitivity : 0.9210             
+##             Specificity : 0.9002             
+##          Pos Pred Value : 0.9369             
+##          Neg Pred Value : 0.8764             
+##              Prevalence : 0.6165             
+##          Detection Rate : 0.5678             
+##    Detection Prevalence : 0.6061             
+##       Balanced Accuracy : 0.9106             
+##                                              
+##        'Positive' Class : nonspam            
+## 
+```
+
+O modelo obteve uma acurácia de 0,913, o que pode ser considerada uma alta taxa de acerto.
+
+É possível alterar a porcentagem de variância a ser explicada pelos componentes nas opções do `train()`. Por exemplo, vamos alterar a porcentagem da variância para 60%.
+
+
+```r
+controle = trainControl(preProcOptions = list(thresh = 0.6))
+
+# Treinando o modelo 2:
+set.seed(754)
+modelo2 = caret::train(type ~ ., method = "glm", preProcess = "pca", data = treino, trControl = controle)
+
+# Aplicando o modelo 2:
+testePCA2 = predict(modelo2, teste)
+```
+
+Avaliando o segundo modelo pela matriz de confusão:
+
+
+```r
+confusionMatrix(teste$type,testePCA2)
+```
+
+```
+## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction nonspam spam
+##    nonspam     647   50
+##    spam         71  382
+##                                               
+##                Accuracy : 0.8948              
+##                  95% CI : (0.8756, 0.9119)    
+##     No Information Rate : 0.6243              
+##     P-Value [Acc > NIR] : < 0.0000000000000002
+##                                               
+##                   Kappa : 0.7778              
+##                                               
+##  Mcnemar's Test P-Value : 0.06904             
+##                                               
+##             Sensitivity : 0.9011              
+##             Specificity : 0.8843              
+##          Pos Pred Value : 0.9283              
+##          Neg Pred Value : 0.8433              
+##              Prevalence : 0.6243              
+##          Detection Rate : 0.5626              
+##    Detection Prevalence : 0.6061              
+##       Balanced Accuracy : 0.8927              
+##                                               
+##        'Positive' Class : nonspam             
+## 
+```
+
+Obtemos uma acurácia de 0,8948, o que indica também uma alta taxa de acerto, porém um pouco menor que a do modelo anterior. Note que a sensibilidade e a especificidade também diminuíram. 
+
+> Em geral, são utilizados pontos de corte para a variãncia explicada acima de 0,9.
+
+#### PCA fora da função train()
+
+Podemos também realizar o pré-processamento fora da função `train()`. Primeiramente vamos criar o pré-processamento, utilizando a amostra treino.
+
+
+```r
+PCA = preProcess(treino, method = c("center","scale","pca"), thresh = 0.95)
+```
+
+> **Obs:** pode-se fixar o número de componentes, utilizando o argumento "pcaComp" ao invés de "thresh".
+
+Agora aplicamos o pré-processamento na amostra treino e realizamos o treinamento, utilizando a amostra treino já pré-processada.
+
+
+```r
+treinoPCA = predict(PCA, treino)
+modelo = caret::train(type ~ ., data = treinoPCA, method="glm")
+```
+
+Agora aplicamos o pré-processamento na amostra teste.
+
+
+```r
+testePCA = predict(PCA, teste)
+```
+
+Por último, aplicamos o modelo criado com a amostra treino na amostra teste pré-processada.
+
+
+```r
+testeMod = predict(modelo, testePCA)
+
+# Avaliando o modelo:
+caret::confusionMatrix(testeMod, testePCA$type)
+```
+
+```
+## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction nonspam spam
+##    nonspam     653   56
+##    spam         44  397
+##                                              
+##                Accuracy : 0.913              
+##                  95% CI : (0.8952, 0.9287)   
+##     No Information Rate : 0.6061             
+##     P-Value [Acc > NIR] : <0.0000000000000002
+##                                              
+##                   Kappa : 0.817              
+##                                              
+##  Mcnemar's Test P-Value : 0.2713             
+##                                              
+##             Sensitivity : 0.9369             
+##             Specificity : 0.8764             
+##          Pos Pred Value : 0.9210             
+##          Neg Pred Value : 0.9002             
+##              Prevalence : 0.6061             
+##          Detection Rate : 0.5678             
+##    Detection Prevalence : 0.6165             
+##       Balanced Accuracy : 0.9066             
+##                                              
+##        'Positive' Class : nonspam            
+## 
+```

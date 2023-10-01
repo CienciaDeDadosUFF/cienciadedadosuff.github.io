@@ -1,0 +1,69 @@
+---
+layout: post
+title: "Outras Medidas da Matriz de Confusão"
+date: 2020-11-21 22:50:58 
+lang: R
+category: Apêndice
+description: "Apresenta o cálculo das demais medidas liberadas pela função confusionMatrix()."
+---
+
+## Apêndice{#link9}
+
+### Outras Medidas da Matriz de Confusão{#link19}
+
+No capítulo de avaliação de preditores introduzimos a [matriz de confusão](#link2) e as medidas de avaliação mais utilizadas: sensibilidade, especificidade e precisão. Vimos também como construí-la de forma rápida e prática com a função confusionMatrix() do pacote *caret*. Porém, além das 3 medidas mais utilizadas, a função também libera algumas outras, que explicaremos como elas são calculadas a seguir.
+
+Vamos ver a saída da função para o mesmo exemplo dado anteriormente, onde utilizamos a base de dados *spam*. Nesse exemplo nós treinamos o modelo pelo método GLM e em seguida aplicamos ele ao conjunto teste. Avaliamos o modelo utilizando a matriz de confusão gerada pela função confusionMatrix().
+
+
+```
+## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction nonspam spam
+##    nonspam     659   55
+##    spam         38  398
+##                                               
+##                Accuracy : 0.9191              
+##                  95% CI : (0.9018, 0.9342)    
+##     No Information Rate : 0.6061              
+##     P-Value [Acc > NIR] : < 0.0000000000000002
+##                                               
+##                   Kappa : 0.8295              
+##                                               
+##  Mcnemar's Test P-Value : 0.09709             
+##                                               
+##             Sensitivity : 0.9455              
+##             Specificity : 0.8786              
+##          Pos Pred Value : 0.9230              
+##          Neg Pred Value : 0.9128              
+##              Prevalence : 0.6061              
+##          Detection Rate : 0.5730              
+##    Detection Prevalence : 0.6209              
+##       Balanced Accuracy : 0.9120              
+##                                               
+##        'Positive' Class : nonspam             
+## 
+```
+
+Além de *Accuracy* (Precisão), *Sensitivity* (Sensibilidade) e *Specificity* (Especificidade), as outras saídas representam o seguinte:
+
+- **95% CI** = intervalo de confiança com 95% de confiança para a precisão;
+
+- ***No Information Rate* (Taxa de Não-Informação)** = a maior proporção estimada de classe nos dados. Nesse exemplo a taxa foi de 0,6061, o que significa que aproximadamente 60% dos dados são "não spam", ou seja, se você classificar todos os dados como "não spam" acertará 60% das vezes. Essa taxa pode ser um bom indicador se o seu modelo funciona bem ou não quando comparada à precisão. Caso a taxa seja maior do que a precisão, podemos concluir que o modelo não está funcionando adequadamente para os dados. (A taxa de não-informação é dada por 1-[erro majoritário](#link16) );
+
+- ***P-Value [Acc > NIR]*** = p-valor do teste unilateral onde a hipótese alternativa é: *Accuracy* > *No Information Rate*;
+
+- ***Mcnemar's Test P-Value*** = p-valor do teste de Mcnemar. O teste de Mcnemar é um teste não-paramétrico utilizado em dados nominais pareados. Para mais informações, consulte [esse site](https://pt.wikipedia.org/wiki/Teste_de_McNemar);
+
+- ***Prevalence*** (**Prevalência**) = $\frac{VP+FN}{VP+FP+FN+VN}$;
+
+- ***Pos Pred Value*** = $\frac{\hbox{sensibilidade} \times \hbox{prevalência}}{\hbox{sensibilidade} \times \hbox{prevalência} + \left( 1- \hbox{especificidade} \right) \times \left( 1- \hbox{prevalência} \right)}$;
+
+- ***Neg Pred Value*** = $\frac{\hbox{especificidade} \times \left( 1- \hbox{prevalência} \right)}{\left( 1 - \hbox{sensibilidade} \right) \times \hbox{prevalência} + \hbox{especificidade} \times \left( 1 - \hbox{prevalência} \right)}$;
+
+- ***Detection Rate*** (**Taxa de Detecção**) = $\frac{VP}{VP+FP+FN+VN}$;
+
+- ***Detection Prevalence*** (**Prevalência de Detecção**) = $\frac{VP+FP}{VP+FP+FN+VN}$;
+
+- ***Balanced Accuracy*** (**Precisão Balanceada**) = $\frac{\hbox{sensibilidade} + \hbox{especificidade}}{2}$.

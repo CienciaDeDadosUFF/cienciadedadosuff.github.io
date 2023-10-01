@@ -1,0 +1,199 @@
+---
+
+layout: post
+
+title: "Estrutura de um Preditor"
+
+date: 2020-11-21 23:50:41 
+
+lang: R
+category: Introdução
+description: ""
+---
+
+
+## Predição 
+
+Queremos então construir um algoritmo "preditor" capaz de inferir se um dado pertence ou não a uma certa categoria. O preditor será formado pelos seguintes componentes:
+
+Pergunta $\rightarrow$ Amostra de entrada $\rightarrow$  Características $\rightarrow$ Algoritmo $\rightarrow$ Parâmetros $\rightarrow$ Avaliação
+
+### Pergunta
+
+O nosso objetivo é responder a uma pergunta de tipo "O dado A é do tipo x ou do tipo y?". Por exemplo, podemos querer saber se é possível detectar automaticamente se um e-mail é um spam ou um *ham*, isto é, não spam. O que na verdade queremos saber é: "É possível usar características quantitativas para classificar um e-mail como spam?".
+
+### Amostra de Entrada
+
+Uma vez formulada a pergunta, precisamos obter uma amostra de onde tentaremos extrair informações que caracterizam a categoria a qual um dado pertence e então usar essas informações para classificar outros dados não categorizados. O ideal é que se tenha uma amostra grande, pois assim haverá mais informação disponível para construir o preditor.
+
+Voltando ao exemplo da pergunta sobre um e-mail ser spam ou não, podemos analisar essa questão através da base de dados "spam", disponível no pacote *kernlab* [@kernlab]. Esse banco de dados foi coletado pela *Hewlett-Packard Labs* e contém informações de 4601 e-mails, que foram classificados como spam ou não spam. Ele possui 58 variáveis que indicam algumas características presentes nos e-mails:
+
+- As primeiras 48 colunas contêm a frequência (%) de algumas palavras e números. Por exemplo, a variável "num650" indica a frequência do número 650;
+
+- As colunas 49-54 indicam a frequência de caracteres, como pontos ou parênteses;
+
+- As colunas 55-57 contêm informações sobre letras em maiúsculo (média, maior comprimento e quantidade);
+
+- Por fim, a coluna 58, referente a variável "*type*", indica se o e-mail analisado é spam ou não spam.
+
+
+```r
+library(kernlab)
+# Carregando a base de dados:
+data(spam)
+head(spam)
+```
+
+```
+##   make address  all num3d  our over remove internet order mail receive will
+## 1 0.00    0.64 0.64     0 0.32 0.00   0.00     0.00  0.00 0.00    0.00 0.64
+## 2 0.21    0.28 0.50     0 0.14 0.28   0.21     0.07  0.00 0.94    0.21 0.79
+## 3 0.06    0.00 0.71     0 1.23 0.19   0.19     0.12  0.64 0.25    0.38 0.45
+## 4 0.00    0.00 0.00     0 0.63 0.00   0.31     0.63  0.31 0.63    0.31 0.31
+## 5 0.00    0.00 0.00     0 0.63 0.00   0.31     0.63  0.31 0.63    0.31 0.31
+## 6 0.00    0.00 0.00     0 1.85 0.00   0.00     1.85  0.00 0.00    0.00 0.00
+##   people report addresses free business email  you credit your font num000
+## 1   0.00   0.00      0.00 0.32     0.00  1.29 1.93   0.00 0.96    0   0.00
+## 2   0.65   0.21      0.14 0.14     0.07  0.28 3.47   0.00 1.59    0   0.43
+## 3   0.12   0.00      1.75 0.06     0.06  1.03 1.36   0.32 0.51    0   1.16
+## 4   0.31   0.00      0.00 0.31     0.00  0.00 3.18   0.00 0.31    0   0.00
+## 5   0.31   0.00      0.00 0.31     0.00  0.00 3.18   0.00 0.31    0   0.00
+## 6   0.00   0.00      0.00 0.00     0.00  0.00 0.00   0.00 0.00    0   0.00
+##   money hp hpl george num650 lab labs telnet num857 data num415 num85
+## 1  0.00  0   0      0      0   0    0      0      0    0      0     0
+## 2  0.43  0   0      0      0   0    0      0      0    0      0     0
+## 3  0.06  0   0      0      0   0    0      0      0    0      0     0
+## 4  0.00  0   0      0      0   0    0      0      0    0      0     0
+## 5  0.00  0   0      0      0   0    0      0      0    0      0     0
+## 6  0.00  0   0      0      0   0    0      0      0    0      0     0
+##   technology num1999 parts pm direct cs meeting original project   re  edu
+## 1          0    0.00     0  0   0.00  0       0     0.00       0 0.00 0.00
+## 2          0    0.07     0  0   0.00  0       0     0.00       0 0.00 0.00
+## 3          0    0.00     0  0   0.06  0       0     0.12       0 0.06 0.06
+## 4          0    0.00     0  0   0.00  0       0     0.00       0 0.00 0.00
+## 5          0    0.00     0  0   0.00  0       0     0.00       0 0.00 0.00
+## 6          0    0.00     0  0   0.00  0       0     0.00       0 0.00 0.00
+##   table conference charSemicolon charRoundbracket charSquarebracket
+## 1     0          0          0.00            0.000                 0
+## 2     0          0          0.00            0.132                 0
+## 3     0          0          0.01            0.143                 0
+## 4     0          0          0.00            0.137                 0
+## 5     0          0          0.00            0.135                 0
+## 6     0          0          0.00            0.223                 0
+##   charExclamation charDollar charHash capitalAve capitalLong capitalTotal
+## 1           0.778      0.000    0.000      3.756          61          278
+## 2           0.372      0.180    0.048      5.114         101         1028
+## 3           0.276      0.184    0.010      9.821         485         2259
+## 4           0.137      0.000    0.000      3.537          40          191
+## 5           0.135      0.000    0.000      3.537          40          191
+## 6           0.000      0.000    0.000      3.000          15           54
+##   type
+## 1 spam
+## 2 spam
+## 3 spam
+## 4 spam
+## 5 spam
+## 6 spam
+```
+
+Obtida a amostra, precisamos dividi-la em duas partes que chamaremos de **conjunto de treino** e **conjunto de teste**. O conjunto de treino será usado para construir o algoritmo. É dele que vamos extrair as informações que julgarmos utéis para classificar um dado em uma certa categoria. É importante que o modelo de previsão seja feito com base **apenas** no conjunto de treino. Após construido o algoritmo, usaremos o conjunto de teste para obter a estimativa de erro do modelo, que será detalhada mais à frente.
+
+
+```r
+set.seed(127)
+# Sorteando as linhas da base de dados que farão parte do conjunto de treino (aproximadamente 60% dos dados):
+indices = sample(dim(spam)[1], size = 2760)
+# Criando o conjunto de treino:
+treino = spam[indices,]
+# Criando o conjunto de teste:
+teste = spam[-indices,]
+```
+
+### Características
+
+Temos que encontrar agora características que possam indicar a categoria dos dados. Podemos, por exemplo, vizualizar algumas variáveis graficamente para obter uma ideia do que podemos fazer. Continuando com o nosso exemplo de e-mails, podemos querer avaliar se a frequência de palavras "*your*" em um e-mail pode indicar se ele é um spam ou não.
+
+
+```r
+plot(density(treino$your[treino$type=="nonspam"]), col="blue", 
+     main = "Densidade de 'your' em ham (azul) e spam (vermelho)", 
+     xlab = "Frequência de 'your'", ylab = "Densidade")
+lines(density(treino$your[treino$type=="spam"]), col="red")
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-4-1.png)
+
+Pelo gráfico podemos notar que a maioria dos e-mails que são spam têm uma frequência maior da palavra "*your*". Por outro lado, aqueles que são classificados como *ham* (não spam) têm um pico mais alto perto do 0.
+
+### Algoritmo
+
+Com base nisso podemos construir um algoritmo para prever se um e-mail é spam ou *ham*. Podemos criar um modelo onde o objetivo seja encontrar uma constante *c* tal que, se a frequência da palavra "*your*" for maior do que *c*, então classificamos o e-mail como spam. Caso contrário, classificamos o e-mail como não spam.
+
+Vamos observar graficamente como ficaria esse modelo se *c* = 0,8.
+
+
+```r
+plot(density(treino$your[treino$type=="nonspam"]), col = "blue", 
+     main = "Densidade de 'your' em ham (azul) e spam (vermelho)", 
+     xlab = "Frequência de 'your'", ylab = "densidade")
+lines(density(treino$your[treino$type == "spam"]), col = "red")
+abline(v = .8, col = "black")
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-5-1.png)
+
+Segundo o modelo criado, os e-mails à direita da linha preta seriam classificados como spam, enquanto que os à esquerda seriam classificados como não spam.
+
+### Avaliação
+
+Agora vamos avaliar nosso modelo de predição.
+
+
+```r
+# Classificando os dados de acordo com a regra do modelo criado:
+predicao = ifelse(treino$your > .8, "spam", "nonspam")
+# Verificando o quão bom foi o algoritmo criado (quantos acertos e erros ele possuiu):
+table(predicao, treino$type)/length(treino$type)
+```
+
+```
+##          
+## predicao    nonspam      spam
+##   nonspam 0.4978261 0.1293478
+##   spam    0.1155797 0.2572464
+```
+
+Podemos ver que quando os e-mails não eram spam e classificamos como "não spam" de acordo com nosso modelo, acertamos em 50% das vezes. Quando os e-mails eram spam e classificamos ele em spam, acertamos por volta de 26% das vezes. Então, ao total, nós acertamos por volta de 50%+26%=76% das predições. Então nosso algoritmo de previsão tem uma precisão por volta de 76% na amostra treino. Agora vamos verificar essa precisão na amostra teste.
+
+
+```r
+predicao = ifelse(teste$your > .8, "spam", "nonspam")
+table(predicao, teste$type)/length(teste$type)
+```
+
+```
+##          
+## predicao    nonspam      spam
+##   nonspam 0.4910375 0.1434003
+##   spam    0.1037480 0.2618142
+```
+
+Já na amostra teste acertamos em aproximadamente 49%+26%=75% das vezes. O erro na amostra teste é o que chamamos de erro real. É o erro que esperamos em amostras novas que passarem por nosso preditor.
+
+### Como construir um bom algoritmo de aprendizado de máquina?
+
+O "melhor" método de aprendizado de máquina é caracterizado por:
+
+- Uma boa base de dados;
+- Reter informações relevantes;
+- Ser bem interpretável;
+- Fácil de ser explicado e entendido;
+- Ser preciso;
+- Fácil de se construir e de se testar em pequenas amostras;
+- Fácil de se aplicar a um grande conjunto de dados.
+
+Os erros mais comuns, que se deve tomar um certo cuidado, são:
+
+- Tentar automatizar a seleção de variáveis (características) de uma maneira que não permita que você entenda como essas variáveis estão sendo aplicadas para fazer previsões;
+- Não prestar atenção a peculiaridades específicas de alguns dados, como comportamentos estranhos de variáveis específicas;
+- Jogar fora informações desnecessariamente.

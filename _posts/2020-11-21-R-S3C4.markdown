@@ -1,0 +1,82 @@
+---
+layout: post
+title: "Variáveis de Variância Zero ou Quase Zero"
+date: 2020-11-21 22:50:58 
+lang: R
+category: Pré-Processamento
+description: "Apresenta o conceito de variáveis com variância zero ou quase zero e como identificá-las em um banco de dados."
+---
+
+### Variância Zero ou Quase Zero {#link7}
+
+Algumas vezes em um conjunto de dados podemos ter uma variável que assuma somente um único valor para todos os indivíduos, ou seja, ela possui **variância zero**. Ou podemos ter uma com uma frequência muito alta de um único valor, possuindo, assim, **variância quase zero**. Essas variáveis não auxiliam na predição, pois possuem o mesmo valor em muitos indivíduos; trazendo, assim, pouca informação ao modelo. Nosso objetivo é, então, identificar essas variáveis, chamadas de *near zero covariates*, para que possamos removê-las do nosso modelo de predição.
+
+Para detectar as *near zero covariates*, utilizamos a função `nearZeroVar()` do pacote *caret*. Vamos verificar se há *near zero covariates* no banco de dados "*forestfires*"[@forestfires].
+
+Na função `nearZeroVar()` passamos primeiro a base de dados a ser analisada, depois o argumento lógico "*saveMetrics*", o qual se for "TRUE" retorna todos os detalhes sobre as variáveis da base de dados afim de identificar as *near zero covariates*. A saída da função fica da seguinte forma:
+
+
+```r
+library(readr)
+library(caret)
+incendio = read_csv("forestfires.csv")
+nearZeroVar(incendio, saveMetrics = T)
+```
+
+```
+##        freqRatio percentUnique zeroVar   nzv
+## X       1.058140      1.740812   FALSE FALSE
+## Y       1.624000      1.353965   FALSE FALSE
+## month   1.069767      2.321083   FALSE FALSE
+## day     1.117647      1.353965   FALSE FALSE
+## FFMC    1.000000     20.502901   FALSE FALSE
+## DMC     1.111111     41.586074   FALSE FALSE
+## DC      1.111111     42.359768   FALSE FALSE
+## ISI     1.095238     23.017408   FALSE FALSE
+## temp    1.000000     37.137331   FALSE FALSE
+## RH      1.375000     14.506770   FALSE FALSE
+## wind    1.000000      4.061896   FALSE FALSE
+## rain  254.500000      1.353965   FALSE  TRUE
+## area   82.333333     48.549323   FALSE FALSE
+```
+
+Note que é retornado uma tabela onde nas linhas se encontram as variáveis da base de dados e as colunas podemos resumir da seguinte forma:
+
+- 1ª coluna: a Taxa de Frequência de cada variável. Essa taxa é calculada pela razão de frequências do valor mais comum sobre o segundo valor mais comum;
+
+- 2ª coluna: a Porcentagem de Valores Únicos. Ela é calculada utilizando o número de valores distintos sobre o número de amostras;
+
+- 3ª coluna: indica se a variável tem variância zero;
+
+- 4ª coluna: indica se a variável tem variância quase zero.
+
+Podemos observar que a variável "*rain*" possui variância quase zero, portanto ela é uma *near zero covariate*. 
+
+
+```r
+hist(incendio$rain, main = "Histograma da Variável Rain",
+     xlab = "Variável Rain", ylab = "Frequência", col = "purple")
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-96-1.png)
+
+Logo, vamos excluí-la da base de dados. O argumento "*saveMetrics=FALSE*" (default da função) retorna justamente qual(is) variável(is) do bando de dados é(são) *near zero covariate* .
+
+
+```r
+nzv = nearZeroVar(incendio)
+Nova_incendio = incendio[,-nzv]
+head(Nova_incendio)
+```
+
+```
+## # A tibble: 6 x 12
+##       X     Y month day    FFMC   DMC    DC   ISI  temp    RH  wind  area
+##   <dbl> <dbl> <chr> <chr> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
+## 1     7     5 mar   fri    86.2  26.2  94.3   5.1   8.2    51   6.7     0
+## 2     7     4 oct   tue    90.6  35.4 669.    6.7  18      33   0.9     0
+## 3     7     4 oct   sat    90.6  43.7 687.    6.7  14.6    33   1.3     0
+## 4     8     6 mar   fri    91.7  33.3  77.5   9     8.3    97   4       0
+## 5     8     6 mar   sun    89.3  51.3 102.    9.6  11.4    99   1.8     0
+## 6     8     6 aug   sun    92.3  85.3 488    14.7  22.2    29   5.4     0
+```
