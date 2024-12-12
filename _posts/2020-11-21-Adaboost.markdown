@@ -1,0 +1,447 @@
+---
+layout: post
+title: "AdaBoost"
+date: 2020-09-09 23:07:41 
+lang: R 
+category: Métodos de Treino Baseados em Árvores
+description: "Criação: Maqueise Pinheiro e Thaís Machado. Orientação: Douglas Rodrigues (UFF) e Karina Yaginuma (UFF). Colaboradores: Gabriel Miranda e Thiago Augusto."
+---
+
+### *AdaBoost*
+
+O método de treino AdaBoost se baseia na construção de uma floresta aleatória. Entretanto, na floresta construída por esse método as árvores possuem apenas um nó e duas folhas. Essas árvores são chamadas de **tocos**.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/Floresta_AdaBoost.png)
+
+Em geral, tocos não são muito bons em fazer classificações precisas, ou seja, eles são classificadores fracos. No entanto, o método AdaBoost os combina de forma a criar um bom aprendiz. Ele faz isso utilizando diferenciais na classificação e na construção das árvores que a floresta aleatória comum não utiliza:
+
+- **Floresta Aleatória**: cada árvore de decisão tem um peso igual na classificação final das amostras. Além disso, cada árvore é construída independentemente das outras.
+
+- **AdaBoost**: alguns tocos têm mais peso na classificação final do que outros, e a ordem de construção dos tocos importam. Em outras palavras, os erros que o primeito toco comete influenciam em como o segundo toco é construído, os erros que o segundo toco comete influenciam em como o terceiro toco é construído, e assim sucessivamente.
+
+Vamos ver os detalhes práticos de como funciona o AdaBoost utilizando o banco de dados golf. Este banco possui informações sobre condições climáticas e se o indivíduo jogou golf no dia. A ideia é tentar prever se o indivíduo vai jogar golf baseado nas outras variáveis.
+
+
+```r
+golf = readRDS("Golf.rds")
+golf
+```
+
+```
+## # A tibble: 14 x 4
+##    Outlook  Humidity Wind   Play 
+##    <chr>    <chr>    <chr>  <chr>
+##  1 Sunny    High     Weak   No   
+##  2 Sunny    High     Strong No   
+##  3 Overcast High     Weak   Yes  
+##  4 Rain     High     Weak   Yes  
+##  5 Rain     Normal   Weak   Yes  
+##  6 Rain     Normal   Strong No   
+##  7 Overcast Normal   Strong Yes  
+##  8 Sunny    High     Weak   No   
+##  9 Sunny    Normal   Weak   Yes  
+## 10 Rain     Normal   Weak   Yes  
+## 11 Sunny    Normal   Strong Yes  
+## 12 Overcast High     Strong Yes  
+## 13 Overcast Normal   Weak   Yes  
+## 14 Rain     High     Strong No
+```
+
+Primeiramente construímos um toco para cada uma das variáveis e calculamos seus respectivos índices Gini. Vamos começar com a variável *Outlook*.
+
+
+```r
+library(dplyr)
+golf %>% group_by(Outlook, Play) %>% summarise(N=n())
+```
+
+```
+## # A tibble: 5 x 3
+## # Groups:   Outlook [3]
+##   Outlook  Play      N
+##   <chr>    <chr> <int>
+## 1 Overcast Yes       4
+## 2 Rain     No        2
+## 3 Rain     Yes       3
+## 4 Sunny    No        3
+## 5 Sunny    Yes       2
+```
+
+Então temos que "Outlook = Overcast" separa os dados da seguinte forma:
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/AB_Overcast.png)
+
+$\hbox{Gini(Outlook = Overcast)} = \frac{4}{14} \times \left[ 1- \left( \frac{4}{4} \right)^{2} - \left( \frac{0}{4} \right)^{2} \right] + \frac{10}{14} \times \left[ 1- \left( \frac{5}{10} \right)^{2} - \left( \frac{5}{10} \right)^{2} \right] = 0,357.$
+
+Vamos agora olhar para "Outlook = Rain":
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/AB_Rain.png)
+
+$\hbox{Gini(Outlook = Rain)} = \frac{5}{14} \times \left[ 1- \left( \frac{3}{5} \right)^{2} - \left( \frac{2}{5} \right)^{2} \right] + \frac{9}{14} \times \left[ 1- \left( \frac{6}{9} \right)^{2} - \left( \frac{3}{9} \right)^{2} \right] = 0,457.$
+
+Por último, "Outlook = Sunny":
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/AB_Sunny.png)
+
+$\hbox{Gini(Outlook = Sunny)} = \frac{5}{14} \times \left[ 1- \left( \frac{2}{5} \right)^{2} - \left( \frac{3}{5} \right)^{2} \right] + \frac{9}{14} \times \left[ 1- \left( \frac{7}{9} \right)^{2} - \left( \frac{2}{9} \right)^{2} \right] = 0,394.$
+
+Agora vamos para a variável *Humidity*.
+
+
+```r
+golf %>% group_by(Humidity, Play) %>% summarise(N=n())
+```
+
+```
+## # A tibble: 4 x 3
+## # Groups:   Humidity [2]
+##   Humidity Play      N
+##   <chr>    <chr> <int>
+## 1 High     No        4
+## 2 High     Yes       3
+## 3 Normal   No        1
+## 4 Normal   Yes       6
+```
+
+Temos que "Humidity = High" separa os dados da seguinte forma:
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/AB_High.png)
+
+
+$\hbox{Gini(Humidity = High)} = \frac{7}{14} \times \left[ 1- \left( \frac{3}{7} \right)^{2} - \left( \frac{4}{7} \right)^{2} \right] + \frac{7}{14} \times \left[ 1- \left( \frac{6}{7} \right)^{2} - \left( \frac{1}{7} \right)^{2} \right] = 0,367.$
+
+Por último, a variável *Wind*:
+
+
+```r
+golf %>% group_by(Wind, Play) %>% summarise(N=n())
+```
+
+```
+## # A tibble: 4 x 3
+## # Groups:   Wind [2]
+##   Wind   Play      N
+##   <chr>  <chr> <int>
+## 1 Strong No        3
+## 2 Strong Yes       3
+## 3 Weak   No        2
+## 4 Weak   Yes       6
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/AB_Wind.png)
+
+
+$\hbox{Gini(Wind = Strong)} = \frac{6}{14} \times \left[ 1- \left( \frac{3}{6} \right)^{2} - \left( \frac{3}{6} \right)^{2} \right] + \frac{8}{14} \times \left[ 1- \left( \frac{6}{8} \right)^{2} - \left( \frac{2}{8} \right)^{2} \right] = 0,429.$
+
+Logo, os índices Gini calculados foram:
+
+
+|Variáveis          |Índice Gini |
+|:------------------|:-----------|
+|Outlook = Overcast |0,357       |
+|Outlook = Rain     |0,457       |
+|Outlook = Sunny    |0,394       |
+|Humidity = High    |0,367       |
+|Wind = Strong      |0,429       |
+
+Selecionamos a variável com o menor índice Gini para ser o primeiro toco da floresta. Nesse caso, o menor índice Gini é o da variável "Outlook = Overcast".
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/AB_toco.png)
+
+
+Agora precisamos calcular o peso desse toco na classificação final. Para isso, vamos calcular seu **erro total**.
+
+> O **erro total** de um toco é calculado pelo número de amostras classificadas erradas dividido pelo total de amostras.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/AB_toco2.png)
+
+
+Para esse toco houve 5 amostras classificadas erradas em um total de 14. Logo,
+
+$$ \hbox{Erro Total} = \frac{5}{14}. $$
+
+Dessa forma podemos calcular o *Amount of Say* do toco, que será seu peso na classificação final.
+
+$$ \hbox{Amount of Say} = \frac{1}{2} \times log \left( \frac{1-\hbox{Erro Total}}{\hbox{Erro Total}} \right) $$
+Logo, o *Amount of Say* desse toco será de:
+
+$$ \hbox{Amount of Say} = \frac{1}{2} \times log \left( \frac{1-5/14}{5/14} \right) = 0,29.$$
+
+Então 0,29 é o seu peso na classificação final.
+
+Agora vamos construir o próximo toco. Para isso damos um peso maior para as amostras que foram classificadas erroneamente no toco anterior. Essas amostras foram as seguintes:
+
+
+```r
+golf %>% filter(Outlook != "Overcast" & Play != "No")
+```
+
+```
+## # A tibble: 5 x 4
+##   Outlook Humidity Wind   Play 
+##   <chr>   <chr>    <chr>  <chr>
+## 1 Rain    High     Weak   Yes  
+## 2 Rain    Normal   Weak   Yes  
+## 3 Sunny   Normal   Weak   Yes  
+## 4 Rain    Normal   Weak   Yes  
+## 5 Sunny   Normal   Strong Yes
+```
+
+Então, para rebalancearmos os pesos das amostras classificadas de forma certa e errada, utilizamos as seguintes fórmulas:
+
+$$ \hbox{Peso Amostras Erradas} = \hbox{Erro Total} \ \times e^{\hbox{Amount of Say}}$$
+$$ \hbox{Peso Amostras Corretas} = \hbox{Erro Total} \ \times e^{-\hbox{Amount of Say}}$$
+
+Assim, para o segundo toco, os pesos serão:
+
+$$ \hbox{Peso Amostras Erradas} = \frac{5}{14} \ \times e^{0,29} = 0,477.$$
+$$ \hbox{Peso Amostras Corretas} = \frac{5}{14} \ \times e^{-0,29} = 0,267.$$
+
+Então temos os pesos para as amostras:
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/tabela_adaboost.png)
+
+
+A soma dos pesos das amostras deve ser 1, mas isso não ocorre: note que a soma resulta em 4,788. Dessa forma, precisamos reescalar os pesos. Faremos isso dividindo cada um deles por 4,788.
+
+Feito isso, temos uma nova tabela de pesos:
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/tabela_adaboost2.png)
+
+
+Definidos os pesos, em seguida realizamos uma reamostragem via *bootstrap* (uma amostragem da própria amostra, com reposição) do mesmo tamanho da base de dados original. A probabilidade de um elemento da amostra ser sorteado é o peso dele.
+
+
+```r
+# Numerando os elementos da amostra:
+amostra = 1:14
+
+# Definindo as probabilidades dos elementos serem sorteados:
+pesos = rep(c(0.056, 0.099, 0.056, 0.099, 0.056), times = c(3,2,3,3,3))
+
+# Realizando o bootstrap:
+set.seed(271)
+sample(amostra, size = 14, replace = T, prob = pesos)
+```
+
+```
+##  [1] 11  7  5  5  9 10  9 11  1 11 13 12  6  3
+```
+
+Então temos uma nova amostra formada pelos elementos sorteados na reamostragem:
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/tabela_bootstrap.png)
+
+
+Agora, com essa nova amostra, fixamos pesos uniformes para os elementos e repetimos o processo de criação para o próximo toco. Em seguida verificamos os elementos que foram classificados de forma errada, aumentamos seus pesos no banco de dados e repetimos o processo de *bootstrap*, construindo, assim, o próximo toco. O processo se repete até que a floresta de tocos esteja concluída.
+
+Finalizada a floresta, realizamos a classificação final dos elementos somando os pesos dos tocos para cada classificação e selecionando o maior deles. Por exemplo, se a soma dos pesos das árvores que classificaram a amostra como "positivo" for 2,7 e a das que classificaram a amostra como "negativo" for 0,84, a amostra será classificada como "positivo".
+
+#### Adaboost com o pacote `adabag`
+
+Agora que já sabemos como funciona o *adaboost*, vamos botá-lo em prática através do pacote `adabag`[@adabag]. Vamos utilizar a base de dados *spam*.
+
+Inicialmente vamos separar a amostra em treino e teste.
+
+
+```r
+library(kernlab)
+data(spam)
+set.seed(16)
+noTreino = createDataPartition(y = spam$type, p = 0.7, list = F)
+treino = spam[noTreino,]
+teste = spam[-noTreino,]
+```
+
+Antes de realizarmos o *adaboost* precisamos definir a profundidade máxima que as árvores da floresta terão. Faremos isso através do comando rpart.control(). Como o objetivo é construir uma floresta de tocos, as árvores terão todas profundidade 1.
+
+
+```r
+library(rpart)
+controle = rpart.control(maxdepth = 1)
+```
+
+Agora vamos aplicar o método *adaboost* no conjunto treino utilizando o comando boosting().
+
+
+```r
+library(adabag)
+set.seed(16)
+modelo = boosting(formula = type~., data = treino, boos = T, mfinal = 100,
+                  coeflearn = "Breiman", control = controle)
+```
+
+Os principais argumentos dessa função são:
+
+- **formula** = uma fórmula especificando qual variável queremos prever em função de qual(is);
+- **data** = base de dados onde se encontram as variáveis;
+- **boos** = argumento do tipo *logical* onde, se TRUE (*default*), utiliza *bootstrap* para criar uma nova amostra treino para a próxima árvore baseado nos erros da árvore anterior;
+- **mfinal** = número de árvores da floresta;
+- **coeflearn** = define qual fórmula será utilizada para o *Amount of Say* de cada árvore. A que vimos é a fórmula de Breiman (*default*);
+- **control** = opções que controlam detalhes do algoritmo rpart.
+
+Para visualizarmos qualquer árvore da floresta utilizamos o comando rpart.plot().
+
+
+```r
+library(rpart.plot)
+
+# Visualizando a primeira árvore construída:
+rpart.plot(modelo$trees[[1]])
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-165-1.png)
+
+Por último, vamos aplicar o modelo na amostra teste e em seguida avaliar o modelo através da matriz de confusão.
+
+
+```r
+predicao = predict(modelo, teste)
+
+# Podemos obter a matriz de confusão com o seguinte comando:
+predicao$confusion
+```
+
+```
+##                Observed Class
+## Predicted Class nonspam spam
+##         nonspam     807   61
+##         spam         29  482
+```
+
+Ou utilizamos a função confusionMatrix() para, além da matriz de confusão, obtermos demais medidas avaliativas do modelo.
+
+
+```r
+# Transformando em fator para utilizar a função confusionMatrix():
+predicao$class = as.factor(predicao$class)
+teste$type = as.factor(teste$type)
+
+# Matriz de confusão e demais medidas avaliativas:
+confusionMatrix(predicao$class, teste$type, positive = "spam")
+```
+
+```
+## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction nonspam spam
+##    nonspam     807   61
+##    spam         29  482
+##                                                
+##                Accuracy : 0.9347               
+##                  95% CI : (0.9204, 0.9472)     
+##     No Information Rate : 0.6062               
+##     P-Value [Acc > NIR] : < 0.00000000000000022
+##                                                
+##                   Kappa : 0.8619               
+##                                                
+##  Mcnemar's Test P-Value : 0.001084             
+##                                                
+##             Sensitivity : 0.8877               
+##             Specificity : 0.9653               
+##          Pos Pred Value : 0.9432               
+##          Neg Pred Value : 0.9297               
+##              Prevalence : 0.3938               
+##          Detection Rate : 0.3495               
+##    Detection Prevalence : 0.3706               
+##       Balanced Accuracy : 0.9265               
+##                                                
+##        'Positive' Class : spam                 
+## 
+```
+
+Repare que obtivemos uma ótima precisão e especificidade. A sensibilidade não foi tão boa quanto elas, mas talvez deva melhorar se aumentarmos o número de árvores da floresta.
+
+#### Adaboost com o `train`
+
+Também podemos utilizar o *adaboost* através da função train(). Para isso basta escolhermos a opção "AdaBoost.M1" no argumento referente ao método de treino que será utilizado. Vamos fazer isso utilizando a base de dados College.
+
+
+```r
+college = readr::read_csv2("College.csv")
+
+# Separando a amostra em treino e teste:
+set.seed(100)
+noTreino = caret::createDataPartition(y = college$Private, p = 0.7, list = F)
+treino = college[noTreino,]
+teste = college[-noTreino,]
+
+# Para utilizar o adaboost no train primeiramente precisamos fixar os parâmetros maxdepth,
+# coeflearn e mfinal
+controle = expand.grid(maxdepth = 1, coeflearn = "Breiman", mfinal = 10)
+
+# Treinando o modelo com o adaboost:
+set.seed(100)
+modelo = caret::train(Private~., method = "AdaBoost.M1", data = treino, tuneGrid = controle)
+modelo
+```
+
+```
+## AdaBoost.M1 
+## 
+## 545 samples
+##  17 predictor
+##   2 classes: 'No', 'Yes' 
+## 
+## No pre-processing
+## Resampling: Bootstrapped (25 reps) 
+## Summary of sample sizes: 545, 545, 545, 545, 545, 545, ... 
+## Resampling results:
+## 
+##   Accuracy   Kappa    
+##   0.9216357  0.7980984
+## 
+## Tuning parameter 'mfinal' was held constant at a value of 10
+## 
+## Tuning parameter 'maxdepth' was held constant at a value of 1
+## 
+## Tuning parameter 'coeflearn' was held constant at a value of Breiman
+```
+
+Vamos aplicar o modelo no conjunto teste e avaliá-lo através da matriz de confusão.
+
+
+```r
+predicao = predict(modelo, teste)
+
+# Transformando em fator para depois construirmos a matriz de confusão:
+teste$Private = as.factor(teste$Private)
+
+# Construindo a matriz de confusão:
+confusionMatrix(predicao, teste$Private)
+```
+
+```
+## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction  No Yes
+##        No   53   9
+##        Yes  10 160
+##                                             
+##                Accuracy : 0.9181            
+##                  95% CI : (0.8751, 0.95)    
+##     No Information Rate : 0.7284            
+##     P-Value [Acc > NIR] : 0.0000000000003803
+##                                             
+##                   Kappa : 0.792             
+##                                             
+##  Mcnemar's Test P-Value : 1                 
+##                                             
+##             Sensitivity : 0.8413            
+##             Specificity : 0.9467            
+##          Pos Pred Value : 0.8548            
+##          Neg Pred Value : 0.9412            
+##              Prevalence : 0.2716            
+##          Detection Rate : 0.2284            
+##    Detection Prevalence : 0.2672            
+##       Balanced Accuracy : 0.8940            
+##                                             
+##        'Positive' Class : No                
+## 
+```
+
+Note que obtivemos bons resultados mesmo utilizando apenas 10 árvores. A acurácia, em particular, foi maior que 0,9, o que já é um bom indicativo de que o modelo se adequou bem aos dados.
+
+---

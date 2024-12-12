@@ -1,0 +1,1108 @@
+---
+layout: post
+title: "XGBoost"
+date: 2020-09-09 23:07:41 
+lang: R 
+category: Métodos de Treino Baseados em Árvores
+description: "Criação: Maqueise Pinheiro e Thaís Machado. Orientação: Douglas Rodrigues (UFF) e Karina Yaginuma (UFF). Colaboradores: Gabriel Miranda e Thiago Augusto."
+---
+
+### *XGBoost* {#link10}
+
+O XGBoost é a abreviação de ***Extreme Gradient Boost***. Ele foi desenvolvido para **suportar um grande volume de dados de forma eficiente**. Geralmente é 10 vezes mais rápido que o Gradiente Boosting.
+
+#### Em Regressão
+
+Apesar do XGBoost ser usado para lidar com bases grandes, vamos usar uma base de dados bem pequena só para entendermos melhor como ele funciona. Para isso considere a seguinte situação: queremos predizer o peso de um indivíduo em função de sua altura.
+
+
+```r
+# lendo e vizualizando a base
+library(readr)
+peso = read_csv("peso-altura.csv")
+library(ggplot2)
+ggplot(peso, aes(x=Altura, y=Peso)) + geom_point(lwd=5, colour = "deeppink3") + 
+  theme_minimal() + ylim(c(50,90)) + xlim(c(1.3,1.9))
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-186-1.png)
+
+O primeiro passo é fazer uma predição inicial, que pode ser qualquer uma. O *default* é usar 0,5, mas como estamos falando de peso, vamos utilizar a predição inicial "Peso = 70".
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/images/xgb1.png)
+
+
+Agora precisamos calcular os resíduos (diferença entre o valor real e o valor predito) que vão nos mostrar quão boa é essa predição. 
+
+
+```r
+library(dplyr)
+(peso = peso %>% mutate( residuos = Peso-70 ))
+```
+
+```
+## # A tibble: 5 x 3
+##   Altura  Peso residuos
+##    <dbl> <dbl>    <dbl>
+## 1    1.7    88       18
+## 2    1.6    76        6
+## 3    1.5    56      -14
+## 4    1.8    75        5
+## 5    1.4    60      -10
+```
+
+Assim como no Gradiente Boosting, o próximo passo é construir uma árvore para predizer os resíduos. Mas o XGBoost utiliza uma árvore de regressão diferente que vamos chamar de árvore XGB. 
+
+> Existem muitas formas de construir uma árvore XGB. Vamos aprender a mais comum. 
+
+A árvore XGB inicia com uma folha que leva todos os resíduos.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb2.png)
+
+
+Em seguida, calculamos um índice de qualidade ou **Índice de similaridade** $$Índice\ Similaridade\ = \frac{(soma\ dos\ resíduos)^2}{número\ de\ resíduos + \lambda} $$ Onde $\lambda$ (lambda) é um parâmetro de regularização, o que significa que tem o objetivo de reduzir a sensibilidade das observações individuais, ou seja, reduzir o sobreajuste. Por enquanto, vamos considerar $\lambda = 0$ porque esse é o valor default. Sendo assim, o Índice de similaridade da raiz é $\frac{(18+6-14+5-10)^2}{5+0}=\frac{5^2}{5}=5$
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb3.png)
+
+
+Agora vamos ver se conseguimos melhorar esse índice dividindo os resíduos, ou seja, criando uma ramificação. Vamos começar dividindo a variável `Altura` na média entre os dois menores valores, que são $1.4$ e $1.5$, e calculando o Indice para as novas folhas.
+
+> Observe que nas folhas não estarão as alturas e sim os resíduos correspondentes a altura especificada.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb4.png)
+
+
+Agora, precisamos calcular o ganho dessa ramificação para ver o quanto ela foi efetiva. O ganho é calculado da seguinte forma: $$ganho = IS_{folha\ da\ esquerda} + IS_{folha\ da\ direita} - IS_{raiz}$$ Assim, o ganho da ramificação 'Altura<1.45' é $100 + 56.25 - 5 = 151.25$. Vamos fazer esse calculo em todas as ramificações possiveis, Isto é, se temos 5 observações com diferentes alturas, vamos ter 4 ramificações possiveis: 'Altura<1.45', 'Altura<1.55', 'Altura<1.65' e 'Altura<1.75'.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb5.png)
+
+
+Podemos ver que o ganho de usar a ramificação 'Altura<1.55' é maior, portanto é essa que vamos usar. Agora vamos ramificar as folhas da mesma maneira e escolher as que tiverem melhor ganho. 
+
+> Nesse exemplo, vamos limitar a profundidade da árvore XGB em 2. Mas o default é permitir até 6 níveis de profundidade.
+
+Nossa árvore XGB final ficou:
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb6.png)
+
+
+Agora, vamos podar nossa árvore. Fazemos isso porque pode ser que algum nó tenha o ganho muito baixo e por isso não vale a pena estar na árvore. Para decidir se vamos tirar algum nó e, se sim, qual, vamos escolher um valor que será chamado de $\gamma$ (gamma). Em seguida, calculamos a diferença entre o ganho associado ao nó e $\gamma$, se essa diferença for negativa, então removemos o nó.
+
+> $\gamma$ especifica o ganho mínimo necessario para fazer uma divisão. Seu default é 0. Quanto maior, mais conservador é o modelo.
+>
+>> Mesmo quando $\gamma = 0$ isso não previne podas.
+
+Vamos escolher $\gamma = 10$. Começando sempre dos nós mais profundos para a raiz, vamos avaliar a diferença entre o ganho e $\gamma$. No nó mais à direita temos que o ganho é 32,7, portanto a diferença é $32,7-10=22,7$. Como o resultado é positivo, o nó permanece. No nó à esquerda, a diferença fica $8-10=-2$, e, como o resultado é negativo, retiramos esse nó. Assim, estamos dizendo que o ganho do nó à esquerda não é bom o suficiente pra justificar essa ramificação. Como o nó à direita permaneceu na árvore, não faz sentido calcular essa diferença para o nó raiz.
+
+> Mesmo se o valor da diferença der negativo nos nós de cima, se não removermos o de baixo, o de cima não é removido.
+
+Com isso, nossa árvore XGB ficou:
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb7.png)
+
+Note que se tivéssemos escolhido um $\gamma$ muito alto, por exemplo $\gamma = 570$, toda árvore seria podada. É preciso cuidado.
+
+> Agora vamos voltar ao inicio e reconstruir a árvore agora usando $\lambda = 1$ (lembra do $\lambda$? aquele da fórmula do índicador de similaridade :) ). Para facilitar a vizualização, vamos omitir os cálculos. A nova árvore XGB ficou:
+>
+>
+> ![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb8.png)
+>
+>
+> Podemos notar que quando $\lambda > 0$, o índice de similaridade é menor. O que significa que se mantivermos o mesmo $\gamma$, a poda será mais extrema. Por outro lado, deixar $\lambda > 0$ ajuda a previnir sobreajustes.
+
+Agora que temos árvore final, vamos calcular os valores de saída das folhas. $$valores\ de\ saida = \frac{soma\ dos\ residuos}{número\ de\ resíduos + \lambda}$$ Repare que essa fórmula é bem parecida com a do índice de similaridade, mas a soma dos resíduos não está ao quadrado.
+
+Note também que, como $\lambda = 0$ o valor de saida é uma média aritmética simples entre os resíduos. Mas note que se $\lambda > 0$ e a folha tiver apenas uma observação, isso reduzira a sensibilidade dessa observação individual evitando sobreajuste.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb9.png)
+
+
+Assim a primeira árvore está completa e, como em Gradient Boosting, fazemos novas predições começando com a predição inicial e somando com o resultado da árvore XGB escalada pela taxa de aprendizado.
+
+> O XGBoost chama a taxa de aprendizado de $\varepsilon$ (eta) e seu valor default é 0.3, que é o que vamos usar.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb10.png)
+
+
+Por exemplo, se a gente pegasse a primeira observação (indivíduo com altura=1.7), seu peso predito seria $predicao\ inicial + \varepsilon*valor\ de\ saida\ da \ árvore\ XGB = 70+0.3*12=73.6$ que é mais perto do seu peso real (que era 88) do que a predição anterior (70). Assim, com as novas predições, os novos resíduos ficaram: 
+
+
+```r
+nova_pred = c(73.6, 73.6, 66.4, 71.5, 66.4)
+(peso = peso %>% mutate( residuos2 = Peso - nova_pred ))
+```
+
+```
+## # A tibble: 5 x 4
+##   Altura  Peso residuos residuos2
+##    <dbl> <dbl>    <dbl>     <dbl>
+## 1    1.7    88       18      14.4
+## 2    1.6    76        6       2.4
+## 3    1.5    56      -14     -10.4
+## 4    1.8    75        5       3.5
+## 5    1.4    60      -10      -6.4
+```
+
+Perceba que o novo resíduo é melhor que o anterior (seu valor absoluto é mais próximo de 0). Ou seja, estamos dando pequenos passos na direção correta.
+
+Agora construímos outra árvore XGB da mesma forma, mas para predizer os novos resíduos, Dessa forma obteremos previsões com resíduos menores. E continuamos construíndo árvores XGB até que os resíduos sejam bem pequenos ou até atingir o número de árvores desejado.
+
+##### Construindo um regressor com o pacote `xgboost`
+
+Vamos usar a base de dados `winequality-red`. O objetivo dessa base é prever a qualidade do vinho baseado em suas outras variáveis. Mas nós vamos tentar prever o nível alcoólico do vinho.
+
+
+```r
+library(readr)
+wine = read_csv2("winequality-red.csv")
+str(wine)
+```
+
+```
+## tibble [1,599 x 12] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+##  $ fixed acidity       : num [1:1599] 7.4 7.8 7.8 11.2 7.4 7.4 7.9 7.3 7.8 7.5 ...
+##  $ volatile acidity    : num [1:1599] 0.7 0.88 0.76 0.28 0.7 0.66 0.6 0.65 0.58 0.5 ...
+##  $ citric acid         : num [1:1599] 0 0 0.04 0.56 0 0 0.06 0 0.02 0.36 ...
+##  $ residual sugar      : num [1:1599] 1.9 2.6 2.3 1.9 1.9 1.8 1.6 1.2 2 6.1 ...
+##  $ chlorides           : num [1:1599] 0.076 0.098 0.092 0.075 0.076 0.075 0.069 0.065 0.073 0.071 ...
+##  $ free sulfur dioxide : num [1:1599] 11 25 15 17 11 13 15 15 9 17 ...
+##  $ total sulfur dioxide: num [1:1599] 34 67 54 60 34 40 59 21 18 102 ...
+##  $ density             : num [1:1599] 0.998 0.997 0.997 0.998 0.998 ...
+##  $ pH                  : num [1:1599] 3.51 3.2 3.26 3.16 3.51 3.51 3.3 3.39 3.36 3.35 ...
+##  $ sulphates           : num [1:1599] 0.56 0.68 0.65 0.58 0.56 0.56 0.46 0.47 0.57 0.8 ...
+##  $ alcohol             : num [1:1599] 9.4 9.8 9.8 9.8 9.4 9.4 9.4 10 9.5 10.5 ...
+##  $ quality             : num [1:1599] 5 5 5 6 5 5 5 7 7 5 ...
+##  - attr(*, "spec")=
+##   .. cols(
+##   ..   `fixed acidity` = col_double(),
+##   ..   `volatile acidity` = col_double(),
+##   ..   `citric acid` = col_double(),
+##   ..   `residual sugar` = col_double(),
+##   ..   chlorides = col_double(),
+##   ..   `free sulfur dioxide` = col_double(),
+##   ..   `total sulfur dioxide` = col_double(),
+##   ..   density = col_double(),
+##   ..   pH = col_double(),
+##   ..   sulphates = col_double(),
+##   ..   alcohol = col_double(),
+##   ..   quality = col_double()
+##   .. )
+```
+
+Como sempre, vamos dividir a base em amostra de treino e amostra de teste.
+
+
+```r
+library(caret)
+set.seed(100)
+noTreino = createDataPartition(wine$alcohol, p = 0.7, list = F)
+# vendo a classe da base de dados
+class(wine)
+```
+
+```
+## [1] "spec_tbl_df" "tbl_df"      "tbl"         "data.frame"
+```
+
+O pacote `xgboost`[@xgboost] só le matrizes. Então teremos que transformar a base numa matriz. Além disso, teremos que separar a váriavel de interesse das variáveis explicativas.
+
+
+```r
+# Transformando a base em matriz
+wine = as.matrix(wine)
+class(wine)
+```
+
+```
+## [1] "matrix" "array"
+```
+
+```r
+# separando amostra treino e teste
+treino       = wine[noTreino,-11] # a variável 'alcohol' é a 11ª coluna
+treino_label = wine[noTreino, 11]
+
+teste       = wine[-noTreino,-11]
+teste_label = wine[-noTreino, 11]
+```
+
+Agora, podemos usar a função `xgboost` para criar nosso modelo.
+
+
+```r
+library(xgboost)
+set.seed(100)
+modelo = xgboost(data = treino, label = treino_label,
+                 gamma=0, eta=0.3, nrounds = 100, 
+                 objective = "reg:squarederror", 
+                 verbose = 0)
+```
+
+Os principais argumentos da função `xgboost` são:
+
+- **data**: recebe a amostra treino apenas com as variáveis explicativas;
+- **label**: recebe a variável de interesse;
+- **gamma**: ganho mínimo necessário para fazer uma divisão;
+- **eta**: taxa de aprendizado (*default*: 0.3);
+- **nrounds**: representa o número de árvores XGB criadas, lembrando que a primeira "árvore" é apenas um toco (não possui *default*);
+- **base_score**: a predição inicial (*default*: 0.5)
+- **objective**: é o tipo de predição que será feita. Para mais informações, veja [nesse site.](https://github.com/dmlc/xgboost/blob/master/doc/parameter.rst) (*default*: "reg:squarederror");
+- **verbose**: se for 1, que é o *default*, o xgboost vai imprimir informações de desempenho a cada iteração. Se for 0, não vai imprimir nada.
+
+Podemos plotar uma das árvores com o seguinte comando
+
+
+```r
+# plotando a primeira árvore após o toco
+xgb.plot.tree(model = modelo, trees = 1)
+```
+
+```
+## PhantomJS not found. You can install it with webshot::install_phantomjs(). If it is installed, please make sure the phantomjs executable can be found via the PATH variable.
+```
+
+```
+## Error in file(con, "rb"): não é possível abrir a conexão
+```
+
+```r
+# plotando a 99ª árvore após o toco ou seja a última
+xgb.plot.tree(model = modelo, trees = 99)
+```
+
+```
+## PhantomJS not found. You can install it with webshot::install_phantomjs(). If it is installed, please make sure the phantomjs executable can be found via the PATH variable.
+```
+
+```
+## Error in file(con, "rb"): não é possível abrir a conexão
+```
+
+A medida "*Cover*" que aparece na árvore será definida na parte de classificação.
+
+Para fazer a predição usamos o conhecido `predict()`. Em seguida, vamos avaliar os resultados do modelo utilizando a função `defaultSummary()` do pacote *caret*. Essa função nos retorna os valores do RMSE, $R^{2}$ e MAE do modelo. Para isso devemos passar como argumento um *dataframe* onde a primeira coluna são os valores observados dos rótulos do conjunto teste e a segunda coluna são os valores preditos pelo modelo.
+
+
+```r
+predicao = predict(modelo,teste)
+# Calculando o RMSE do modelo:
+caret::defaultSummary(data.frame(obs = teste_label, pred = predicao))
+```
+
+```
+##      RMSE  Rsquared       MAE 
+## 0.5394468 0.7435102 0.3548454
+```
+
+```r
+# tambem podemos utilizar a função postResample
+caret::postResample(obs = teste_label, pred = predicao)
+```
+
+```
+##      RMSE  Rsquared       MAE 
+## 0.5394468 0.7435102 0.3548454
+```
+
+Considerando a escala em que os dados se encontram, o valor do RMSE foi um pouco grande. Em contrapartida podemos considerar os valores do MAE e do $R^{2}$ como sendo razoáveis para o modelo. Em particular, um $R^{2}$ de aproximadamente 0,7881 nos indica que o modelo tem um poder de explicação de 78,81%.
+
+#### Em Classificação
+
+Para entendermos como o XGBoost funciona para problemas de classificação, vamos utilizar a base de dados a seguir. O objetivo é prever se a universidade é pública ou privada baseado nos pedidos para ingresso. Estamos usando o pacote `readxl`[@readxl].
+
+> OBS: Assim como comentado anteriormente em regressão, o XGBoost foi projetado para bases de dados grandes, mas para fins didáticos iremos utilizar uma base bem pequena.
+
+
+```r
+library(readxl)
+college = read_excel("SmallCollege.xlsx")
+college
+```
+
+```
+## # A tibble: 4 x 2
+##   Private  Apps
+##   <chr>   <dbl>
+## 1 No       2119
+## 2 Yes      1660
+## 3 Yes      2694
+## 4 No       2785
+```
+
+
+```r
+library(ggplot2)
+library(dplyr)
+# Construindo um gráfico para os pedidos para ingresso x tipo da universidade:
+college %>% ggplot(aes(x = Apps, y = Private)) + geom_point(lwd = 5, aes(colour = Private)) +
+  guides(col = F) + theme_minimal() + ggtitle("Pedidos para Ingresso x Tipo da Universidade") +
+  xlab("Pedidos para Ingresso") + ylab("Universidade Privada")
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-196-1.png)
+
+O primeiro passo é fazer uma predição inicial. Essa predição pode ser qualquer valor, como por exemplo a probabilidade de observar universidades públicas no conjunto de dados. Por *default*, essa predição é de 0,5.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/pred_inicial.png)
+
+
+Podemos ilustrar essa predição inicial adicionando uma linha horizontal no gráfico que representa as probabilidades de uma universidade ser pública pelo que observamos no conjunto de dados.
+
+
+```r
+# Vamos adicionar a coluna "Probabilidade" na base de dados que conterá a probabilidade da
+# universidade ser pública:
+college$Probabilidade = ifelse(college$Private == "Yes", 0, 1)
+
+# Gráfico dos pedidos para ingresso x probabilidade da universidade ser pública baseado no
+# conjunto de dados:
+college %>% ggplot(aes(x = Apps, y = Probabilidade)) + 
+            geom_point(lwd = 5, aes(colour = Private)) + theme_minimal() + 
+            ylab("Probabilidade da Universidade ser Pública") + 
+            geom_hline(yintercept = 0.5, type = 2) + 
+            ggtitle("Pedidos para Ingresso x Probabilidade da Universidade ser Pública") + 
+            xlab("Pedidos para Ingresso") + guides(col = F)
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-197-1.png)
+
+Feita a predição inicial, agora vamos calcular os resíduos e verificar quão boa é essa predição.
+
+
+```r
+college$Residuos = college$Probabilidade-0.5
+college
+```
+
+```
+## # A tibble: 4 x 4
+##   Private  Apps Probabilidade Residuos
+##   <chr>   <dbl>         <dbl>    <dbl>
+## 1 No       2119             1      0.5
+## 2 Yes      1660             0     -0.5
+## 3 Yes      2694             0     -0.5
+## 4 No       2785             1      0.5
+```
+
+O próximo passo é construir uma árvore para predizer os resíduos. Assim como a árvore XGB para regressão, a árvore XGB para classificação se inicia com apenas uma folha que leva todos os resíduos.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/Resíduos_XGB.png)
+
+Agora precisamos calcular o Índice de Similaridade para os resíduos. Porém, como estamos usando XGBoost para classificação, temos uma nova fórmula para ele.
+
+$$ \hbox{Índice de Similaridade} = \frac{\left( \sum\limits_{i=1}^{n} \hbox{Resíduo}_i \right)^{2}}{\sum\limits_{i=1}^{n} \left[ \hbox{Probabilidade Prévia}_i \times \left( 1 - \hbox{Probabilidade Prévia}_i \right) \right] + \lambda} $$
+
+Veja que o numerador da fórmula para classificação é igual ao da fórmula para regressão. E assim como para regressão, o denominador contém $\lambda$, o parâmetro de regularização.
+
+Note que, para o nosso exemplo, o numerador do Índice de Similaridade para a folha resultará em 0, pois nós somamos os resíduos antes de elevá-los ao quadrado, o que faz com que eles se cancelem.
+
+$$\left( \sum\limits_{i=1}^{n} \hbox{Resíduo}_i \right)^{2} = (0,5 - 0,5 - 0,5 + 0,5)^{2} = 0 \Rightarrow \hbox{Índice de Similaridade} = 0$$
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/IS1.png)
+
+
+Vamos tentar melhorar o Índice dividindo os resíduos em 2 grupos diferentes. Para isso temos que testar todos os possíveis separadores para os dados e escolher o que tiver o maior ganho. Vamos começar com a média entre os 2 menores valores da variável "*Apps*".
+
+
+```r
+ordenados = sort(college$Apps)
+mean(ordenados[1:2])
+```
+
+```
+## [1] 1889.5
+```
+
+Assim, os resíduos que possuem *Apps* < 1889,5 vão para a esquerda, e os com *Apps* > 1889,5 vão para a direita.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb_1.png)
+
+
+Agora vamos calcular o Índice de Similaridade para as duas folhas. Como estamos construindo nossa primeira árvore, a Probabilidade Prévia para todos os resíduos é a predição da folha inicial (0,5). Para simplificar as contas, vamos utilizar o valor padrão de $\lambda$, $\lambda$ = 0. Contudo, sabemos da regressão que o $\lambda$ reduz o Índice de Similaridade, o que consequentemente diminui o Ganho e assim torna as folhas mais fáceis de serem podadas, o que ajuda a previnir o sobreajuste.
+
+$$\hbox{IS}_\hbox{folha da esquerda} = \frac{(-0,5)^{2}}{0,5 \times (1-0,5)} = 1.$$
+
+$$\hbox{IS}_\hbox{folha da direita} = \frac{(-0,5+0,5+0,5)^{2}}{[0,5 \times (1-0,5)] + [0,5 \times (1-0,5)] + [0,5 \times (1-0,5)]} = 0,33.$$
+
+Agora podemos calcular o ganho:
+
+$$\hbox{Ganho} = \hbox{IS}_\hbox{folha da esquerda} + \hbox{IS}_\hbox{folha da direita} - \hbox{IS}_{\hbox{raiz}} = 1 + 0,33-0 = 1,33.$$
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb_2.png)
+
+
+Agora vamos realizar os mesmos cálculos para os próximos 2 separadores: a média entre o segundo e o terceiro valor e a média entre o terceiro e o quarto valor da variável "*Apps*".
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb_3.png)
+
+
+Podemos ver que o maior ganho é tanto o da divisão por "Apps < 1889,5?" quanto o da divisão por "Apps < 2739,5?", que deram exatamente iguais. Assim, podemos usar qualquer um dos 2 para ser a raiz da árvore XGB. Vamos ficar com o último. 
+
+O próximo passo agora é ramificar a folha da esquerda para darmos continuidade à nossa árvore. Novamente, vamos limitar a profundidade dela em 2.
+
+A árvore XGB fica, então, da seguinte forma:
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb_4.png)
+
+
+Assim, terminamos de construir a árvore XGB. 
+
+É importante saber que o XGBoost possui uma forma de determinar um número mínimo de resíduos permitido em cada folha da árvore. Ele faz isso calculando o ***Cover*** das folhas.
+
+$$\hbox{Cover} = \sum\limits_{i=1}^{n} \left[ \hbox{Probabilidade Prévia}_i \times \left( 1 - \hbox{Probabilidade Prévia}_i \right) \right] $$
+
+Note que o *Cover* é definido pelo denominador do Índice de Similaridade sem o $\lambda$. O valor *default* é de que o *Cover* seja no mínimo 1, ou seja, se o *Cover* de uma folha der menor que 1, o XGBoost não permite que ela exista. Se der maior ou igual a 1, ela pode permanecer na árvore.
+
+Calculando o *Cover* das nossas duas últimas folhas, temos que:
+
+- *Cover* da 1ª folha = $0,5 \times (1-0,5) = 0,25$;
+
+- *Cover* da 2ª folha = $0,5 \times (1-0,5) + 0,5 \times (1-0,5) = 0,5$.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb_5.png)
+
+
+Como o *Cover* de ambas as folhas são menores do que 1, o XGBoost não as permite permanecer na árvore. Logo, vamos removê-las. A árvore fica, então, da seguinte forma:
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb_6.png)
+
+
+Calculando agora o *Cover* das duas folhas, obtemos:
+
+- *Cover* da 1ª folha = $0,5 \times (1-0,5) + 0,5 \times (1-0,5) + 0,5 \times (1-0,5) = 0,75$;
+
+- *Cover* da 2ª folha = $0,5 \times (1-0,5) = 0,25$.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb_7.png)
+
+
+Como o *Cover* de ambas as folhas também são menores do que 1, o XGBoost também não as permite permanecer na árvore. Assim, só nos resta a raiz. Mas isso também é um problema, pois o XGBoost requer árvores que sejam maiores do que apenas a raiz. Dessa forma, vamos fixar o valor mínimo para o *Cover* como 0. Assim podemos permanecer com nossa árvore XGB anterior.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb_8.png)
+
+
+> **OBS:** Quando estamos utilizando XGBoost para regressão usamos a seguinte fórmula para o Índice de Similaridade:
+>
+> $$\hbox{Índice de Similaridade} = \frac{\left( \sum\limits_{i=1}^{n} \hbox{Resíduo}_i \right)^{2}}{\hbox{Número de Resíduos} + \lambda}$$
+>
+> Logo, o *Cover* de uma folha é dado por:
+>
+> $$\hbox{Cover} = \hbox{Número de Resíduos}$$
+>
+> Como o *default* do *Cover* é 1, isso significa que podemos ter até 1 resíduo por folha. Em outras palavras, o *Cover* não tem efeito na construção da árvore. Por conta disso ele não foi utilizado anteriormente em XGBoost para regressão.
+
+Agora vamos entrar na parte de como podar a árvore. Ela é feita exatamente como na regressão, nós podamos com base na diferença entre o **Ganho** associado ao nó e $\gamma$. Para esse exemplo, vamos fixar $\gamma = 0,5$.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb_9.png)
+
+
+Como a diferença resultou em um número positivo, não podamos o nó. Logo, não precisamos calcular essa diferença para o nó raiz e nossa árvore permanece a mesma. Note que se tivéssemos fixado, por exemplo, $\gamma = 1,5$, todos os nós seriam podados e nos restaria apenas a predição inicial. É necessário cuidado na escolha do $\gamma$.
+
+Obtida a árvore final, vamos calcular os valores de saída que as folhas terão.
+
+$$ \hbox{Valores de Saída} = \frac{\sum\limits_{i=1}^{n} \hbox{Resíduo}_i}{\sum\limits_{i=1}^{n} \left[ \hbox{Probabilidade Prévia}_i \times \left( 1 - \hbox{Probabilidade Prévia}_i \right) \right] + \lambda} $$
+
+Note que a fórmula é bem parecida com a do Índice de Similaridade, o que muda é apenas o fato de que o numerador não está ao quadrado. Novamente vamos utilizar o valor padrão para $\lambda$, 0.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb_10.png)
+
+
+Agora que construímos nossa primeira árvore podemos realizar predições. Assim como no XGBoost para regressão, o XGBoost para classificação faz novas predições começando com a predição inicial e somando com o resultado da árvore XGB escalado pela taxa de aprendizado. Porém, assim como com o Gradiente Boosting para classificação, precisamos converter a predição inicial, que é uma probabilidade, para log(chances). A fórmula para converter probabilidades para chances é dada por:
+
+$$\frac{p}{1-p} = \hbox{chances}$$
+
+Logo, podemos obter uma fórmula que converte probabilidades em log(chances), aplicando log dos dois lados da equação.
+
+$$log \left( \frac{p}{1-p} \right) = log(\hbox{chances}) $$
+
+Então para a predição inicial de 0,5, temos que $\log \left( \frac{0,5}{1-0,5} \right) = log(1) = 0$. Assim, $log(\hbox{chances}) = 0.$ Agora precisamos adicionar esse valor aos valores de saída da árvore XGB multiplicado pela taxa de aprendizado. Essa taxa é chamada de $\varepsilon$ e seu valor padrão é 0,3, o qual iremos usar.
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb_11.png)
+
+
+>OBS: O que as folhas retornarão após esse cálculo serão os log(chances). É preciso, em seguida, converter para probabilidade também.
+
+Fazendo os cálculos da esquerda para a direita, temos que:
+
+- Para a 1ª folha, seu valor de saída fica: $0 + 0,3 \times (-2) = -0,6$;
+
+- Para a 2ª folha, seu valor de saída fica: $0 + 0,3 \times 0 = 0$;
+
+- Para a 3ª folha, seu valor de saída fica: $0 + 0,3 \times 2 = 0,6$.
+
+Agora para converter esses valores - que são log(chances) - para probabilidade utilizamos a seguinte fórmula:
+
+$$\hbox{Probabilidade} = \frac{e^{log(\hbox{chances})}}{1+e^{log(\hbox{chances})}} $$
+
+---
+
+Fazendo os cálculos, então, da esquerda para a direita:
+
+- Para a 1ª folha, seu valor de saída fica: $\frac{e^{-0,6}}{1+e^{-0,6}} = 0,35$;
+
+- Para a 2ª folha, seu valor de saída fica: $\frac{e^{0}}{1+e^{0}} = 0,5$;
+
+- Para a 3ª folha, seu valor de saída fica: $\frac{e^{0,6}}{1+e^{0,6}} = 0,65$.
+
+Assim, temos as predições da nossa árvore:
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/xgb_12.png)
+
+
+Dessa forma podemos obter novos resíduos utilizando a nova árvore.:
+
+
+```r
+college$Residuos2 = college$Probabilidade-c(0.5,0.35,0.5,0.65)
+college
+```
+
+```
+## # A tibble: 4 x 5
+##   Private  Apps Probabilidade Residuos Residuos2
+##   <chr>   <dbl>         <dbl>    <dbl>     <dbl>
+## 1 No       2119             1      0.5      0.5 
+## 2 Yes      1660             0     -0.5     -0.35
+## 3 Yes      2694             0     -0.5     -0.5 
+## 4 No       2785             1      0.5      0.35
+```
+
+Observe que os novos resíduos são menores ou iguais (em módulo) do que os anteriores, o que significa que estamos indo na direção correta. O próximo passo agora é construir uma nova árvore para os novos resíduos. Note que agora as probabilidades preditas são diferentes (antes era de 0,5 para todos os elementos), o que tornará os cálculos do Índice de Similaridade e dos Valores de Saída mais interessantes, por exemplo. Com a nova árvore construída fazemos novas predições que nos darão resíduos menores ainda. Então construímos uma nova árvore baseada nos novos resíduos e repetimos o processo. Fazemos isso até que os resíduos se tornem super pequenos ou se atingirmos o número máximo de árvores escolhido.
+
+##### Construindo um classificador com o `xgboost`
+
+Vamos novamente utilizar o pacote `xgboost` para construirmos um preditor. Dessa vez iremos construir um classificador e para isso usaremos a base de dados *Adult*, que se encontra presente no [repositório de aprendizado de máquina da Universidade de Irvine, California](https://archive.ics.uci.edu/ml/index.php "UCI Machine Learning Repository")[@ucirepo]. Esse site é um repositório de bases de dados reais, o que torna ele interessante para quem está estudando/trabalhando com aprendizado de máquina.
+
+
+```r
+# Lendo a base de dados como um tibble:
+renda = 
+  dplyr::tibble(read.csv(url("https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data")))
+str(renda)
+```
+
+```
+## tibble [32,560 x 15] (S3: tbl_df/tbl/data.frame)
+##  $ X39          : int [1:32560] 50 38 53 28 37 49 52 31 42 37 ...
+##  $ State.gov    : chr [1:32560] " Self-emp-not-inc" " Private" " Private" " Private" ...
+##  $ X77516       : int [1:32560] 83311 215646 234721 338409 284582 160187 209642 45781 159449 280464 ...
+##  $ Bachelors    : chr [1:32560] " Bachelors" " HS-grad" " 11th" " Bachelors" ...
+##  $ X13          : int [1:32560] 13 9 7 13 14 5 9 14 13 10 ...
+##  $ Never.married: chr [1:32560] " Married-civ-spouse" " Divorced" " Married-civ-spouse" " Married-civ-spouse" ...
+##  $ Adm.clerical : chr [1:32560] " Exec-managerial" " Handlers-cleaners" " Handlers-cleaners" " Prof-specialty" ...
+##  $ Not.in.family: chr [1:32560] " Husband" " Not-in-family" " Husband" " Wife" ...
+##  $ White        : chr [1:32560] " White" " White" " Black" " Black" ...
+##  $ Male         : chr [1:32560] " Male" " Male" " Male" " Female" ...
+##  $ X2174        : int [1:32560] 0 0 0 0 0 0 0 14084 5178 0 ...
+##  $ X0           : int [1:32560] 0 0 0 0 0 0 0 0 0 0 ...
+##  $ X40          : int [1:32560] 13 40 40 40 40 16 45 50 40 80 ...
+##  $ United.States: chr [1:32560] " United-States" " United-States" " United-States" " Cuba" ...
+##  $ X..50K       : chr [1:32560] " <=50K" " <=50K" " <=50K" " <=50K" ...
+```
+
+Essa base possui algumas informações sobre 32.560 indivíduos, tais como: estado civil, raça, sexo, país de origem, entre outras, e a variável de interesse "X..50K", que indica se o indivíduo tem uma renda maior ou menor/igual do que 50.000 U.M. (unidades monetárias) por ano. Mas antes de começarmos a construção do preditor repare que a base de dados possui variáveis com variância quase-zero.
+
+
+```r
+library(caret)
+nearZeroVar(renda, saveMetrics = T)
+```
+
+```
+##                freqRatio percentUnique zeroVar   nzv
+## X39             1.011261   0.224201474   FALSE FALSE
+## State.gov       8.931917   0.027641278   FALSE FALSE
+## X77516          1.000000  66.483415233   FALSE FALSE
+## Bachelors       1.440269   0.049140049   FALSE FALSE
+## X13             1.440269   0.049140049   FALSE FALSE
+## Never.married   1.401985   0.021498771   FALSE FALSE
+## Adm.clerical    1.010002   0.046068796   FALSE FALSE
+## Not.in.family   1.588752   0.018427518   FALSE FALSE
+## White           8.903649   0.015356265   FALSE FALSE
+## Male            2.022932   0.006142506   FALSE FALSE
+## X2174          86.020173   0.365479115   FALSE  TRUE
+## X0            153.668317   0.282555283   FALSE  TRUE
+## X40             5.397659   0.288697789   FALSE FALSE
+## United.States  45.363919   0.128992629   FALSE  TRUE
+## X..50K          3.152532   0.006142506   FALSE FALSE
+```
+
+Podemos ver que as variáveis "X2174", "X0" e "United.States" são as que possuem variância quase-zero, o que significa que elas não trarão muita informação ao modelo, pois possuem os mesmos valores ou mesmas classificações para muitos indivíduos. O pacote `kableExtra`[@kableextra] é usado para melhorar a visualização de tabelas.
+
+
+```r
+hist(renda$X2174, main = "Histograma da variável X2174", xlab = "Variável X2174", 
+     ylab = "Frequência", col = "blue")
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-203-1.png)
+
+
+```r
+hist(renda$X0, main = "Histograma da variável X0", xlab = "Variável X0", 
+     ylab = "Frequência", col = "lightblue")
+```
+
+![tela_0]({{ site.url }}/assets/r/courses/machine_learning/01/images/unnamed-chunk-204-1.png)
+
+
+```r
+# Tabela com as observações da variável "United.States":
+# Repare que a grande maioria dos indivíduos (29.169 de 32.560) é proveniente dos Estados Unidos.
+library(dplyr); library(kableExtra)
+renda.agrupada = renda %>% group_by(United.States) %>% summarise(qnt = n())
+renda.agrupada %>% arrange(desc(qnt)) %>% kable() %>% kable_styling()
+```
+
+<table class="table" style="margin-left: auto; margin-right: auto;">
+ <thead>
+  <tr>
+   <th style="text-align:left;"> United.States </th>
+   <th style="text-align:right;"> qnt </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> United-States </td>
+   <td style="text-align:right;"> 29169 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Mexico </td>
+   <td style="text-align:right;"> 643 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> ? </td>
+   <td style="text-align:right;"> 583 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Philippines </td>
+   <td style="text-align:right;"> 198 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Germany </td>
+   <td style="text-align:right;"> 137 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Canada </td>
+   <td style="text-align:right;"> 121 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Puerto-Rico </td>
+   <td style="text-align:right;"> 114 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> El-Salvador </td>
+   <td style="text-align:right;"> 106 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> India </td>
+   <td style="text-align:right;"> 100 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Cuba </td>
+   <td style="text-align:right;"> 95 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> England </td>
+   <td style="text-align:right;"> 90 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Jamaica </td>
+   <td style="text-align:right;"> 81 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> South </td>
+   <td style="text-align:right;"> 80 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> China </td>
+   <td style="text-align:right;"> 75 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Italy </td>
+   <td style="text-align:right;"> 73 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Dominican-Republic </td>
+   <td style="text-align:right;"> 70 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Vietnam </td>
+   <td style="text-align:right;"> 67 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Guatemala </td>
+   <td style="text-align:right;"> 64 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Japan </td>
+   <td style="text-align:right;"> 62 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Poland </td>
+   <td style="text-align:right;"> 60 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Columbia </td>
+   <td style="text-align:right;"> 59 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Taiwan </td>
+   <td style="text-align:right;"> 51 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Haiti </td>
+   <td style="text-align:right;"> 44 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Iran </td>
+   <td style="text-align:right;"> 43 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Portugal </td>
+   <td style="text-align:right;"> 37 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Nicaragua </td>
+   <td style="text-align:right;"> 34 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Peru </td>
+   <td style="text-align:right;"> 31 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> France </td>
+   <td style="text-align:right;"> 29 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Greece </td>
+   <td style="text-align:right;"> 29 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Ecuador </td>
+   <td style="text-align:right;"> 28 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Ireland </td>
+   <td style="text-align:right;"> 24 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Hong </td>
+   <td style="text-align:right;"> 20 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Cambodia </td>
+   <td style="text-align:right;"> 19 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Trinadad&amp;Tobago </td>
+   <td style="text-align:right;"> 19 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Laos </td>
+   <td style="text-align:right;"> 18 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Thailand </td>
+   <td style="text-align:right;"> 18 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Yugoslavia </td>
+   <td style="text-align:right;"> 16 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Outlying-US(Guam-USVI-etc) </td>
+   <td style="text-align:right;"> 14 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Honduras </td>
+   <td style="text-align:right;"> 13 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Hungary </td>
+   <td style="text-align:right;"> 13 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Scotland </td>
+   <td style="text-align:right;"> 12 </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> Holand-Netherlands </td>
+   <td style="text-align:right;"> 1 </td>
+  </tr>
+</tbody>
+</table>
+
+Dessa forma, vamos remover essas variáveis do banco de dados.
+
+
+```r
+# Vetor com todas as variáveis com variância quase-zero:
+nzv = nearZeroVar(renda)
+
+# Removendo do banco de dados:
+renda = renda[, -nzv]
+```
+
+Agora precisamos nos atentar a um fator importante da função `xgboost`: ela só aceita bases de dados com **variáveis numéricas**. Isso é um problema para a nossa base pois ela possui variáveis do tipo *factor*. O que fazer nesse caso? A resposta para essa pergunta é simples: vamos transformar essas variáveis em variáveis *dummies*.
+
+
+```r
+# Criando as variáveis dummies:
+dummies = dummyVars(~ X..50K + State.gov + Bachelors + Never.married + Adm.clerical +
+                      Not.in.family + White + Male, data = renda, fullRank = T)
+
+# Aplicando ao modelo:
+Dummies = predict(dummies, newdata = renda)
+
+# Anexando aos dados:
+renda = cbind(renda, Dummies)
+
+# Excluindo as variáveis categóricas do banco de dados:
+renda = dplyr::select(renda, -c(X..50K, State.gov, Bachelors, Never.married, 
+                                Adm.clerical, Not.in.family, White, Male))
+head(renda)
+```
+
+```
+##   X39 X77516 X13 X40 X..50K >50K State.gov Federal-gov State.gov Local-gov
+## 1  50  83311  13  13           0                     0                   0
+## 2  38 215646   9  40           0                     0                   0
+## 3  53 234721   7  40           0                     0                   0
+## 4  28 338409  13  40           0                     0                   0
+## 5  37 284582  14  40           0                     0                   0
+## 6  49 160187   5  16           0                     0                   0
+##   State.gov Never-worked State.gov Private State.gov Self-emp-inc
+## 1                      0                 0                      0
+## 2                      0                 1                      0
+## 3                      0                 1                      0
+## 4                      0                 1                      0
+## 5                      0                 1                      0
+## 6                      0                 1                      0
+##   State.gov Self-emp-not-inc State.gov State-gov State.gov Without-pay
+## 1                          1                   0                     0
+## 2                          0                   0                     0
+## 3                          0                   0                     0
+## 4                          0                   0                     0
+## 5                          0                   0                     0
+## 6                          0                   0                     0
+##   Bachelors 11th Bachelors 12th Bachelors 1st-4th Bachelors 5th-6th
+## 1              0              0                 0                 0
+## 2              0              0                 0                 0
+## 3              1              0                 0                 0
+## 4              0              0                 0                 0
+## 5              0              0                 0                 0
+## 6              0              0                 0                 0
+##   Bachelors 7th-8th Bachelors 9th Bachelors Assoc-acdm Bachelors Assoc-voc
+## 1                 0             0                    0                   0
+## 2                 0             0                    0                   0
+## 3                 0             0                    0                   0
+## 4                 0             0                    0                   0
+## 5                 0             0                    0                   0
+## 6                 0             1                    0                   0
+##   Bachelors Bachelors Bachelors Doctorate Bachelors HS-grad
+## 1                   1                   0                 0
+## 2                   0                   0                 1
+## 3                   0                   0                 0
+## 4                   1                   0                 0
+## 5                   0                   0                 0
+## 6                   0                   0                 0
+##   Bachelors Masters Bachelors Preschool Bachelors Prof-school
+## 1                 0                   0                     0
+## 2                 0                   0                     0
+## 3                 0                   0                     0
+## 4                 0                   0                     0
+## 5                 1                   0                     0
+## 6                 0                   0                     0
+##   Bachelors Some-college Never.married Married-AF-spouse
+## 1                      0                               0
+## 2                      0                               0
+## 3                      0                               0
+## 4                      0                               0
+## 5                      0                               0
+## 6                      0                               0
+##   Never.married Married-civ-spouse Never.married Married-spouse-absent
+## 1                                1                                   0
+## 2                                0                                   0
+## 3                                1                                   0
+## 4                                1                                   0
+## 5                                1                                   0
+## 6                                0                                   1
+##   Never.married Never-married Never.married Separated Never.married Widowed
+## 1                           0                       0                     0
+## 2                           0                       0                     0
+## 3                           0                       0                     0
+## 4                           0                       0                     0
+## 5                           0                       0                     0
+## 6                           0                       0                     0
+##   Adm.clerical Adm-clerical Adm.clerical Armed-Forces
+## 1                         0                         0
+## 2                         0                         0
+## 3                         0                         0
+## 4                         0                         0
+## 5                         0                         0
+## 6                         0                         0
+##   Adm.clerical Craft-repair Adm.clerical Exec-managerial
+## 1                         0                            1
+## 2                         0                            0
+## 3                         0                            0
+## 4                         0                            0
+## 5                         0                            1
+## 6                         0                            0
+##   Adm.clerical Farming-fishing Adm.clerical Handlers-cleaners
+## 1                            0                              0
+## 2                            0                              1
+## 3                            0                              1
+## 4                            0                              0
+## 5                            0                              0
+## 6                            0                              0
+##   Adm.clerical Machine-op-inspct Adm.clerical Other-service
+## 1                              0                          0
+## 2                              0                          0
+## 3                              0                          0
+## 4                              0                          0
+## 5                              0                          0
+## 6                              0                          1
+##   Adm.clerical Priv-house-serv Adm.clerical Prof-specialty
+## 1                            0                           0
+## 2                            0                           0
+## 3                            0                           0
+## 4                            0                           1
+## 5                            0                           0
+## 6                            0                           0
+##   Adm.clerical Protective-serv Adm.clerical Sales Adm.clerical Tech-support
+## 1                            0                  0                         0
+## 2                            0                  0                         0
+## 3                            0                  0                         0
+## 4                            0                  0                         0
+## 5                            0                  0                         0
+## 6                            0                  0                         0
+##   Adm.clerical Transport-moving Not.in.family Not-in-family
+## 1                             0                           0
+## 2                             0                           1
+## 3                             0                           0
+## 4                             0                           0
+## 5                             0                           0
+## 6                             0                           1
+##   Not.in.family Other-relative Not.in.family Own-child
+## 1                            0                       0
+## 2                            0                       0
+## 3                            0                       0
+## 4                            0                       0
+## 5                            0                       0
+## 6                            0                       0
+##   Not.in.family Unmarried Not.in.family Wife White Asian-Pac-Islander
+## 1                       0                  0                        0
+## 2                       0                  0                        0
+## 3                       0                  0                        0
+## 4                       0                  1                        0
+## 5                       0                  1                        0
+## 6                       0                  0                        0
+##   White Black White Other White White Male Male
+## 1           0           0           1         1
+## 2           0           0           1         1
+## 3           1           0           0         1
+## 4           1           0           0         0
+## 5           0           0           1         0
+## 6           1           0           0         0
+```
+
+Note que agora todas as nossas variáveis são numéricas e, portanto, a base está pronta para construirmos o preditor. Como sempre, vamos começar dividindo-a em amostra treino e amostra teste.
+
+
+```r
+set.seed(11)
+noTreino = createDataPartition(renda$`X..50K >50K`, p = 0.75, list = F)
+
+# Lembre-se que temos que transformar a base em uma matriz:
+renda = as.matrix(renda)
+
+treino = renda[noTreino, -5]
+treino_label = renda[noTreino, 5]
+
+teste = renda[-noTreino, -5]
+teste_label = renda[-noTreino, 5]
+```
+
+Agora vamos usar a função xgboost() para criar o modelo.
+
+
+```r
+library(xgboost)
+set.seed(11)
+modelo = xgboost(data = treino, label = treino_label, lambda = 1, gamma = 0, eta = 0.3,
+                 nrounds = 500, objective = "binary:logistic", verbose = 0, max_depth = 3)
+
+# Fazendo a predição:
+predicao = predict(modelo, teste)
+head(predicao)
+```
+
+```
+## [1] 0.846276224 0.001679021 0.220495090 0.008715384 0.843290508 0.730734646
+```
+
+O modelo retorna probabilidades, então devemos criar um classificador. Vamos criar um bem simples, da seguinte forma:
+
+- Probabilidade acima de 0,5: consideramos que a renda do indivíduo é maior do que 50.000;
+- Probabilidade abaixo de 0,5: consideramos que a renda do indivíduo é menor ou igual a 50.000.
+
+
+```r
+classificador = as.numeric(predicao>=0.5)
+
+# Utilizando a matriz de confusão para avaliar o modelo:
+
+confusionMatrix(data = as.factor(classificador), reference = as.factor(teste_label), positive = "1")
+```
+
+```
+## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    0    1
+##          0 5654  794
+##          1  564 1128
+##                                                
+##                Accuracy : 0.8332               
+##                  95% CI : (0.8249, 0.8412)     
+##     No Information Rate : 0.7639               
+##     P-Value [Acc > NIR] : < 0.00000000000000022
+##                                                
+##                   Kappa : 0.5176               
+##                                                
+##  Mcnemar's Test P-Value : 0.0000000005159      
+##                                                
+##             Sensitivity : 0.5869               
+##             Specificity : 0.9093               
+##          Pos Pred Value : 0.6667               
+##          Neg Pred Value : 0.8769               
+##              Prevalence : 0.2361               
+##          Detection Rate : 0.1386               
+##    Detection Prevalence : 0.2079               
+##       Balanced Accuracy : 0.7481               
+##                                                
+##        'Positive' Class : 1                    
+## 
+```
+
+Podemos usar o pacote `DiagrammeR`[@diagrammer] para visualizarmos as árvores construídas pelo modelo. Para isso basta utilizarmos a função xgb.plot.tree() e no argumento *trees* escolhermos a(s) árvore(s) desejada(s).
+
+
+```r
+library(DiagrammeR)
+# Visualizando a segunda árvore construída:
+xgb.plot.tree(model = modelo, trees = 2)
+```
+
+```
+## Error in file(con, "rb"): não é possível abrir a conexão
+```
+
+Em cada nó temos:
+- O nome da variável usada para na divisão, 
+- O cover se aquele nó fosse uma folha e
+- O ganho daquela divisão.
+Em cada folha temos: 
+- O cover da folha e 
+- O valor de saída dela.
